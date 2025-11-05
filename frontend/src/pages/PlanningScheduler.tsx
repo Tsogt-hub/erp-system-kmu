@@ -1078,15 +1078,15 @@ export default function PlanningScheduler() {
                       minWidth: 0,
                       borderRight: '1px solid rgba(0, 0, 0, 0.08)',
                       position: 'relative',
-                      display: 'flex',
-                      justifyContent: 'space-between',
                     }}
                   >
-                    {timeSlots.map((hour) => (
+                    {timeSlots.map((hour, hourIndex) => (
                       <Box
                         key={hour}
                         sx={{
-                          flex: 1,
+                          position: 'absolute',
+                          left: `${((hour - WORK_DAY_START) / HOURS_PER_DAY) * 100}%`,
+                          transform: 'translateX(-50%)',
                           textAlign: 'center',
                           fontSize: '0.6875rem',
                           fontWeight: 500,
@@ -1094,6 +1094,7 @@ export default function PlanningScheduler() {
                           pt: 0.5,
                           px: 0.5,
                           letterSpacing: '-0.01em',
+                          whiteSpace: 'nowrap',
                         }}
                       >
                         {hour.toString().padStart(2, '0')}
