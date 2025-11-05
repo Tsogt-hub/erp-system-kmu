@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Box,
   Typography,
@@ -662,7 +662,9 @@ export default function PlanningScheduler() {
   };
 
   const getAllResources = () => {
-    return resourceCategories.flatMap((cat) => cat.resources);
+    const resources = resourceCategories.flatMap((cat) => cat.resources);
+    console.log('getAllResources:', resources);
+    return resources;
   };
 
   const getDateHeader = () => {
@@ -1118,9 +1120,9 @@ export default function PlanningScheduler() {
                 ))}
               </Box>
 
-              {/* Ressourcen-Zeilen mit Timeline - Kategorie für Kategorie */}
+              {/* Ressourcen-Zeilen mit Timeline - Kategorie-by-Kategorie */}
               {resourceCategories.map((category) => (
-                <Box key={`timeline-cat-${category.id}`}>
+                <React.Fragment key={`cat-${category.id}`}>
                   {/* Kategorie-Header Timeline-Zeile */}
                   <Box
                     sx={{
@@ -1145,19 +1147,18 @@ export default function PlanningScheduler() {
                       />
                     ))}
                   </Box>
-                  
-                  {/* Ressourcen-Zeilen dieser Kategorie */}
+                  {/* Ressourcen dieser Kategorie */}
                   {category.resources.map((resource) => (
-                    <Box
-                      key={resource.id}
-                      sx={{
-                        borderBottom: '1px solid rgba(0,0,0,0.08)',
-                        minHeight: 60,
-                        display: 'grid',
-                        gridTemplateColumns: timelineGridTemplate,
-                        width: '100%',
-                      }}
-                    >
+                <Box
+                  key={resource.id}
+                  sx={{
+                    borderBottom: '1px solid rgba(0,0,0,0.08)',
+                    minHeight: 60,
+                    display: 'grid',
+                    gridTemplateColumns: timelineGridTemplate,
+                    width: '100%',
+                  }}
+                >
                   {weekDays.map((day, dayIndex) => {
                     const dayEvents = getEventsForResourceAndDay(resource.id, day);
                     const resourceColor = getResourceColor(resource);
@@ -1458,7 +1459,7 @@ export default function PlanningScheduler() {
                   })}
                 </Box>
               ))}
-                </Box>
+                </React.Fragment>
               ))}
             </Box>
           </Box>
