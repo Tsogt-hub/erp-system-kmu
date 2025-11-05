@@ -908,6 +908,17 @@ export default function PlanningScheduler() {
               >
                 Ressourcen
               </Box>
+              {/* Spacer für Stunden-Zeile (28px) */}
+              <Box
+                sx={{
+                  height: 28,
+                  borderBottom: '1px solid rgba(0, 0, 0, 0.08)',
+                  background: 'rgba(255, 255, 255, 0.98)',
+                  position: 'sticky',
+                  top: 50,
+                  zIndex: 10,
+                }}
+              />
               {resourceCategories.map((category) => (
                 <Box key={category.id}>
                   <Box
