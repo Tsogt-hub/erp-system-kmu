@@ -873,6 +873,8 @@ export default function PlanningScheduler() {
             borderRadius: '12px', 
             overflow: 'hidden',
             background: 'rgba(255, 255, 255, 0.5)',
+            width: '100%',
+            maxWidth: '100%',
           }}>
             {/* Linke Spalte: Ressourcen (Sticky) */}
             <Box
@@ -992,7 +994,13 @@ export default function PlanningScheduler() {
             </Box>
 
             {/* Timeline-Bereich */}
-            <Box sx={{ flex: 1, overflowX: 'auto', position: 'relative' }}>
+            <Box sx={{ 
+              flex: 1, 
+              overflowX: 'auto', 
+              overflowY: 'hidden',
+              position: 'relative',
+              minWidth: 0, // Erlaubt Flexbox-Schrumpfung
+            }}>
               {/* Sticky Header: Zeit-Spalten */}
               <Box
                 sx={{
@@ -1005,6 +1013,7 @@ export default function PlanningScheduler() {
                   borderBottom: '2px solid rgba(0, 0, 0, 0.08)',
                   display: 'flex',
                   boxShadow: '0 1px 3px rgba(0, 0, 0, 0.05)',
+                  minWidth: 'max-content', // Verhindert Abschneiden
                 }}
               >
                 {/* Spacer für Ressourcen-Spalte */}
@@ -1015,8 +1024,8 @@ export default function PlanningScheduler() {
                   <Box
                     key={day.toISOString()}
                     sx={{
-                      width: `${100 / 7}%`, // Exakt 1/7 der Breite für perfekte Ausrichtung
-                      minWidth: 320, // Mindestbreite für Lesbarkeit
+                      flex: 1, // Flexible Breite - passt sich an Browser an
+                      minWidth: 0, // Erlaubt Flexbox zu schrumpfen
                       borderRight: '1px solid rgba(0, 0, 0, 0.08)',
                       p: 1,
                       background: 'transparent',
@@ -1057,6 +1066,7 @@ export default function PlanningScheduler() {
                   borderBottom: '1px solid rgba(0, 0, 0, 0.08)',
                   display: 'flex',
                   height: 28,
+                  minWidth: 'max-content', // Verhindert Abschneiden
                 }}
               >
                 <Box sx={{ width: 0 }} />
@@ -1064,8 +1074,8 @@ export default function PlanningScheduler() {
                   <Box
                     key={day.toISOString()}
                     sx={{
-                      width: `${100 / 7}%`, // Exakt 1/7 der Breite - gleich wie Header
-                      minWidth: 320,
+                      flex: 1, // Flexible Breite - gleich wie Header
+                      minWidth: 0,
                       borderRight: '1px solid rgba(0, 0, 0, 0.08)',
                       position: 'relative',
                       display: 'flex',
@@ -1149,8 +1159,8 @@ export default function PlanningScheduler() {
                               }
                             }}
                             sx={{
-                              width: `${100 / 7}%`, // Exakt 1/7 der Breite - perfekte Ausrichtung mit Header & Stunden
-                              minWidth: 320,
+                              flex: 1, // Flexible Breite - perfekte Ausrichtung mit Header & Stunden
+                              minWidth: 0,
                               borderRight: '1px solid rgba(0,0,0,0.08)',
                               position: 'relative',
                               minHeight: 60,
