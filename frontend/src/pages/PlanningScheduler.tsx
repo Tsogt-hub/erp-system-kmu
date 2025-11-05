@@ -196,6 +196,7 @@ export default function PlanningScheduler() {
   // Nur ausgewählte Stunden anzeigen wie bei Hero: 06, 09, 12, 15
   const displayedHours = [6, 9, 12, 15];
   const timeSlots = displayedHours;
+  const timelineGridTemplate = 'repeat(7, minmax(160px, 1fr))';
 
   useEffect(() => {
     loadProjects();
@@ -1000,7 +1001,7 @@ export default function PlanningScheduler() {
               overflowY: 'auto',
               position: 'relative',
               minWidth: 0,
-              width: 0, // Flexbox-Trick für korrekte Breitenberechnung
+              width: '100%',
             }}>
               {/* Sticky Header: Zeit-Spalten */}
               <Box
@@ -1012,7 +1013,8 @@ export default function PlanningScheduler() {
                   backdropFilter: 'blur(20px)',
                   WebkitBackdropFilter: 'blur(20px)',
                   borderBottom: '2px solid rgba(0, 0, 0, 0.08)',
-                  display: 'flex',
+                  display: 'grid',
+                  gridTemplateColumns: timelineGridTemplate,
                   boxShadow: '0 1px 3px rgba(0, 0, 0, 0.05)',
                   width: '100%',
                 }}
@@ -1022,13 +1024,14 @@ export default function PlanningScheduler() {
                   <Box
                     key={day.toISOString()}
                     sx={{
-                      flex: '1 1 0%', // Gleichmäßige Verteilung
-                      minWidth: 0,
                       borderRight: '1px solid rgba(0, 0, 0, 0.08)',
                       p: 1,
                       background: 'transparent',
                       position: 'relative',
                       textAlign: 'center',
+                      '&:last-of-type': {
+                        borderRight: 'none',
+                      },
                     }}
                   >
                     <Typography variant="body2" sx={{ 
@@ -1062,7 +1065,8 @@ export default function PlanningScheduler() {
                   zIndex: 8,
                   background: 'rgba(255, 255, 255, 0.98)',
                   borderBottom: '1px solid rgba(0, 0, 0, 0.08)',
-                  display: 'flex',
+                  display: 'grid',
+                  gridTemplateColumns: timelineGridTemplate,
                   height: 28,
                   width: '100%',
                 }}
@@ -1071,10 +1075,11 @@ export default function PlanningScheduler() {
                   <Box
                     key={day.toISOString()}
                     sx={{
-                      flex: '1 1 0%', // Gleichmäßige Verteilung wie Header
-                      minWidth: 0,
                       borderRight: '1px solid rgba(0, 0, 0, 0.08)',
                       position: 'relative',
+                      '&:last-of-type': {
+                        borderRight: 'none',
+                      },
                     }}
                   >
                     {timeSlots.map((hour, hourIndex) => (
@@ -1108,7 +1113,8 @@ export default function PlanningScheduler() {
                   sx={{
                     borderBottom: '1px solid rgba(0,0,0,0.08)',
                     minHeight: 80,
-                    display: 'flex',
+                    display: 'grid',
+                    gridTemplateColumns: timelineGridTemplate,
                     width: '100%',
                   }}
                 >
@@ -1156,8 +1162,6 @@ export default function PlanningScheduler() {
                               }
                             }}
                             sx={{
-                              flex: '1 1 0%', // Gleichmäßige Verteilung wie Header & Stunden
-                              minWidth: 0,
                               borderRight: '1px solid rgba(0,0,0,0.08)',
                               position: 'relative',
                               minHeight: 60,
@@ -1165,6 +1169,9 @@ export default function PlanningScheduler() {
                               cursor: 'pointer',
                               '&:hover': {
                                 backgroundColor: 'rgba(0, 0, 0, 0.015)',
+                              },
+                              '&:last-of-type': {
+                                borderRight: 'none',
                               },
                             }}
                             onDoubleClick={() => {
