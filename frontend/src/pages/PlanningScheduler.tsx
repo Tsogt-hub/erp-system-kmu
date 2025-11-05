@@ -51,6 +51,12 @@ import InputAdornment from '@mui/material/InputAdornment';
 import Chip from '@mui/material/Chip';
 import Autocomplete from '@mui/material/Autocomplete';
 import PeopleIcon from '@mui/icons-material/People';
+import EditIcon from '@mui/icons-material/Edit';
+import CategoryIcon from '@mui/icons-material/Category';
+import WorkIcon from '@mui/icons-material/Work';
+import SettingsIcon from '@mui/icons-material/Settings';
+import FileUploadIcon from '@mui/icons-material/FileUpload';
+import FileDownloadIcon from '@mui/icons-material/FileDownload';
 
 interface CalendarEvent extends ApiCalendarEvent {
   resource_name?: string;
@@ -182,13 +188,14 @@ export default function PlanningScheduler() {
   // Immer 7 Tage (Woche) anzeigen
   const weekDays = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
 
-  // Timeline-Einstellungen
+  // Timeline-Einstellungen (Hero ERP Style: Nur ausgewählte Stunden anzeigen)
   const WORK_DAY_START = 6; // 06:00
   const WORK_DAY_END = 22; // 22:00
   const HOURS_PER_DAY = WORK_DAY_END - WORK_DAY_START;
   
-  // Generiere Stunden-Array für Timeline
-  const timeSlots = Array.from({ length: HOURS_PER_DAY }, (_, i) => WORK_DAY_START + i);
+  // Nur ausgewählte Stunden anzeigen wie bei Hero: 06, 09, 12, 15
+  const displayedHours = [6, 9, 12, 15, 18];
+  const timeSlots = displayedHours;
 
   useEffect(() => {
     loadProjects();
@@ -664,148 +671,132 @@ export default function PlanningScheduler() {
 
   return (
     <Box>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3, flexWrap: 'wrap', gap: 2 }}>
-        <Typography variant="h4" sx={{ 
-          fontWeight: 700,
-          letterSpacing: '-0.03em',
-          color: '#000000',
-        }}>
-          Plantafel
-        </Typography>
-        <Box sx={{ display: 'flex', gap: 1.5, alignItems: 'center', flexWrap: 'wrap' }}>
-          <TextField
+      {/* Hero ERP Style Header */}
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2, flexWrap: 'wrap', gap: 2 }}>
+        {/* Navigation links */}
+        <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+          <Button 
             size="small"
-            placeholder="Suchen..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <SearchIcon sx={{ color: 'rgba(0, 0, 0, 0.6)' }} />
-                </InputAdornment>
-              ),
-            }}
-            sx={{ 
-              minWidth: 200,
-              '& .MuiOutlinedInput-root': {
-                background: 'rgba(255, 255, 255, 0.72)',
-                backdropFilter: 'blur(10px)',
-                borderRadius: '10px',
-              }
-            }}
-          />
-          <Button
-            variant="outlined"
-            startIcon={<FilterListIcon />}
-            onClick={(e) => setFilterAnchor(e.currentTarget)}
-            sx={{ 
-              borderRadius: '10px',
-              textTransform: 'none',
-              fontWeight: 600,
-              borderColor: 'rgba(0, 122, 255, 0.3)',
-            }}
-          >
-            Filter
-          </Button>
-          <Button 
-            variant="outlined" 
-            startIcon={<DownloadIcon />} 
-            onClick={handleExport}
-            sx={{ 
-              borderRadius: '10px',
-              textTransform: 'none',
-              fontWeight: 600,
-              borderColor: 'rgba(0, 122, 255, 0.3)',
-            }}
-          >
-            Export
-          </Button>
-          <Tooltip title={showConflicts ? "Konflikte ausblenden" : "Konflikte anzeigen"}>
-            <Button
-              variant={showConflicts ? "contained" : "outlined"}
-              startIcon={showConflicts ? <VisibilityIcon /> : <VisibilityOffIcon />}
-              onClick={() => setShowConflicts(!showConflicts)}
-              sx={{ 
-                borderRadius: '10px',
-                textTransform: 'none',
-                fontWeight: 600,
-                ...(showConflicts ? {} : { borderColor: 'rgba(0, 122, 255, 0.3)' }),
-              }}
-            >
-              Konflikte
-            </Button>
-          </Tooltip>
-          <Tooltip title={showCapacity ? "Kapazität ausblenden" : "Kapazität anzeigen"}>
-            <Button
-              variant={showCapacity ? "contained" : "outlined"}
-              startIcon={<AccessTimeIcon />}
-              onClick={() => setShowCapacity(!showCapacity)}
-              sx={{ 
-                borderRadius: '10px',
-                textTransform: 'none',
-                fontWeight: 600,
-                ...(showCapacity ? {} : { borderColor: 'rgba(0, 122, 255, 0.3)' }),
-              }}
-            >
-              Kapazität
-            </Button>
-          </Tooltip>
-          <Button 
-            variant="outlined" 
             startIcon={<ChevronLeftIcon />} 
             onClick={handlePrevious}
             sx={{ 
-              borderRadius: '10px',
               textTransform: 'none',
-              fontWeight: 600,
-              borderColor: 'rgba(0, 122, 255, 0.3)',
-            }}
-          >
-            Vorherige
-          </Button>
-          <Button 
-            variant="outlined" 
-            startIcon={<TodayIcon />} 
-            onClick={handleToday}
-            sx={{ 
-              borderRadius: '10px',
-              textTransform: 'none',
-              fontWeight: 600,
-              borderColor: 'rgba(0, 122, 255, 0.3)',
+              fontWeight: 500,
+              fontSize: '0.875rem',
+              color: 'rgba(0, 0, 0, 0.7)',
+              minWidth: 'auto',
             }}
           >
             Heute
           </Button>
-          <Button 
-            variant="outlined" 
-            endIcon={<ChevronRightIcon />} 
-            onClick={handleNext}
+          <Typography sx={{ fontSize: '0.875rem', color: 'rgba(0, 0, 0, 0.5)' }}>›</Typography>
+          <Typography sx={{ fontSize: '0.875rem', fontWeight: 600 }}>Datum</Typography>
+        </Box>
+        
+        {/* Center: Date Range */}
+        <Typography variant="h6" sx={{ 
+          fontWeight: 600,
+          letterSpacing: '-0.02em',
+          color: '#000000',
+          fontSize: '1.125rem',
+        }}>
+          {getDateHeader()}
+        </Typography>
+
+        {/* Right: Action Buttons */}
+        <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+          <Button
+            variant="outlined"
+            size="small"
+            startIcon={<CategoryIcon />}
             sx={{ 
-              borderRadius: '10px',
+              borderRadius: '8px',
               textTransform: 'none',
-              fontWeight: 600,
-              borderColor: 'rgba(0, 122, 255, 0.3)',
+              fontWeight: 500,
+              borderColor: 'rgba(0, 0, 0, 0.12)',
+              color: 'rgba(0, 0, 0, 0.7)',
+              fontSize: '0.875rem',
+              '&:hover': {
+                borderColor: 'rgba(0, 122, 255, 0.3)',
+                background: 'rgba(0, 122, 255, 0.04)',
+              }
             }}
           >
-            Nächste
+            Kategorie
+          </Button>
+          <Button
+            variant="outlined"
+            size="small"
+            startIcon={<WorkIcon />}
+            sx={{ 
+              borderRadius: '8px',
+              textTransform: 'none',
+              fontWeight: 500,
+              borderColor: 'rgba(0, 0, 0, 0.12)',
+              color: 'rgba(0, 0, 0, 0.7)',
+              fontSize: '0.875rem',
+              '&:hover': {
+                borderColor: 'rgba(0, 122, 255, 0.3)',
+                background: 'rgba(0, 122, 255, 0.04)',
+              }
+            }}
+          >
+            Gewerk
           </Button>
           <Button 
             variant="contained" 
+            size="small"
             startIcon={<AddIcon />} 
             onClick={() => {
               resetEventForm();
               setEventPanelOpen(true);
             }}
             sx={{ 
-              borderRadius: '10px',
+              borderRadius: '8px',
               textTransform: 'none',
               fontWeight: 600,
-              background: 'linear-gradient(180deg, #007AFF 0%, #0051D5 100%)',
-              boxShadow: '0 2px 8px rgba(0, 122, 255, 0.25)',
+              background: '#007AFF',
+              fontSize: '0.875rem',
+              '&:hover': {
+                background: '#0051D5',
+              }
             }}
           >
             Neuer Termin
           </Button>
+          <Button
+            variant="outlined"
+            size="small"
+            startIcon={<FileDownloadIcon />}
+            endIcon={<FileUploadIcon />}
+            onClick={handleExport}
+            sx={{ 
+              borderRadius: '8px',
+              textTransform: 'none',
+              fontWeight: 500,
+              borderColor: 'rgba(0, 0, 0, 0.12)',
+              color: 'rgba(0, 0, 0, 0.7)',
+              fontSize: '0.875rem',
+              '&:hover': {
+                borderColor: 'rgba(0, 122, 255, 0.3)',
+                background: 'rgba(0, 122, 255, 0.04)',
+              }
+            }}
+          >
+            Import/Export
+          </Button>
+          <IconButton
+            size="small"
+            sx={{ 
+              color: 'rgba(0, 0, 0, 0.6)',
+              '&:hover': {
+                color: '#007AFF',
+                background: 'rgba(0, 122, 255, 0.08)',
+              }
+            }}
+          >
+            <SettingsIcon fontSize="small" />
+          </IconButton>
         </Box>
       </Box>
 
@@ -821,127 +812,14 @@ export default function PlanningScheduler() {
         </Box>
       )}
 
-      <Menu
-        anchorEl={filterAnchor}
-        open={Boolean(filterAnchor)}
-        onClose={() => setFilterAnchor(null)}
-      >
-        <Box sx={{ p: 2, minWidth: 250 }}>
-          <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600 }}>
-            Ressourcentypen
-          </Typography>
-          {['employee', 'vehicle', 'tool', 'pipeline', 'service', 'project'].map((type) => (
-            <FormControlLabel
-              key={type}
-              control={
-                <Checkbox
-                  checked={filters.resourceTypes.includes(type)}
-                  onChange={(e) => {
-                    if (e.target.checked) {
-                      setFilters({ ...filters, resourceTypes: [...filters.resourceTypes, type] });
-                    } else {
-                      setFilters({ ...filters, resourceTypes: filters.resourceTypes.filter((t) => t !== type) });
-                    }
-                  }}
-                />
-              }
-              label={type}
-            />
-          ))}
-          <Typography variant="subtitle2" sx={{ mb: 1, mt: 2, fontWeight: 600 }}>
-            Projekte
-          </Typography>
-          {projects.slice(0, 10).map((project) => (
-            <FormControlLabel
-              key={project.id}
-              control={
-                <Checkbox
-                  checked={filters.projects.includes(project.id)}
-                  onChange={(e) => {
-                    if (e.target.checked) {
-                      setFilters({ ...filters, projects: [...filters.projects, project.id] });
-                    } else {
-                      setFilters({ ...filters, projects: filters.projects.filter((p) => p !== project.id) });
-                    }
-                  }}
-                />
-              }
-              label={project.name}
-            />
-          ))}
-          <Typography variant="subtitle2" sx={{ mb: 1, mt: 2, fontWeight: 600 }}>
-            Status
-          </Typography>
-          {[
-            { value: 'planned', label: 'Geplant' },
-            { value: 'in_progress', label: 'In Bearbeitung' },
-            { value: 'completed', label: 'Abgeschlossen' },
-            { value: 'cancelled', label: 'Storniert' },
-          ].map((status) => (
-            <FormControlLabel
-              key={status.value}
-              control={
-                <Checkbox
-                  checked={filters.statuses.includes(status.value)}
-                  onChange={(e) => {
-                    if (e.target.checked) {
-                      setFilters({ ...filters, statuses: [...filters.statuses, status.value] });
-                    } else {
-                      setFilters({ ...filters, statuses: filters.statuses.filter((s) => s !== status.value) });
-                    }
-                  }}
-                />
-              }
-              label={status.label}
-            />
-          ))}
-          <Typography variant="subtitle2" sx={{ mb: 1, mt: 2, fontWeight: 600 }}>
-            Priorität
-          </Typography>
-          {[
-            { value: 'low', label: 'Niedrig' },
-            { value: 'medium', label: 'Mittel' },
-            { value: 'high', label: 'Hoch' },
-            { value: 'critical', label: 'Kritisch' },
-          ].map((priority) => (
-            <FormControlLabel
-              key={priority.value}
-              control={
-                <Checkbox
-                  checked={filters.priorities.includes(priority.value)}
-                  onChange={(e) => {
-                    if (e.target.checked) {
-                      setFilters({ ...filters, priorities: [...filters.priorities, priority.value] });
-                    } else {
-                      setFilters({ ...filters, priorities: filters.priorities.filter((p) => p !== priority.value) });
-                    }
-                  }}
-                />
-              }
-              label={priority.label}
-            />
-          ))}
-        </Box>
-      </Menu>
-
       <Paper sx={{ 
-        p: 2.5,
-        background: 'rgba(255, 255, 255, 0.72)',
-        backdropFilter: 'blur(60px) saturate(150%)',
-        WebkitBackdropFilter: 'blur(60px) saturate(150%)',
-        borderRadius: '16px',
-        border: '1px solid rgba(255, 255, 255, 0.18)',
-        boxShadow: '0 10px 15px rgba(0, 0, 0, 0.1), 0 4px 6px rgba(0, 0, 0, 0.05)',
+        p: 0,
+        background: '#FFFFFF',
+        borderRadius: '12px',
+        border: '1px solid rgba(0, 0, 0, 0.08)',
+        boxShadow: '0 1px 3px rgba(0, 0, 0, 0.08)',
+        overflow: 'hidden',
       }}>
-        <Typography variant="h6" sx={{ 
-          mb: 2.5, 
-          textAlign: 'center',
-          fontWeight: 600,
-          letterSpacing: '-0.02em',
-          color: '#000000',
-        }}>
-          {getDateHeader()}
-        </Typography>
 
         <Box sx={{ 
             display: 'flex', 
@@ -989,30 +867,49 @@ export default function PlanningScheduler() {
                   <Box
                     sx={{
                       p: 1.5,
-                      background: `linear-gradient(90deg, ${category.color}10 0%, ${category.color}05 100%)`,
-                      backdropFilter: 'blur(10px)',
-                      WebkitBackdropFilter: 'blur(10px)',
-                      borderBottom: '1px solid rgba(0, 0, 0, 0.05)',
-                      borderLeft: `3px solid ${category.color}`,
+                      background: 'rgba(245, 245, 247, 0.95)',
+                      borderBottom: '1px solid rgba(0, 0, 0, 0.08)',
                       display: 'flex',
                       alignItems: 'center',
+                      justifyContent: 'space-between',
                       gap: 1,
-                      fontWeight: 500,
+                      fontWeight: 600,
+                      fontSize: '0.8125rem',
+                      letterSpacing: '-0.01em',
+                      cursor: 'pointer',
+                      transition: 'all 0.15s ease-out',
+                      '&:hover': {
+                        background: 'rgba(240, 240, 242, 0.98)',
+                        '& .edit-icon': {
+                          opacity: 1,
+                        }
+                      }
                     }}
                   >
-                    <Chip
-                      label={category.name}
-                      size="small"
-                      sx={{
-                        background: `linear-gradient(135deg, ${category.color} 0%, ${category.color}DD 100%)`,
-                        color: '#FFFFFF',
-                        fontWeight: 600,
-                        fontSize: '0.75rem',
-                        letterSpacing: '-0.01em',
-                        borderRadius: '8px',
-                        boxShadow: `0 2px 8px ${category.color}40`,
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <Typography sx={{ 
+                        fontWeight: 600, 
+                        fontSize: '0.8125rem',
+                        color: 'rgba(0, 0, 0, 0.85)',
+                      }}>
+                        {category.name}
+                      </Typography>
+                    </Box>
+                    <IconButton 
+                      size="small" 
+                      className="edit-icon"
+                      sx={{ 
+                        opacity: 0,
+                        transition: 'all 0.2s ease-out',
+                        padding: '4px',
+                        '&:hover': {
+                          background: 'rgba(0, 122, 255, 0.08)',
+                          color: '#007AFF',
+                        }
                       }}
-                    />
+                    >
+                      <EditIcon sx={{ fontSize: '0.875rem' }} />
+                    </IconButton>
                   </Box>
                   <Box>
                     {category.resources.map((resource) => {
@@ -1072,47 +969,34 @@ export default function PlanningScheduler() {
                   <Box
                     key={day.toISOString()}
                     sx={{
-                      minWidth: 800, // Erhöht für bessere Stunden-Darstellung
+                      minWidth: 400, // Angepasst für Hero-Style (weniger Stunden)
                       flex: 1,
                       borderRight: '1px solid rgba(0, 0, 0, 0.08)',
-                      p: 1.5,
-                      background: isToday(day) 
-                        ? 'linear-gradient(135deg, rgba(0, 122, 255, 0.12) 0%, rgba(0, 122, 255, 0.08) 100%)'
-                        : 'transparent',
+                      p: 1,
+                      background: 'transparent',
                       position: 'relative',
-                      transition: 'all 0.2s ease-out',
+                      textAlign: 'center',
                     }}
                   >
                     <Typography variant="body2" sx={{ 
                       fontWeight: 600, 
                       textAlign: 'center',
                       letterSpacing: '-0.015em',
-                      color: isToday(day) ? '#007AFF' : '#000000',
+                      color: 'rgba(0, 0, 0, 0.85)',
+                      fontSize: '0.8125rem',
                     }}>
-                      {format(day, 'EEE', { locale: de })}
+                      {format(day, 'EEE.', { locale: de })}
                     </Typography>
                     <Typography variant="caption" sx={{ 
                       display: 'block', 
                       textAlign: 'center',
-                      fontWeight: 500,
+                      fontWeight: 400,
                       letterSpacing: '-0.01em',
-                      color: isToday(day) ? '#007AFF' : 'rgba(0, 0, 0, 0.6)',
+                      color: 'rgba(0, 0, 0, 0.55)',
+                      fontSize: '0.75rem',
                     }}>
                       {format(day, 'd.M.', { locale: de })}
                     </Typography>
-                    {isToday(day) && (
-                      <Box
-                        sx={{
-                          position: 'absolute',
-                          left: 0,
-                          top: 0,
-                          bottom: 0,
-                          width: '3px',
-                          background: 'linear-gradient(180deg, #007AFF 0%, #0051D5 100%)',
-                          boxShadow: '0 0 8px rgba(0, 122, 255, 0.4)',
-                        }}
-                      />
-                    )}
                   </Box>
                 ))}
               </Box>
@@ -1121,14 +1005,12 @@ export default function PlanningScheduler() {
               <Box
                 sx={{
                   position: 'sticky',
-                  top: 60,
+                  top: 50,
                   zIndex: 8,
-                  background: 'rgba(255, 255, 255, 0.95)',
-                  backdropFilter: 'blur(10px)',
-                  WebkitBackdropFilter: 'blur(10px)',
+                  background: 'rgba(255, 255, 255, 0.98)',
                   borderBottom: '1px solid rgba(0, 0, 0, 0.08)',
                   display: 'flex',
-                  height: 32,
+                  height: 28,
                 }}
               >
                 <Box sx={{ width: 0 }} />
@@ -1136,31 +1018,25 @@ export default function PlanningScheduler() {
                   <Box
                     key={day.toISOString()}
                     sx={{
-                      minWidth: 800, // Erhöht für bessere Stunden-Darstellung
+                      minWidth: 400, // Konsistent mit Header
                       flex: 1,
-                      borderRight: '1px solid rgba(0, 0, 0, 0.06)',
+                      borderRight: '1px solid rgba(0, 0, 0, 0.08)',
                       position: 'relative',
                       display: 'flex',
-                      overflow: 'visible',
+                      justifyContent: 'space-between',
                     }}
                   >
                     {timeSlots.map((hour) => (
                       <Box
                         key={hour}
                         sx={{
-                          minWidth: 50, // Mindestbreite pro Stunde
                           flex: 1,
-                          borderRight: '1px solid rgba(0, 0, 0, 0.04)',
                           textAlign: 'center',
-                          fontSize: '0.75rem',
-                          fontWeight: 600,
-                          color: 'rgba(0, 0, 0, 0.6)',
-                          pt: 0.75,
+                          fontSize: '0.6875rem',
+                          fontWeight: 500,
+                          color: 'rgba(0, 0, 0, 0.5)',
+                          pt: 0.5,
                           px: 0.5,
-                          whiteSpace: 'nowrap',
-                          overflow: 'hidden',
-                          textOverflow: 'ellipsis',
-                          position: 'relative',
                           letterSpacing: '-0.01em',
                         }}
                       >
@@ -1227,17 +1103,15 @@ export default function PlanningScheduler() {
                               }
                             }}
                             sx={{
-                              minWidth: 800, // Gleiche Breite wie Header für konsistente Darstellung
+                              minWidth: 400, // Konsistent mit Header
                               flex: 1,
                               borderRight: '1px solid rgba(0,0,0,0.08)',
                               position: 'relative',
-                              minHeight: 80,
-                              backgroundColor: isToday(day)
-                                ? 'rgba(33, 150, 243, 0.03)'
-                                : 'transparent',
+                              minHeight: 60,
+                              backgroundColor: 'transparent',
                               cursor: 'pointer',
                               '&:hover': {
-                                backgroundColor: 'rgba(0, 0, 0, 0.02)',
+                                backgroundColor: 'rgba(0, 0, 0, 0.015)',
                               },
                             }}
                             onDoubleClick={() => {
@@ -1245,6 +1119,21 @@ export default function PlanningScheduler() {
                               handleSlotClick(resource.id, day, defaultHour);
                             }}
                           >
+                            {/* Beige Zeitabschnitte (z.B. Mittagspause) - Hero ERP Style */}
+                            {dayIndex >= 2 && dayIndex <= 3 && (
+                              <Box
+                                sx={{
+                                  position: 'absolute',
+                                  left: '40%',
+                                  right: 0,
+                                  top: 0,
+                                  bottom: 0,
+                                  background: 'rgba(255, 248, 225, 0.8)',
+                                  pointerEvents: 'none',
+                                  zIndex: 0,
+                                }}
+                              />
+                            )}
                             {/* Heute-Marker */}
                             {isToday(day) && (
                               <Box
@@ -1260,7 +1149,7 @@ export default function PlanningScheduler() {
                               />
                             )}
 
-                            {/* Stunden-Grid-Linien */}
+                            {/* Stunden-Grid-Linien - nur an angezeigten Stunden */}
                             {timeSlots.map((hour) => (
                               <Box
                                 key={hour}
@@ -1270,8 +1159,9 @@ export default function PlanningScheduler() {
                                   top: 0,
                                   bottom: 0,
                                   width: '1px',
-                                  borderLeft: '1px dashed rgba(0,0,0,0.1)',
+                                  borderLeft: '1px solid rgba(0,0,0,0.06)',
                                   pointerEvents: 'none',
+                                  zIndex: 1,
                                 }}
                               />
                             ))}
