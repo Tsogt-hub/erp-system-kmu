@@ -27,3 +27,4 @@ echo "✅ Datenbank initialisiert!"
 
 
 
+

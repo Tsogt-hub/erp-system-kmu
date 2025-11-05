@@ -1118,18 +1118,46 @@ export default function PlanningScheduler() {
                 ))}
               </Box>
 
-              {/* Ressourcen-Zeilen mit Timeline */}
-              {getAllResources().map((resource) => (
-                <Box
-                  key={resource.id}
-                  sx={{
-                    borderBottom: '1px solid rgba(0,0,0,0.08)',
-                    minHeight: 60,
-                    display: 'grid',
-                    gridTemplateColumns: timelineGridTemplate,
-                    width: '100%',
-                  }}
-                >
+              {/* Ressourcen-Zeilen mit Timeline - Kategorie für Kategorie */}
+              {resourceCategories.map((category) => (
+                <Box key={`timeline-cat-${category.id}`}>
+                  {/* Kategorie-Header Timeline-Zeile */}
+                  <Box
+                    sx={{
+                      borderBottom: '1px solid rgba(0, 0, 0, 0.08)',
+                      minHeight: 60,
+                      display: 'grid',
+                      gridTemplateColumns: timelineGridTemplate,
+                      width: '100%',
+                      background: 'rgba(245, 245, 247, 0.95)',
+                    }}
+                  >
+                    {weekDays.map((day) => (
+                      <Box
+                        key={day.toISOString()}
+                        sx={{
+                          borderRight: '1px solid rgba(0, 0, 0, 0.08)',
+                          position: 'relative',
+                          '&:last-of-type': {
+                            borderRight: 'none',
+                          },
+                        }}
+                      />
+                    ))}
+                  </Box>
+                  
+                  {/* Ressourcen-Zeilen dieser Kategorie */}
+                  {category.resources.map((resource) => (
+                    <Box
+                      key={resource.id}
+                      sx={{
+                        borderBottom: '1px solid rgba(0,0,0,0.08)',
+                        minHeight: 60,
+                        display: 'grid',
+                        gridTemplateColumns: timelineGridTemplate,
+                        width: '100%',
+                      }}
+                    >
                   {weekDays.map((day, dayIndex) => {
                     const dayEvents = getEventsForResourceAndDay(resource.id, day);
                     const resourceColor = getResourceColor(resource);
@@ -1428,6 +1456,8 @@ export default function PlanningScheduler() {
                           </Box>
                     );
                   })}
+                </Box>
+              ))}
                 </Box>
               ))}
             </Box>
