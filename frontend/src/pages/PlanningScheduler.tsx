@@ -874,7 +874,7 @@ export default function PlanningScheduler() {
         <Box sx={{ 
             display: 'flex', 
             width: '100%',
-            overflow: 'hidden',
+            overflow: 'visible',
             background: 'rgba(255, 255, 255, 0.5)',
           }}>
             {/* Linke Spalte: Ressourcen (Sticky) */}
@@ -1016,6 +1016,7 @@ export default function PlanningScheduler() {
               overflowX: 'auto',
               position: 'relative',
               minWidth: 0,
+              minHeight: 800,
             }}>
               {/* Sticky Header: Zeit-Spalten */}
               <Box
@@ -1120,35 +1121,19 @@ export default function PlanningScheduler() {
                 ))}
               </Box>
 
-              {/* Ressourcen-Zeilen mit Timeline - Kategorie-by-Kategorie */}
-              {resourceCategories.map((category) => (
-                <React.Fragment key={`cat-${category.id}`}>
-                  {/* Kategorie-Header Timeline-Zeile */}
-                  <Box
-                    sx={{
-                      borderBottom: '1px solid rgba(0, 0, 0, 0.08)',
-                      minHeight: 60,
-                      display: 'grid',
-                      gridTemplateColumns: timelineGridTemplate,
-                      width: '100%',
-                      background: 'rgba(245, 245, 247, 0.95)',
-                    }}
-                  >
-                    {weekDays.map((day) => (
-                      <Box
-                        key={day.toISOString()}
-                        sx={{
-                          borderRight: '1px solid rgba(0, 0, 0, 0.08)',
-                          position: 'relative',
-                          '&:last-of-type': {
-                            borderRight: 'none',
-                          },
-                        }}
-                      />
-                    ))}
-                  </Box>
-                  {/* Ressourcen dieser Kategorie */}
-                  {category.resources.map((resource) => (
+              {/* EINFACHSTER TEST: Eine einzige statische Zeile */}
+              <Box sx={{ background: 'yellow', minHeight: 60, display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', borderBottom: '2px solid red' }}>
+                <Box>Mo</Box>
+                <Box>Di</Box>
+                <Box>Mi</Box>
+                <Box>Do</Box>
+                <Box>Fr</Box>
+                <Box>Sa</Box>
+                <Box>So</Box>
+              </Box>
+
+              {/* Ressourcen-Zeilen mit Timeline - NUR für Ressourcen */}
+              {getAllResources().map((resource) => (
                 <Box
                   key={resource.id}
                   sx={{
@@ -1459,9 +1444,17 @@ export default function PlanningScheduler() {
                   })}
                 </Box>
               ))}
-                </React.Fragment>
-              ))}
             </Box>
+          </Box>
+          
+          {/* DEBUG: Test direkt im Paper */}
+          <Box sx={{ background: 'lime', p: 2, m: 2 }}>
+            <Typography>🚀 TEST: Kann ich hier rendern?</Typography>
+            {getAllResources().map((r) => (
+              <Box key={r.id} sx={{ p: 1, borderBottom: '1px solid black' }}>
+                {r.name}
+              </Box>
+            ))}
           </Box>
       </Paper>
 
