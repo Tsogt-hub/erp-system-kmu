@@ -194,7 +194,7 @@ export default function PlanningScheduler() {
   const HOURS_PER_DAY = WORK_DAY_END - WORK_DAY_START;
   
   // Nur ausgewählte Stunden anzeigen wie bei Hero: 06, 09, 12, 15
-  const displayedHours = [6, 9, 12, 15, 18];
+  const displayedHours = [6, 9, 12, 15];
   const timeSlots = displayedHours;
 
   useEffect(() => {
@@ -673,23 +673,69 @@ export default function PlanningScheduler() {
     <Box>
       {/* Hero ERP Style Header */}
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2, flexWrap: 'wrap', gap: 2 }}>
-        {/* Navigation links */}
+        {/* Links: Kalenderwoche Dropdown + Navigation */}
         <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+          <FormControl size="small" sx={{ minWidth: 150 }}>
+            <Select
+              value="week"
+              sx={{
+                fontSize: '0.875rem',
+                borderRadius: '8px',
+                '& .MuiOutlinedInput-notchedOutline': {
+                  borderColor: 'rgba(0, 0, 0, 0.12)',
+                },
+                '&:hover .MuiOutlinedInput-notchedOutline': {
+                  borderColor: 'rgba(0, 122, 255, 0.3)',
+                },
+              }}
+            >
+              <MenuItem value="week">Kalenderwoche</MenuItem>
+              <MenuItem value="month">Monat</MenuItem>
+              <MenuItem value="day">Tag</MenuItem>
+            </Select>
+          </FormControl>
+          <IconButton 
+            size="small"
+            onClick={handlePrevious}
+            sx={{ 
+              color: 'rgba(0, 0, 0, 0.7)',
+              '&:hover': {
+                background: 'rgba(0, 0, 0, 0.04)',
+              }
+            }}
+          >
+            <ChevronLeftIcon fontSize="small" />
+          </IconButton>
           <Button 
             size="small"
-            startIcon={<ChevronLeftIcon />} 
-            onClick={handlePrevious}
+            onClick={handleToday}
             sx={{ 
               textTransform: 'none',
               fontWeight: 500,
               fontSize: '0.875rem',
               color: 'rgba(0, 0, 0, 0.7)',
               minWidth: 'auto',
+              px: 1.5,
+              '&:hover': {
+                background: 'rgba(0, 0, 0, 0.04)',
+              }
             }}
           >
             Heute
           </Button>
-          <Typography sx={{ fontSize: '0.875rem', color: 'rgba(0, 0, 0, 0.5)' }}>›</Typography>
+          <IconButton 
+            size="small"
+            onClick={handleNext}
+            sx={{ 
+              color: 'rgba(0, 0, 0, 0.7)',
+              '&:hover': {
+                background: 'rgba(0, 0, 0, 0.04)',
+              }
+            }}
+          >
+            <ChevronRightIcon fontSize="small" />
+          </IconButton>
+          <Typography sx={{ fontSize: '0.875rem', color: 'rgba(0, 0, 0, 0.5)', mx: 0.5 }}>›</Typography>
           <Typography sx={{ fontSize: '0.875rem', fontWeight: 600 }}>Datum</Typography>
         </Box>
         
@@ -969,8 +1015,8 @@ export default function PlanningScheduler() {
                   <Box
                     key={day.toISOString()}
                     sx={{
-                      minWidth: 400, // Angepasst für Hero-Style (weniger Stunden)
-                      flex: 1,
+                      width: `${100 / 7}%`, // Exakt 1/7 der Breite für perfekte Ausrichtung
+                      minWidth: 320, // Mindestbreite für Lesbarkeit
                       borderRight: '1px solid rgba(0, 0, 0, 0.08)',
                       p: 1,
                       background: 'transparent',
@@ -1018,8 +1064,8 @@ export default function PlanningScheduler() {
                   <Box
                     key={day.toISOString()}
                     sx={{
-                      minWidth: 400, // Konsistent mit Header
-                      flex: 1,
+                      width: `${100 / 7}%`, // Exakt 1/7 der Breite - gleich wie Header
+                      minWidth: 320,
                       borderRight: '1px solid rgba(0, 0, 0, 0.08)',
                       position: 'relative',
                       display: 'flex',
@@ -1103,8 +1149,8 @@ export default function PlanningScheduler() {
                               }
                             }}
                             sx={{
-                              minWidth: 400, // Konsistent mit Header
-                              flex: 1,
+                              width: `${100 / 7}%`, // Exakt 1/7 der Breite - perfekte Ausrichtung mit Header & Stunden
+                              minWidth: 320,
                               borderRight: '1px solid rgba(0,0,0,0.08)',
                               position: 'relative',
                               minHeight: 60,
