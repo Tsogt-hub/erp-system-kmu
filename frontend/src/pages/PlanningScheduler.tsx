@@ -887,6 +887,8 @@ export default function PlanningScheduler() {
                 position: 'sticky',
                 left: 0,
                 zIndex: 10,
+                display: 'flex',
+                flexDirection: 'column',
               }}
             >
               <Box
@@ -910,7 +912,7 @@ export default function PlanningScheduler() {
                 <Box key={category.id}>
                   <Box
                     sx={{
-                      height: 60,
+                      minHeight: 60,
                       p: 1.5,
                       background: 'rgba(245, 245, 247, 0.95)',
                       borderBottom: '1px solid rgba(0, 0, 0, 0.08)',
@@ -962,7 +964,7 @@ export default function PlanningScheduler() {
                         <Box
                           key={resource.id}
                           sx={{
-                            height: 60,
+                            minHeight: 60,
                             display: 'flex',
                             alignItems: 'center',
                             p: 1.5,
@@ -1001,7 +1003,6 @@ export default function PlanningScheduler() {
               overflowX: 'auto',
               position: 'relative',
               minWidth: 0,
-              width: '100%',
             }}>
               {/* Sticky Header: Zeit-Spalten */}
               <Box
@@ -1112,7 +1113,7 @@ export default function PlanningScheduler() {
                   key={resource.id}
                   sx={{
                     borderBottom: '1px solid rgba(0,0,0,0.08)',
-                    height: 60,
+                    minHeight: 60,
                     display: 'grid',
                     gridTemplateColumns: timelineGridTemplate,
                     width: '100%',
