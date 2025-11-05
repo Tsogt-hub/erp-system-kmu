@@ -196,7 +196,7 @@ export default function PlanningScheduler() {
   // Nur ausgewählte Stunden anzeigen wie bei Hero: 06, 09, 12, 15
   const displayedHours = [6, 9, 12, 15];
   const timeSlots = displayedHours;
-  const timelineGridTemplate = 'repeat(7, minmax(160px, 1fr))';
+  const timelineGridTemplate = 'repeat(7, 1fr)'; // Alle 7 Tage gleichmäßig ohne Mindestbreite
 
   useEffect(() => {
     loadProjects();
