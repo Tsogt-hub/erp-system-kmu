@@ -865,16 +865,14 @@ export default function PlanningScheduler() {
         border: '1px solid rgba(0, 0, 0, 0.08)',
         boxShadow: '0 1px 3px rgba(0, 0, 0, 0.08)',
         overflow: 'hidden',
+        width: '100%',
       }}>
 
         <Box sx={{ 
             display: 'flex', 
-            border: '1px solid rgba(0, 0, 0, 0.08)', 
-            borderRadius: '12px', 
+            width: '100%',
             overflow: 'hidden',
             background: 'rgba(255, 255, 255, 0.5)',
-            width: '100%',
-            maxWidth: '100%',
           }}>
             {/* Linke Spalte: Ressourcen (Sticky) */}
             <Box
@@ -995,11 +993,14 @@ export default function PlanningScheduler() {
 
             {/* Timeline-Bereich */}
             <Box sx={{ 
-              flex: 1, 
-              overflowX: 'auto', 
-              overflowY: 'hidden',
+              flex: 1,
+              display: 'flex',
+              flexDirection: 'column',
+              overflowX: 'auto',
+              overflowY: 'auto',
               position: 'relative',
-              minWidth: 0, // Erlaubt Flexbox-Schrumpfung
+              minWidth: 0,
+              width: 0, // Flexbox-Trick für korrekte Breitenberechnung
             }}>
               {/* Sticky Header: Zeit-Spalten */}
               <Box
@@ -1013,19 +1014,16 @@ export default function PlanningScheduler() {
                   borderBottom: '2px solid rgba(0, 0, 0, 0.08)',
                   display: 'flex',
                   boxShadow: '0 1px 3px rgba(0, 0, 0, 0.05)',
-                  minWidth: 'max-content', // Verhindert Abschneiden
+                  width: '100%',
                 }}
               >
-                {/* Spacer für Ressourcen-Spalte */}
-                <Box sx={{ width: 0 }} />
-                
                 {/* Tage-Header */}
                 {weekDays.map((day) => (
                   <Box
                     key={day.toISOString()}
                     sx={{
-                      flex: 1, // Flexible Breite - passt sich an Browser an
-                      minWidth: 0, // Erlaubt Flexbox zu schrumpfen
+                      flex: '1 1 0%', // Gleichmäßige Verteilung
+                      minWidth: 0,
                       borderRight: '1px solid rgba(0, 0, 0, 0.08)',
                       p: 1,
                       background: 'transparent',
@@ -1066,15 +1064,14 @@ export default function PlanningScheduler() {
                   borderBottom: '1px solid rgba(0, 0, 0, 0.08)',
                   display: 'flex',
                   height: 28,
-                  minWidth: 'max-content', // Verhindert Abschneiden
+                  width: '100%',
                 }}
               >
-                <Box sx={{ width: 0 }} />
                 {weekDays.map((day) => (
                   <Box
                     key={day.toISOString()}
                     sx={{
-                      flex: 1, // Flexible Breite - gleich wie Header
+                      flex: '1 1 0%', // Gleichmäßige Verteilung wie Header
                       minWidth: 0,
                       borderRight: '1px solid rgba(0, 0, 0, 0.08)',
                       position: 'relative',
@@ -1112,10 +1109,9 @@ export default function PlanningScheduler() {
                     borderBottom: '1px solid rgba(0,0,0,0.08)',
                     minHeight: 80,
                     display: 'flex',
+                    width: '100%',
                   }}
                 >
-                  <Box sx={{ width: 0 }} />
-                  
                   {weekDays.map((day, dayIndex) => {
                     const dayEvents = getEventsForResourceAndDay(resource.id, day);
                     const resourceColor = getResourceColor(resource);
@@ -1160,7 +1156,7 @@ export default function PlanningScheduler() {
                               }
                             }}
                             sx={{
-                              flex: 1, // Flexible Breite - perfekte Ausrichtung mit Header & Stunden
+                              flex: '1 1 0%', // Gleichmäßige Verteilung wie Header & Stunden
                               minWidth: 0,
                               borderRight: '1px solid rgba(0,0,0,0.08)',
                               position: 'relative',
