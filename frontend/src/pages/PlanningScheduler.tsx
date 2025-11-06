@@ -371,17 +371,20 @@ export default function PlanningScheduler() {
             {/* Sidebar Header */}
             <Box
               sx={{
-                height: ROW_HEIGHT,
+                minHeight: 58,
                 display: 'flex',
                 alignItems: 'center',
                 px: 2,
                 fontWeight: 600,
-                borderBottom: '1px solid #e0e0e0',
-                bgcolor: '#fafafa',
+                borderBottom: '2px solid rgba(0, 0, 0, 0.08)',
+                bgcolor: 'rgba(245, 245, 247, 0.95)',
               }}
             >
               Ressourcen
             </Box>
+            
+            {/* Spacer für Stunden-Zeile */}
+            <Box sx={{ height: 28, borderBottom: '1px solid rgba(0, 0, 0, 0.08)', bgcolor: 'rgba(255, 255, 255, 0.98)' }} />
 
             {/* Categories & Resources */}
             {resourceCategories.map((category) => (
@@ -395,17 +398,19 @@ export default function PlanningScheduler() {
                     alignItems: 'center',
                     px: 2,
                     cursor: 'pointer',
-                    bgcolor: '#fff',
-                    borderBottom: '1px solid #e0e0e0',
-                    '&:hover': { bgcolor: '#f5f5f5' },
+                    bgcolor: 'rgba(250, 250, 250, 0.8)',
+                    borderBottom: '1px solid rgba(0, 0, 0, 0.08)',
+                    '&:hover': { bgcolor: 'rgba(245, 245, 245, 0.95)' },
                   }}
                 >
-                  <Typography sx={{ flex: 1, fontWeight: 500 }}>{category.name}</Typography>
-                  <IconButton size="small">
-                    <EditIcon fontSize="small" />
+                  <Typography sx={{ flex: 1, fontWeight: 600, fontSize: '0.875rem', color: 'rgba(0, 0, 0, 0.87)' }}>
+                    {category.name}
+                  </Typography>
+                  <IconButton size="small" onClick={(e) => { e.stopPropagation(); }}>
+                    <EditIcon fontSize="small" sx={{ fontSize: '1rem' }} />
                   </IconButton>
                   <IconButton size="small">
-                    {category.expanded ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+                    {category.expanded ? <ExpandLessIcon fontSize="small" /> : <ExpandMoreIcon fontSize="small" />}
                   </IconButton>
                 </Box>
 
@@ -419,11 +424,14 @@ export default function PlanningScheduler() {
                         display: 'flex',
                         alignItems: 'center',
                         px: 3,
-                        borderBottom: '1px solid #e0e0e0',
+                        borderBottom: '1px solid rgba(0, 0, 0, 0.08)',
                         bgcolor: 'white',
+                        '&:hover': { bgcolor: 'rgba(0, 122, 255, 0.02)' },
                       }}
                     >
-                      <Typography variant="body2">{resource.name}</Typography>
+                      <Typography variant="body2" sx={{ fontSize: '0.8125rem', color: 'rgba(0, 0, 0, 0.87)' }}>
+                        {resource.name}
+                      </Typography>
                     </Box>
                   ))}
                 </Collapse>
@@ -508,7 +516,7 @@ export default function PlanningScheduler() {
                   <Box key={resource.id} sx={{ 
                     display: 'grid', 
                     gridTemplateColumns: 'repeat(7, 1fr)',
-                    minHeight: ROW_HEIGHT,
+                    height: ROW_HEIGHT,
                     borderBottom: '1px solid rgba(0, 0, 0, 0.08)',
                   }}>
                     {weekDays.map((day) => {
@@ -526,17 +534,18 @@ export default function PlanningScheduler() {
                             '&:hover': { bgcolor: 'rgba(0, 122, 255, 0.02)' }
                           }}
                         >
-                          {/* Grid-Linien */}
-                          {[6, 9, 12, 15].map((hour) => (
-                            <Box key={hour} sx={{ 
-                              position: 'absolute',
-                              left: `${((hour - 6) / 16) * 100}%`,
-                              top: 0,
-                              bottom: 0,
-                              width: '1px',
-                              bgcolor: 'rgba(0, 0, 0, 0.06)',
-                            }} />
-                          ))}
+                        {/* Grid-Linien */}
+                        {[6, 9, 12, 15].map((hour) => (
+                          <Box key={hour} sx={{ 
+                            position: 'absolute',
+                            left: `${((hour - 6) / 16) * 100}%`,
+                            top: 0,
+                            bottom: 0,
+                            width: '1px',
+                            bgcolor: 'rgba(0, 0, 0, 0.12)',
+                            zIndex: 1,
+                          }} />
+                        ))}
 
                           {/* Events */}
                           {dayEvents.map((event) => {
