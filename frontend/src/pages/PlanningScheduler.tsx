@@ -494,22 +494,7 @@ export default function PlanningScheduler() {
             </Box>
 
             {/* Timeline-Zeilen-Container */}
-            <Box sx={{ flex: 1, bgcolor: '#f0f0f0' }}>
-              {/* TEST: Statische Zeile */}
-              <Box sx={{ 
-                display: 'grid', 
-                gridTemplateColumns: 'repeat(7, 1fr)',
-                minHeight: 48,
-                borderBottom: '1px solid rgba(0, 0, 0, 0.08)',
-                bgcolor: 'yellow'
-              }}>
-                {weekDays.map((day, i) => (
-                  <Box key={i} sx={{ borderRight: '1px solid red', p: 2 }}>
-                    TEST {i+1}
-                  </Box>
-                ))}
-              </Box>
-
+            <Box sx={{ flex: 1 }}>
               {resourceCategories
                 .filter(cat => cat.expanded)
                 .flatMap(cat => cat.resources)
