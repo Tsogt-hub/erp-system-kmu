@@ -87,6 +87,7 @@ const CATEGORY_COLORS: Record<string, string> = {
 };
 
 const DEFAULT_EVENT_COLOR = '#1976D2';
+const ROW_HEIGHT = 60; // px
 
 export default function PlanningScheduler() {
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -431,7 +432,7 @@ export default function PlanningScheduler() {
           </Box>
 
           {/* TIMELINE */}
-          <Box sx={{ flex: 1, overflowX: 'auto', bgcolor: 'white', display: 'flex', flexDirection: 'column' }}>
+          <Box sx={{ flex: 1, overflowX: 'auto', bgcolor: 'white' }}>
             {/* Tages-Header */}
             <Box sx={{ 
               display: 'grid', 
@@ -493,16 +494,15 @@ export default function PlanningScheduler() {
               ))}
             </Box>
 
-            {/* Timeline-Zeilen-Container */}
-            <Box sx={{ flex: 1 }}>
-              {resourceCategories
-                .filter(cat => cat.expanded)
-                .flatMap(cat => cat.resources)
-                .map((resource) => {
-                const resourceCategory = resourceCategories.find(cat => 
+            {/* Timeline-Zeilen */}
+            {resourceCategories
+              .filter(cat => cat.expanded)
+              .flatMap(cat => cat.resources)
+              .map((resource) => {
+                const category = resourceCategories.find(cat => 
                   cat.resources.some(r => r.id === resource.id)
                 );
-                const resourceColor = resourceCategory?.color || DEFAULT_EVENT_COLOR;
+                const resourceColor = category?.color || DEFAULT_EVENT_COLOR;
 
                 return (
                   <Box key={resource.id} sx={{ 
@@ -594,7 +594,6 @@ export default function PlanningScheduler() {
                   </Box>
                 );
               })}
-            </Box>
           </Box>
         </Paper>
       </Box>
