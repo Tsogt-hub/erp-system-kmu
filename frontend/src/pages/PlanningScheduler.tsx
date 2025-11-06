@@ -431,18 +431,165 @@ export default function PlanningScheduler() {
           </Box>
 
           {/* TIMELINE */}
-          <Box sx={{ flex: 1, overflow: 'auto', bgcolor: 'yellow', p: 4 }}>
-            <div style={{ background: 'red', color: 'white', padding: '40px', fontSize: '24px', fontWeight: 'bold' }}>
-              🔴 TEST: IF YOU SEE THIS, THE TIMELINE CONTAINER WORKS!
-            </div>
-            
-            <div style={{ background: 'blue', color: 'white', padding: '40px', fontSize: '24px', fontWeight: 'bold', marginTop: '20px' }}>
-              🔵 TEST 2: SECOND BOX
-            </div>
-            
-            <div style={{ background: 'green', color: 'white', padding: '40px', fontSize: '24px', fontWeight: 'bold', marginTop: '20px' }}>
-              🟢 TEST 3: THIRD BOX
-            </div>
+          <Box sx={{ flex: 1, overflowX: 'auto', overflowY: 'visible', bgcolor: 'white' }}>
+            {/* Tages-Header */}
+            <Box sx={{ 
+              display: 'grid', 
+              gridTemplateColumns: 'repeat(7, 1fr)',
+              borderBottom: '2px solid rgba(0, 0, 0, 0.08)',
+              position: 'sticky',
+              top: 0,
+              zIndex: 9,
+              bgcolor: 'rgba(245, 245, 247, 0.95)',
+            }}>
+              {weekDays.map((day) => (
+                <Box key={day.toISOString()} sx={{ 
+                  p: 1, 
+                  textAlign: 'center',
+                  borderRight: '1px solid rgba(0, 0, 0, 0.08)',
+                  '&:last-child': { borderRight: 'none' }
+                }}>
+                  <Typography variant="body2" sx={{ fontWeight: 600, fontSize: '0.8125rem' }}>
+                    {format(day, 'EEE.', { locale: de })}
+                  </Typography>
+                  <Typography variant="caption" sx={{ fontSize: '0.75rem', color: 'rgba(0, 0, 0, 0.55)' }}>
+                    {format(day, 'd.M.', { locale: de })}
+                  </Typography>
+                </Box>
+              ))}
+            </Box>
+
+            {/* Stunden-Markierungen */}
+            <Box sx={{ 
+              display: 'grid', 
+              gridTemplateColumns: 'repeat(7, 1fr)',
+              borderBottom: '1px solid rgba(0, 0, 0, 0.08)',
+              height: 28,
+              position: 'sticky',
+              top: 50,
+              zIndex: 8,
+              bgcolor: 'rgba(255, 255, 255, 0.98)',
+            }}>
+              {weekDays.map((day) => (
+                <Box key={day.toISOString()} sx={{ 
+                  borderRight: '1px solid rgba(0, 0, 0, 0.08)',
+                  position: 'relative',
+                  '&:last-child': { borderRight: 'none' }
+                }}>
+                  {[6, 9, 12, 15].map((hour) => (
+                    <Typography key={hour} sx={{ 
+                      position: 'absolute',
+                      left: `${((hour - 6) / 16) * 100}%`,
+                      transform: 'translateX(-50%)',
+                      fontSize: '0.6875rem',
+                      fontWeight: 500,
+                      color: 'rgba(0, 0, 0, 0.5)',
+                      pt: 0.5,
+                    }}>
+                      {hour.toString().padStart(2, '0')}
+                    </Typography>
+                  ))}
+                </Box>
+              ))}
+            </Box>
+
+            {/* Timeline-Zeilen für alle Ressourcen */}
+            {resourceCategories.flatMap(cat => cat.resources).map((resource) => {
+              const resourceCategory = resourceCategories.find(cat => 
+                cat.resources.some(r => r.id === resource.id)
+              );
+              const resourceColor = resourceCategory?.color || DEFAULT_EVENT_COLOR;
+
+              return (
+                <Box key={resource.id} sx={{ 
+                  display: 'grid', 
+                  gridTemplateColumns: 'repeat(7, 1fr)',
+                  minHeight: ROW_HEIGHT,
+                  borderBottom: '1px solid rgba(0, 0, 0, 0.08)',
+                }}>
+                  {weekDays.map((day) => {
+                    const dayEvents = getEventsForResourceAndDay(resource.id, day);
+
+                    return (
+                      <Box 
+                        key={day.toISOString()} 
+                        onDragOver={handleDragOver}
+                        onDrop={(e) => handleDrop(e, resource.id, day)}
+                        sx={{ 
+                          borderRight: '1px solid rgba(0, 0, 0, 0.08)',
+                          position: 'relative',
+                          '&:last-child': { borderRight: 'none' },
+                          '&:hover': { bgcolor: 'rgba(0, 122, 255, 0.02)' }
+                        }}
+                      >
+                        {/* Grid-Linien */}
+                        {[6, 9, 12, 15].map((hour) => (
+                          <Box key={hour} sx={{ 
+                            position: 'absolute',
+                            left: `${((hour - 6) / 16) * 100}%`,
+                            top: 0,
+                            bottom: 0,
+                            width: '1px',
+                            bgcolor: 'rgba(0, 0, 0, 0.06)',
+                          }} />
+                        ))}
+
+                        {/* Events */}
+                        {dayEvents.map((event) => {
+                          const position = calculateEventPosition(event);
+                          const project = projects.find(p => p.id === event.project_id);
+                          
+                          return (
+                            <Box
+                              key={event.id}
+                              draggable
+                              onDragStart={(e) => handleDragStart(e, event)}
+                              onClick={() => {
+                                setEditingEvent(event);
+                                setEventPanelOpen(true);
+                              }}
+                              sx={{
+                                position: 'absolute',
+                                left: position.left,
+                                width: position.width,
+                                top: 4,
+                                bottom: 4,
+                                bgcolor: resourceColor,
+                                borderRadius: '4px',
+                                px: 0.5,
+                                display: 'flex',
+                                alignItems: 'center',
+                                cursor: 'pointer',
+                                overflow: 'hidden',
+                                boxShadow: '0 1px 3px rgba(0,0,0,0.12)',
+                                '&:hover': {
+                                  boxShadow: '0 2px 6px rgba(0,0,0,0.2)',
+                                  zIndex: 2,
+                                },
+                              }}
+                            >
+                              <Typography
+                                variant="caption"
+                                sx={{
+                                  color: 'white',
+                                  fontWeight: 500,
+                                  fontSize: '0.6875rem',
+                                  whiteSpace: 'nowrap',
+                                  overflow: 'hidden',
+                                  textOverflow: 'ellipsis',
+                                }}
+                              >
+                                {project?.name || event.title}
+                              </Typography>
+                            </Box>
+                          );
+                        })}
+                      </Box>
+                    );
+                  })}
+                </Box>
+              );
+            })}
           </Box>
         </Paper>
       </Box>
