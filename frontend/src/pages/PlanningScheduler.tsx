@@ -1011,128 +1011,29 @@ export default function PlanningScheduler() {
             {/* Timeline-Bereich */}
             <Box sx={{ 
               flex: 1,
-              display: 'flex',
-              flexDirection: 'column',
               overflowX: 'auto',
+              overflowY: 'visible',
               position: 'relative',
               minWidth: 0,
-              minHeight: 800,
             }}>
-              {/* Sticky Header: Zeit-Spalten */}
-              <Box
-                sx={{
-                  position: 'sticky',
-                  top: 0,
-                  zIndex: 9,
-                  background: 'rgba(245, 245, 247, 0.95)',
-                  backdropFilter: 'blur(20px)',
-                  WebkitBackdropFilter: 'blur(20px)',
-                  borderBottom: '2px solid rgba(0, 0, 0, 0.08)',
-                  display: 'grid',
-                  gridTemplateColumns: timelineGridTemplate,
-                  boxShadow: '0 1px 3px rgba(0, 0, 0, 0.05)',
-                  width: '100%',
-                }}
-              >
-                {/* Tage-Header */}
-                {weekDays.map((day) => (
-                  <Box
-                    key={day.toISOString()}
-                    sx={{
-                      borderRight: '1px solid rgba(0, 0, 0, 0.08)',
-                      p: 1,
-                      background: 'transparent',
-                      position: 'relative',
-                      textAlign: 'center',
-                      '&:last-of-type': {
-                        borderRight: 'none',
-                      },
-                    }}
-                  >
-                    <Typography variant="body2" sx={{ 
-                      fontWeight: 600, 
-                      textAlign: 'center',
-                      letterSpacing: '-0.015em',
-                      color: 'rgba(0, 0, 0, 0.85)',
-                      fontSize: '0.8125rem',
-                    }}>
-                      {format(day, 'EEE.', { locale: de })}
-                    </Typography>
-                    <Typography variant="caption" sx={{ 
-                      display: 'block', 
-                      textAlign: 'center',
-                      fontWeight: 400,
-                      letterSpacing: '-0.01em',
-                      color: 'rgba(0, 0, 0, 0.55)',
-                      fontSize: '0.75rem',
-                    }}>
-                      {format(day, 'd.M.', { locale: de })}
-                    </Typography>
-                  </Box>
-                ))}
+              {/* Sticky Header: Zeit-Spalten - TEMPORÄR VEREINFACHT */}
+              <Box sx={{ p: 2, background: 'lightblue' }}>
+                TAGES-HEADER
               </Box>
 
-              {/* Stunden-Markierungen (Sticky) */}
-              <Box
-                sx={{
-                  position: 'sticky',
-                  top: 50,
-                  zIndex: 8,
-                  background: 'rgba(255, 255, 255, 0.98)',
-                  borderBottom: '1px solid rgba(0, 0, 0, 0.08)',
-                  display: 'grid',
-                  gridTemplateColumns: timelineGridTemplate,
-                  height: 28,
-                  width: '100%',
-                }}
-              >
-                {weekDays.map((day) => (
-                  <Box
-                    key={day.toISOString()}
-                    sx={{
-                      borderRight: '1px solid rgba(0, 0, 0, 0.08)',
-                      position: 'relative',
-                      '&:last-of-type': {
-                        borderRight: 'none',
-                      },
-                    }}
-                  >
-                    {timeSlots.map((hour, hourIndex) => (
-                      <Box
-                        key={hour}
-                        sx={{
-                          position: 'absolute',
-                          left: `${((hour - WORK_DAY_START) / HOURS_PER_DAY) * 100}%`,
-                          transform: 'translateX(-50%)',
-                          textAlign: 'center',
-                          fontSize: '0.6875rem',
-                          fontWeight: 500,
-                          color: 'rgba(0, 0, 0, 0.5)',
-                          pt: 0.5,
-                          px: 0.5,
-                          letterSpacing: '-0.01em',
-                          whiteSpace: 'nowrap',
-                        }}
-                      >
-                        {hour.toString().padStart(2, '0')}
-                      </Box>
-                    ))}
-                  </Box>
-                ))}
+              {/* Stunden-Markierungen (Sticky) - TEMPORÄR VEREINFACHT */}
+              <Box sx={{ p: 2, background: 'yellow' }}>
+                STUNDEN-MARKIERUNGEN
               </Box>
 
-              {/* EINFACHSTER TEST: Eine einzige statische Zeile */}
-              <Box sx={{ background: 'yellow', minHeight: 60, display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', borderBottom: '2px solid red' }}>
-                <Box>Mo</Box>
-                <Box>Di</Box>
-                <Box>Mi</Box>
-                <Box>Do</Box>
-                <Box>Fr</Box>
-                <Box>Sa</Box>
-                <Box>So</Box>
-              </Box>
+              <div style={{background: 'lime', height: '100px', width: '100%', padding: '20px', fontSize: '24px'}}>✅ TIMELINE CONTAINER IST OK!</div>
+              
+            </Box>
+          </Box>
+      </Paper>
 
-              {/* Ressourcen-Zeilen mit Timeline - NUR für Ressourcen */}
+      {/* TEMPORÄR DEAKTIVIERT FÜR DEBUG 
+      <Paper>
               {getAllResources().map((resource) => (
                 <Box
                   key={resource.id}
@@ -1150,8 +1051,8 @@ export default function PlanningScheduler() {
                     const droppableId = `resource-${resource.id}-day-${dayIndex}`;
 
                     return (
-                          <Box
-                            key={day.toISOString()}
+                      <Box
+                        key={day.toISOString()}
                             onDragOver={(e) => {
                               e.preventDefault();
                               e.dataTransfer.dropEffect = 'move';
@@ -1439,24 +1340,12 @@ export default function PlanningScheduler() {
                                 </Box>
                               );
                             })}
-                          </Box>
+                      </Box>
                     );
                   })}
                 </Box>
               ))}
-            </Box>
-          </Box>
-          
-          {/* DEBUG: Test direkt im Paper */}
-          <Box sx={{ background: 'lime', p: 2, m: 2 }}>
-            <Typography>🚀 TEST: Kann ich hier rendern?</Typography>
-            {getAllResources().map((r) => (
-              <Box key={r.id} sx={{ p: 1, borderBottom: '1px solid black' }}>
-                {r.name}
-              </Box>
-            ))}
-          </Box>
-      </Paper>
+      */}
 
       {/* Event Sidebar Panel (Hero ERP Style) */}
       <Drawer
