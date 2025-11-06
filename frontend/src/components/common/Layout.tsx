@@ -71,7 +71,7 @@ export default function Layout() {
       >
         <Header />
         <Box sx={{ mt: 2 }}>
-          <Outlet />
+        <Outlet />
         </Box>
       </Box>
     </Box>

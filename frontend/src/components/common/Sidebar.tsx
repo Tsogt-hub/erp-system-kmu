@@ -180,10 +180,10 @@ export default function Sidebar({ drawerWidth, isOpen, onToggle }: SidebarProps)
 
   const handleCategoryClick = (categoryTitle: string) => {
     if (categoryTitle !== 'PLANUNG') {
-      setOpenCategories((prev) => ({
-        ...prev,
-        [categoryTitle]: !prev[categoryTitle],
-      }));
+    setOpenCategories((prev) => ({
+      ...prev,
+      [categoryTitle]: !prev[categoryTitle],
+    }));
     }
   };
 
@@ -225,40 +225,40 @@ export default function Sidebar({ drawerWidth, isOpen, onToggle }: SidebarProps)
     const menuItemOpen = openMenus[menuKey] || false;
 
     const menuButton = (
-      <ListItemButton
-        onClick={() => handleMenuClick(item, categoryTitle)}
-        selected={isSelected && !hasChildren}
-        sx={{
+          <ListItemButton
+            onClick={() => handleMenuClick(item, categoryTitle)}
+            selected={isSelected && !hasChildren}
+            sx={{
           borderRadius: '10px',
           my: 0.3,
           mx: 1.5,
           px: isOpen ? 1.5 : 1.2,
           minHeight: 40,
           transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
-          '&.Mui-selected': {
+              '&.Mui-selected': {
             background: 'linear-gradient(135deg, rgba(10, 132, 255, 0.14) 0%, rgba(10, 132, 255, 0.10) 100%)',
             backdropFilter: 'blur(20px)',
             WebkitBackdropFilter: 'blur(20px)',
             border: '0.5px solid rgba(10, 132, 255, 0.25)',
             color: '#0A84FF',
-            fontWeight: 600,
+                fontWeight: 600,
             boxShadow: '0 2px 12px rgba(0, 122, 255, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.4)',
             '&:hover': {
               background: 'linear-gradient(135deg, rgba(10, 132, 255, 0.18) 0%, rgba(10, 132, 255, 0.14) 100%)',
               transform: 'translateX(3px)',
             },
-          },
-          '&:hover': {
+              },
+              '&:hover': {
             background: 'rgba(0, 0, 0, 0.04)',
             transform: 'translateX(2px)',
-          },
+              },
           '&:active': {
             transform: 'scale(0.98)',
           },
           justifyContent: isOpen ? 'flex-start' : 'center',
-        }}
-      >
-        {item.icon && (
+            }}
+          >
+            {item.icon && (
           <ListItemIcon 
             sx={{ 
               color: isSelected ? '#0A84FF' : '#3C3C43',
@@ -270,9 +270,9 @@ export default function Sidebar({ drawerWidth, isOpen, onToggle }: SidebarProps)
               }
             }}
           >
-            {item.icon}
-          </ListItemIcon>
-        )}
+                {item.icon}
+              </ListItemIcon>
+            )}
         {isOpen && (
           <>
             <ListItemText 
@@ -285,15 +285,15 @@ export default function Sidebar({ drawerWidth, isOpen, onToggle }: SidebarProps)
                   letterSpacing: '-0.01em',
                   color: isSelected ? '#0A84FF' : '#1D1D1F',
                 },
-              }}
+                }}
             />
             {hasChildren && (
               menuItemOpen ? <ExpandLessIcon sx={{ fontSize: '1.1rem', color: '#3C3C43' }} /> : <ExpandMoreIcon sx={{ fontSize: '1.1rem', color: '#3C3C43' }} />
             )}
           </>
         )}
-      </ListItemButton>
-    );
+                  </ListItemButton>
+                );
 
     return (
       <Box key={`${categoryTitle}-${item.text}`}>
@@ -390,8 +390,8 @@ export default function Sidebar({ drawerWidth, isOpen, onToggle }: SidebarProps)
                 WebkitTextFillColor: 'transparent',
               }}
             >
-              Elite ERP
-            </Typography>
+          Elite ERP
+        </Typography>
           </Box>
         )}
         <IconButton
@@ -423,7 +423,7 @@ export default function Sidebar({ drawerWidth, isOpen, onToggle }: SidebarProps)
       {/* Menu Categories */}
       <List sx={{ px: 0.5, py: 1.5 }}>
         {menuCategories.map((category) => (
-          <Box key={category.title}>
+            <Box key={category.title}>
             {category.title !== 'PLANUNG' ? (
               <ListItem disablePadding>
                 <ListItemButton
@@ -463,22 +463,22 @@ export default function Sidebar({ drawerWidth, isOpen, onToggle }: SidebarProps)
                   )}
                   {isOpen && (
                     <>
-                      <ListItemText
-                        primary={category.title}
-                        sx={{
+                  <ListItemText
+                    primary={category.title}
+                    sx={{
                           ml: 0.5,
-                          '& .MuiTypography-root': {
+                      '& .MuiTypography-root': {
                             fontSize: '0.6875rem',
-                            fontWeight: 700,
+                        fontWeight: 700,
                             letterSpacing: '0.05em',
                             color: '#6E6E73',
-                            textTransform: 'uppercase',
-                          },
-                        }}
-                      />
+                        textTransform: 'uppercase',
+                      },
+                    }}
+                  />
                       {openCategories[category.title] ? (
                         <ExpandLessIcon sx={{ fontSize: '1rem', color: '#007AFF' }} />
-                      ) : (
+                  ) : (
                         <ExpandMoreIcon sx={{ fontSize: '1rem', color: '#007AFF' }} />
                       )}
                     </>
@@ -534,8 +534,8 @@ export default function Sidebar({ drawerWidth, isOpen, onToggle }: SidebarProps)
             <Collapse in={openCategories[category.title] || category.title === 'PLANUNG'} timeout="auto" unmountOnExit>
               <List component="div" disablePadding>
                 {category.items.map((item) => renderMenuItem(item, category.title))}
-              </List>
-            </Collapse>
+                </List>
+              </Collapse>
 
             <Divider 
               sx={{ 
@@ -545,7 +545,7 @@ export default function Sidebar({ drawerWidth, isOpen, onToggle }: SidebarProps)
                 boxShadow: '0 1px 0 rgba(255, 255, 255, 0.6)',
               }} 
             />
-          </Box>
+            </Box>
         ))}
       </List>
     </Drawer>

@@ -296,9 +296,6 @@ export default function PlanningScheduler() {
     loadData();
   }, []);
 
-  // ROW HEIGHT - Alle Zeilen müssen gleich hoch sein
-  const ROW_HEIGHT = 48; // px
-
   return (
     <Box sx={{ height: '100vh', display: 'flex', flexDirection: 'column', bgcolor: '#f5f5f5' }}>
       {/* HEADER */}
@@ -371,7 +368,7 @@ export default function PlanningScheduler() {
             {/* Sidebar Header */}
             <Box
               sx={{
-                minHeight: 58,
+                height: 58,
                 display: 'flex',
                 alignItems: 'center',
                 px: 2,
@@ -394,12 +391,18 @@ export default function PlanningScheduler() {
                   onClick={() => toggleCategory(category.id)}
                   sx={{
                     height: ROW_HEIGHT,
+                    minHeight: ROW_HEIGHT,
+                    maxHeight: ROW_HEIGHT,
                     display: 'flex',
                     alignItems: 'center',
-                    px: 2,
+                    paddingLeft: 2,
+                    paddingRight: 2,
+                    paddingTop: 0,
+                    paddingBottom: 0,
                     cursor: 'pointer',
                     bgcolor: 'rgba(250, 250, 250, 0.8)',
                     borderBottom: '1px solid rgba(0, 0, 0, 0.08)',
+                    margin: 0,
                     '&:hover': { bgcolor: 'rgba(245, 245, 245, 0.95)' },
                   }}
                 >
@@ -415,26 +418,41 @@ export default function PlanningScheduler() {
                 </Box>
 
                 {/* Resources */}
-                <Collapse in={category.expanded}>
-                  {category.resources.map((resource) => (
-                    <Box
-                      key={resource.id}
-                      sx={{
-                        height: ROW_HEIGHT,
-                        display: 'flex',
-                        alignItems: 'center',
-                        px: 3,
-                        borderBottom: '1px solid rgba(0, 0, 0, 0.08)',
-                        bgcolor: 'white',
-                        '&:hover': { bgcolor: 'rgba(0, 122, 255, 0.02)' },
+                {category.expanded && category.resources.map((resource) => (
+                  <Box
+                    key={resource.id}
+                    sx={{
+                      height: ROW_HEIGHT,
+                      minHeight: ROW_HEIGHT,
+                      maxHeight: ROW_HEIGHT,
+                      display: 'flex',
+                      alignItems: 'center',
+                      paddingLeft: 3,
+                      paddingRight: 3,
+                      paddingTop: 0,
+                      paddingBottom: 0,
+                      borderBottom: '1px solid rgba(0, 0, 0, 0.08)',
+                      bgcolor: 'white',
+                      margin: 0,
+                      boxSizing: 'border-box',
+                      '&:hover': { bgcolor: 'rgba(0, 122, 255, 0.02)' },
+                    }}
+                  >
+                    <Typography 
+                      variant="body2" 
+                      sx={{ 
+                        fontSize: '0.8125rem', 
+                        color: 'rgba(0, 0, 0, 0.87)',
+                        lineHeight: 1.2,
+                        margin: 0,
+                        padding: 0,
+                        display: 'block',
                       }}
                     >
-                      <Typography variant="body2" sx={{ fontSize: '0.8125rem', color: 'rgba(0, 0, 0, 0.87)' }}>
-                        {resource.name}
-                      </Typography>
-                    </Box>
-                  ))}
-                </Collapse>
+                      {resource.name}
+                    </Typography>
+                  </Box>
+                ))}
               </Box>
             ))}
           </Box>
@@ -445,6 +463,7 @@ export default function PlanningScheduler() {
             <Box sx={{ 
               display: 'grid', 
               gridTemplateColumns: 'repeat(7, 1fr)',
+              height: 58,
               borderBottom: '2px solid rgba(0, 0, 0, 0.08)',
               position: 'sticky',
               top: 0,
@@ -453,15 +472,18 @@ export default function PlanningScheduler() {
             }}>
               {weekDays.map((day) => (
                 <Box key={day.toISOString()} sx={{ 
-                  p: 1, 
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'center',
+                  alignItems: 'center',
                   textAlign: 'center',
                   borderRight: '1px solid rgba(0, 0, 0, 0.08)',
                   '&:last-child': { borderRight: 'none' }
                 }}>
-                  <Typography variant="body2" sx={{ fontWeight: 600, fontSize: '0.8125rem' }}>
+                  <Typography variant="body2" sx={{ fontWeight: 600, fontSize: '0.8125rem', lineHeight: 1.2 }}>
                     {format(day, 'EEE.', { locale: de })}
                   </Typography>
-                  <Typography variant="caption" sx={{ fontSize: '0.75rem', color: 'rgba(0, 0, 0, 0.55)' }}>
+                  <Typography variant="caption" sx={{ fontSize: '0.75rem', color: 'rgba(0, 0, 0, 0.55)', lineHeight: 1.2 }}>
                     {format(day, 'd.M.', { locale: de })}
                   </Typography>
                 </Box>
@@ -517,7 +539,12 @@ export default function PlanningScheduler() {
                     display: 'grid', 
                     gridTemplateColumns: 'repeat(7, 1fr)',
                     height: ROW_HEIGHT,
+                    minHeight: ROW_HEIGHT,
+                    maxHeight: ROW_HEIGHT,
                     borderBottom: '1px solid rgba(0, 0, 0, 0.08)',
+                    margin: 0,
+                    padding: 0,
+                    boxSizing: 'border-box',
                   }}>
                     {weekDays.map((day) => {
                       const dayEvents = getEventsForResourceAndDay(resource.id, day);
