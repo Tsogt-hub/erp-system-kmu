@@ -56,6 +56,26 @@ export async function seedSQLiteDatabase() {
       return;
     }
 
+    await query(
+      `INSERT INTO roles (name, permissions)
+       VALUES 
+        ($1, $2),
+        ($3, $4),
+        ($5, $6),
+        ($7, $8)
+       ON CONFLICT(name) DO NOTHING`,
+      [
+        'admin',
+        JSON.stringify(['metadata:read', 'metadata:write', 'governance:manage', 'users:manage', 'audit:read', 'pipelines:run', 'feature-store:read', 'feature-store:write', 'feature-store:sync']),
+        'operations_lead',
+        JSON.stringify(['metadata:read', 'pipelines:run', 'audit:read']),
+        'project_manager',
+        JSON.stringify(['metadata:read']),
+        'employee',
+        JSON.stringify([]),
+      ]
+    );
+
     // Erstelle Admin-Benutzer
     const adminPasswordHash = await bcrypt.hash('admin123', 10);
     await query(

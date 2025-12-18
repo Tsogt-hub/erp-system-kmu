@@ -16,7 +16,7 @@ import {
 } from '@mui/material';
 import { useNavigate, useLocation } from 'react-router-dom';
 
-// SF Symbols-Style Icons (perfekte Apple-Ästhetik)
+// SF Symbols-Style Icons
 import HomeOutlinedIcon from '@mui/icons-material/HomeOutlined';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import CalendarMonthOutlinedIcon from '@mui/icons-material/CalendarMonthOutlined';
@@ -46,6 +46,9 @@ import WarehouseOutlinedIcon from '@mui/icons-material/WarehouseOutlined';
 import AddBoxOutlinedIcon from '@mui/icons-material/AddBoxOutlined';
 import IndeterminateCheckBoxOutlinedIcon from '@mui/icons-material/IndeterminateCheckBoxOutlined';
 import MenuBookOutlinedIcon from '@mui/icons-material/MenuBookOutlined';
+import SecurityOutlinedIcon from '@mui/icons-material/SecurityOutlined';
+import InsightsOutlinedIcon from '@mui/icons-material/InsightsOutlined';
+import TimelineOutlinedIcon from '@mui/icons-material/TimelineOutlined';
 
 interface SidebarProps {
   drawerWidth: number;
@@ -156,12 +159,21 @@ const menuCategories: MenuCategory[] = [
     title: 'MANAGEMENT',
     icon: <SettingsOutlinedIcon />,
     items: [
-      { text: 'Dashboard', icon: <DashboardOutlinedIcon />, path: '/dashboard' },
+      { text: 'Dashboard', icon: <DashboardOutlinedIcon />, path: '/' },
       { text: 'Benutzer', icon: <PersonOutlineIcon />, path: '/users' },
       { text: 'Einstellungen', icon: <SettingsOutlinedIcon />, path: '/settings' },
     ],
   },
+  {
+    title: 'GOVERNANCE',
+    icon: <SecurityOutlinedIcon />,
+    items: [
+      { text: 'Data Quality', icon: <InsightsOutlinedIcon />, path: '/governance/data-quality' },
+      { text: 'Audit Logs', icon: <TimelineOutlinedIcon />, path: '/governance/audit-logs' },
+    ],
+  },
 ];
+
 
 export default function Sidebar({ drawerWidth, isOpen, onToggle }: SidebarProps) {
   const navigate = useNavigate();
@@ -176,14 +188,15 @@ export default function Sidebar({ drawerWidth, isOpen, onToggle }: SidebarProps)
     'ARTIKELSTAMM': false,
     'LAGER': false,
     'MANAGEMENT': false,
+    'GOVERNANCE': true,
   });
 
   const handleCategoryClick = (categoryTitle: string) => {
     if (categoryTitle !== 'PLANUNG') {
-    setOpenCategories((prev) => ({
-      ...prev,
-      [categoryTitle]: !prev[categoryTitle],
-    }));
+      setOpenCategories((prev) => ({
+        ...prev,
+        [categoryTitle]: !prev[categoryTitle],
+      }));
     }
   };
 
@@ -225,54 +238,76 @@ export default function Sidebar({ drawerWidth, isOpen, onToggle }: SidebarProps)
     const menuItemOpen = openMenus[menuKey] || false;
 
     const menuButton = (
-          <ListItemButton
-            onClick={() => handleMenuClick(item, categoryTitle)}
-            selected={isSelected && !hasChildren}
-            sx={{
+      <ListItemButton
+        onClick={() => handleMenuClick(item, categoryTitle)}
+        selected={isSelected && !hasChildren}
+        sx={{
           borderRadius: '10px',
           my: 0.3,
-          mx: 1.5,
-          px: isOpen ? 1.5 : 1.2,
-          minHeight: 40,
-          transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
-              '&.Mui-selected': {
-            background: 'linear-gradient(135deg, rgba(10, 132, 255, 0.14) 0%, rgba(10, 132, 255, 0.10) 100%)',
+          mx: 0.75,
+          px: isOpen ? 1.5 : 1,
+          minHeight: 34,
+          transition: 'all 0.2s cubic-bezier(0.32, 0.72, 0, 1)',
+          position: 'relative',
+          overflow: 'hidden',
+          '&::before': {
+            content: '""',
+            position: 'absolute',
+            inset: 0,
+            borderRadius: '10px',
+            background: 'transparent',
+            transition: 'background 0.2s ease',
+          },
+          '&.Mui-selected': {
+            background: 'linear-gradient(135deg, rgba(0, 122, 255, 0.15) 0%, rgba(0, 122, 255, 0.08) 100%)',
             backdropFilter: 'blur(20px)',
             WebkitBackdropFilter: 'blur(20px)',
-            border: '0.5px solid rgba(10, 132, 255, 0.25)',
-            color: '#0A84FF',
-                fontWeight: 600,
-            boxShadow: '0 2px 12px rgba(0, 122, 255, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.4)',
+            border: '0.5px solid rgba(0, 122, 255, 0.25)',
+            color: '#0071E3',
+            fontWeight: 600,
+            boxShadow: `
+              0 2px 8px rgba(0, 122, 255, 0.15),
+              inset 0 0.5px 0 rgba(255, 255, 255, 0.6),
+              inset 0 -0.5px 0 rgba(0, 0, 0, 0.05)
+            `,
             '&:hover': {
-              background: 'linear-gradient(135deg, rgba(10, 132, 255, 0.18) 0%, rgba(10, 132, 255, 0.14) 100%)',
-              transform: 'translateX(3px)',
+              background: 'linear-gradient(135deg, rgba(0, 122, 255, 0.18) 0%, rgba(0, 122, 255, 0.10) 100%)',
+              transform: 'translateX(2px)',
             },
-              },
-              '&:hover': {
+            '&::before': {
+              background: 'linear-gradient(90deg, rgba(0, 122, 255, 0.1) 0%, transparent 100%)',
+            },
+          },
+          '&:hover': {
             background: 'rgba(0, 0, 0, 0.04)',
             transform: 'translateX(2px)',
-              },
+            '&::before': {
+              background: 'linear-gradient(90deg, rgba(0, 0, 0, 0.02) 0%, transparent 100%)',
+            },
+          },
           '&:active': {
             transform: 'scale(0.98)',
+            background: 'rgba(0, 0, 0, 0.06)',
           },
           justifyContent: isOpen ? 'flex-start' : 'center',
-            }}
-          >
-            {item.icon && (
+        }}
+      >
+        {item.icon && (
           <ListItemIcon 
             sx={{ 
-              color: isSelected ? '#0A84FF' : '#3C3C43',
-              minWidth: isOpen ? 36 : 'auto',
+              color: isSelected ? '#0071E3' : 'rgba(60, 60, 67, 0.7)',
+              minWidth: isOpen ? 30 : 'auto',
               justifyContent: 'center',
-              fontSize: '1.3rem',
               '& .MuiSvgIcon-root': {
-                fontSize: '1.3rem',
+                fontSize: '1.1rem',
+                strokeWidth: isSelected ? 1.5 : 1,
+                transition: 'all 0.2s ease',
               }
             }}
           >
-                {item.icon}
-              </ListItemIcon>
-            )}
+            {item.icon}
+          </ListItemIcon>
+        )}
         {isOpen && (
           <>
             <ListItemText 
@@ -280,20 +315,23 @@ export default function Sidebar({ drawerWidth, isOpen, onToggle }: SidebarProps)
               sx={{ 
                 ml: 0.5,
                 '& .MuiTypography-root': { 
-                  fontSize: level === 0 ? '0.9375rem' : '0.875rem',
-                  fontWeight: level === 0 && isSelected ? 600 : 500,
+                  fontSize: '0.8125rem',
+                  fontWeight: isSelected ? 600 : 500,
                   letterSpacing: '-0.01em',
-                  color: isSelected ? '#0A84FF' : '#1D1D1F',
+                  color: isSelected ? '#0071E3' : 'rgba(29, 29, 31, 0.85)',
+                  fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif',
                 },
-                }}
+              }}
             />
             {hasChildren && (
-              menuItemOpen ? <ExpandLessIcon sx={{ fontSize: '1.1rem', color: '#3C3C43' }} /> : <ExpandMoreIcon sx={{ fontSize: '1.1rem', color: '#3C3C43' }} />
+              menuItemOpen 
+                ? <ExpandLessIcon sx={{ fontSize: '0.95rem', color: 'rgba(60, 60, 67, 0.5)' }} /> 
+                : <ExpandMoreIcon sx={{ fontSize: '0.95rem', color: 'rgba(60, 60, 67, 0.5)' }} />
             )}
           </>
         )}
-                  </ListItemButton>
-                );
+      </ListItemButton>
+    );
 
     return (
       <Box key={`${categoryTitle}-${item.text}`}>
@@ -305,7 +343,7 @@ export default function Sidebar({ drawerWidth, isOpen, onToggle }: SidebarProps)
           </Tooltip>
         )}
         {hasChildren && isOpen && (
-          <Collapse in={menuItemOpen} timeout="auto" unmountOnExit>
+          <Collapse in={menuItemOpen} timeout={200} unmountOnExit>
             <List component="div" disablePadding sx={{ pl: 1.5 }}>
               {item.children!.map((child) => renderMenuItem(child, categoryTitle, level + 1))}
             </List>
@@ -324,138 +362,165 @@ export default function Sidebar({ drawerWidth, isOpen, onToggle }: SidebarProps)
         '& .MuiDrawer-paper': {
           width: drawerWidth,
           boxSizing: 'border-box',
-          background: 'rgba(252, 252, 253, 0.88)',
-          backdropFilter: 'blur(50px) saturate(160%)',
-          WebkitBackdropFilter: 'blur(50px) saturate(160%)',
+          // macOS Tahoe Sidebar - Frosted Glass
+          background: 'linear-gradient(180deg, rgba(255, 255, 255, 0.85) 0%, rgba(251, 251, 253, 0.78) 100%)',
+          backdropFilter: 'blur(80px) saturate(200%)',
+          WebkitBackdropFilter: 'blur(80px) saturate(200%)',
           border: 'none',
-          borderRight: '1px solid rgba(0, 0, 0, 0.08)',
-          boxShadow: '0 0 0 0.5px rgba(255, 255, 255, 0.6) inset, 8px 0 32px rgba(0, 0, 0, 0.05)',
-          transition: 'width 0.35s cubic-bezier(0.4, 0, 0.2, 1)',
+          borderRight: '0.5px solid rgba(0, 0, 0, 0.08)',
+          boxShadow: `
+            inset -1px 0 0 rgba(255, 255, 255, 0.5),
+            6px 0 32px rgba(0, 0, 0, 0.04),
+            2px 0 8px rgba(0, 0, 0, 0.02)
+          `,
+          transition: 'width 0.4s cubic-bezier(0.32, 0.72, 0, 1)',
           overflowX: 'hidden',
           overflowY: 'auto',
           '&::-webkit-scrollbar': {
-            width: '8px',
+            width: '6px',
           },
           '&::-webkit-scrollbar-track': {
             background: 'transparent',
+            margin: '4px 0',
           },
           '&::-webkit-scrollbar-thumb': {
-            background: 'rgba(0, 0, 0, 0.18)',
-            borderRadius: '10px',
-            transition: 'background 0.2s',
+            background: 'rgba(0, 0, 0, 0.15)',
+            borderRadius: '3px',
             '&:hover': {
-              background: 'rgba(0, 0, 0, 0.30)',
+              background: 'rgba(0, 0, 0, 0.25)',
             },
           },
         },
       }}
     >
-      {/* macOS Tahoe Header */}
+      {/* Header */}
       <Box
         sx={{
-          p: 2.5,
+          p: 2,
           display: 'flex',
           alignItems: 'center',
           justifyContent: isOpen ? 'space-between' : 'center',
-          minHeight: 72,
-          background: 'linear-gradient(180deg, rgba(255, 255, 255, 0.7) 0%, rgba(250, 250, 250, 0.6) 100%)',
-          backdropFilter: 'blur(30px) saturate(150%)',
-          WebkitBackdropFilter: 'blur(30px) saturate(150%)',
-          borderBottom: '1px solid rgba(0, 0, 0, 0.08)',
-          boxShadow: '0 1px 0 rgba(255, 255, 255, 0.6) inset',
+          minHeight: 64,
+          background: 'linear-gradient(180deg, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0.8) 100%)',
+          backdropFilter: 'blur(40px)',
+          WebkitBackdropFilter: 'blur(40px)',
+          borderBottom: '0.5px solid rgba(0, 0, 0, 0.06)',
+          boxShadow: 'inset 0 -0.5px 0 rgba(0, 0, 0, 0.04)',
+          position: 'relative',
         }}
       >
-        {isOpen && (
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-            <Avatar
+        {isOpen ? (
+          <>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25 }}>
+              <Avatar
+                sx={{
+                  width: 34,
+                  height: 34,
+                  background: 'linear-gradient(135deg, #0071E3 0%, #5AC8FA 100%)',
+                  boxShadow: '0 2px 12px rgba(0, 113, 227, 0.35)',
+                  fontSize: '0.875rem',
+                  fontWeight: 700,
+                  fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif',
+                }}
+              >
+                E
+              </Avatar>
+              <Typography
+                variant="h6"
+                sx={{
+                  fontWeight: 700,
+                  fontSize: '1.125rem',
+                  letterSpacing: '-0.02em',
+                  background: 'linear-gradient(135deg, #0071E3 0%, #5856D6 100%)',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                  fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif',
+                }}
+              >
+                Elite ERP
+              </Typography>
+            </Box>
+            <IconButton
+              onClick={onToggle}
+              size="small"
               sx={{
-                width: 38,
-                height: 38,
-                background: 'linear-gradient(135deg, #0A84FF 0%, #64D2FF 100%)',
-                boxShadow: '0 3px 10px rgba(10, 132, 255, 0.30)',
-                fontSize: '1rem',
-                fontWeight: 700,
+                width: 30,
+                height: 30,
+                background: 'rgba(0, 0, 0, 0.04)',
+                backdropFilter: 'blur(20px)',
+                WebkitBackdropFilter: 'blur(20px)',
+                border: '0.5px solid rgba(0, 0, 0, 0.06)',
+                '&:hover': {
+                  background: 'rgba(0, 0, 0, 0.08)',
+                  transform: 'scale(1.05)',
+                },
+                '&:active': {
+                  transform: 'scale(0.95)',
+                },
+                transition: 'all 0.2s cubic-bezier(0.32, 0.72, 0, 1)',
               }}
             >
-              E
-            </Avatar>
-            <Typography
-              variant="h6"
-              sx={{
-                fontWeight: 700,
-                fontSize: '1.25rem',
-                letterSpacing: '-0.03em',
-                background: 'linear-gradient(135deg, #0A84FF 0%, #BF5AF2 100%)',
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-              }}
-            >
-          Elite ERP
-        </Typography>
-          </Box>
+              <MenuIcon sx={{ fontSize: '1rem', color: 'rgba(60, 60, 67, 0.7)' }} />
+            </IconButton>
+          </>
+        ) : (
+          <IconButton
+            onClick={onToggle}
+            size="small"
+            sx={{
+              width: 36,
+              height: 36,
+              background: 'rgba(0, 113, 227, 0.08)',
+              backdropFilter: 'blur(20px)',
+              WebkitBackdropFilter: 'blur(20px)',
+              border: '0.5px solid rgba(0, 113, 227, 0.15)',
+              boxShadow: '0 1px 3px rgba(0, 113, 227, 0.1)',
+              '&:hover': {
+                background: 'rgba(0, 113, 227, 0.14)',
+                transform: 'scale(1.05)',
+              },
+              '&:active': {
+                transform: 'scale(0.95)',
+              },
+              transition: 'all 0.2s cubic-bezier(0.32, 0.72, 0, 1)',
+            }}
+          >
+            <MenuIcon sx={{ fontSize: '1rem', color: '#0071E3' }} />
+          </IconButton>
         )}
-        <IconButton
-          onClick={onToggle}
-          size="small"
-          sx={{
-            width: 34,
-            height: 34,
-            background: 'linear-gradient(135deg, rgba(10, 132, 255, 0.12) 0%, rgba(10, 132, 255, 0.08) 100%)',
-            backdropFilter: 'blur(20px)',
-            WebkitBackdropFilter: 'blur(20px)',
-            border: '1px solid rgba(10, 132, 255, 0.20)',
-            boxShadow: '0 2px 8px rgba(0, 122, 255, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.5)',
-            '&:hover': {
-              background: 'linear-gradient(135deg, rgba(10, 132, 255, 0.18) 0%, rgba(10, 132, 255, 0.12) 100%)',
-              transform: 'scale(1.06)',
-              boxShadow: '0 4px 12px rgba(0, 122, 255, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.6)',
-            },
-            '&:active': {
-              transform: 'scale(0.94)',
-            },
-            transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
-          }}
-        >
-          <MenuIcon sx={{ fontSize: '1.2rem', color: '#007AFF', fontWeight: 600 }} />
-        </IconButton>
       </Box>
 
       {/* Menu Categories */}
       <List sx={{ px: 0.5, py: 1.5 }}>
         {menuCategories.map((category) => (
-            <Box key={category.title}>
+          <Box key={category.title}>
             {category.title !== 'PLANUNG' ? (
               <ListItem disablePadding>
                 <ListItemButton
                   onClick={() => handleCategoryClick(category.title)}
                   sx={{
-                    borderRadius: '10px',
-                    my: 0.5,
-                    mx: 1.5,
-                    px: isOpen ? 1.5 : 1.2,
-                    minHeight: 38,
-                    background: 'rgba(0, 122, 255, 0.03)',
-                    backdropFilter: 'blur(10px)',
-                    border: '1px solid rgba(0, 122, 255, 0.08)',
+                    borderRadius: '8px',
+                    my: 0.25,
+                    mx: 0.75,
+                    px: isOpen ? 1.5 : 1,
+                    minHeight: 30,
+                    background: 'transparent',
                     '&:hover': {
-                      background: 'rgba(0, 122, 255, 0.08)',
-                      border: '1px solid rgba(0, 122, 255, 0.12)',
-                      transform: 'translateX(2px)',
+                      background: 'rgba(0, 0, 0, 0.03)',
                     },
                     '&:active': {
-                      transform: 'scale(0.98)',
+                      transform: 'scale(0.99)',
                     },
-                    transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+                    transition: 'all 0.15s ease',
                     justifyContent: isOpen ? 'flex-start' : 'center',
                   }}
                 >
                   {category.icon && (
                     <ListItemIcon sx={{ 
-                      minWidth: isOpen ? 36 : 'auto', 
-                      color: '#007AFF', 
-                      fontSize: '1.2rem',
+                      minWidth: isOpen ? 28 : 'auto', 
+                      color: 'rgba(0, 122, 255, 0.8)', 
                       '& .MuiSvgIcon-root': {
-                        fontSize: '1.2rem',
+                        fontSize: '0.95rem',
                       }
                     }}>
                       {category.icon}
@@ -463,23 +528,24 @@ export default function Sidebar({ drawerWidth, isOpen, onToggle }: SidebarProps)
                   )}
                   {isOpen && (
                     <>
-                  <ListItemText
-                    primary={category.title}
-                    sx={{
-                          ml: 0.5,
-                      '& .MuiTypography-root': {
+                      <ListItemText
+                        primary={category.title}
+                        sx={{
+                          ml: 0.25,
+                          '& .MuiTypography-root': {
                             fontSize: '0.6875rem',
-                        fontWeight: 700,
-                            letterSpacing: '0.05em',
-                            color: '#6E6E73',
-                        textTransform: 'uppercase',
-                      },
-                    }}
-                  />
+                            fontWeight: 700,
+                            letterSpacing: '0.06em',
+                            color: 'rgba(60, 60, 67, 0.55)',
+                            textTransform: 'uppercase',
+                            fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif',
+                          },
+                        }}
+                      />
                       {openCategories[category.title] ? (
-                        <ExpandLessIcon sx={{ fontSize: '1rem', color: '#007AFF' }} />
-                  ) : (
-                        <ExpandMoreIcon sx={{ fontSize: '1rem', color: '#007AFF' }} />
+                        <ExpandLessIcon sx={{ fontSize: '0.85rem', color: 'rgba(60, 60, 67, 0.35)' }} />
+                      ) : (
+                        <ExpandMoreIcon sx={{ fontSize: '0.85rem', color: 'rgba(60, 60, 67, 0.35)' }} />
                       )}
                     </>
                   )}
@@ -488,27 +554,22 @@ export default function Sidebar({ drawerWidth, isOpen, onToggle }: SidebarProps)
             ) : (
               <Box
                 sx={{
-                  px: isOpen ? 2.5 : 1.5,
-                  py: 1.5,
-                  mx: 1.5,
-                  my: 0.5,
+                  px: isOpen ? 2.25 : 1.5,
+                  py: 0.75,
+                  mx: 0.75,
+                  my: 0.25,
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: isOpen ? 'flex-start' : 'center',
-                  background: 'rgba(0, 122, 255, 0.03)',
-                  backdropFilter: 'blur(10px)',
-                  borderRadius: '8px',
-                  border: '1px solid rgba(0, 122, 255, 0.08)',
                 }}
               >
                 {category.icon && (
                   <Box sx={{ 
-                    color: '#007AFF', 
-                    mr: isOpen ? 1.5 : 0, 
+                    color: 'rgba(0, 122, 255, 0.8)', 
+                    mr: isOpen ? 0.75 : 0, 
                     display: 'flex', 
-                    fontSize: '1.2rem',
                     '& .MuiSvgIcon-root': {
-                      fontSize: '1.2rem',
+                      fontSize: '0.95rem',
                     }
                   }}>
                     {category.icon}
@@ -520,9 +581,10 @@ export default function Sidebar({ drawerWidth, isOpen, onToggle }: SidebarProps)
                     sx={{
                       fontSize: '0.6875rem',
                       fontWeight: 700,
-                      letterSpacing: '0.05em',
-                      color: '#6E6E73',
+                      letterSpacing: '0.06em',
+                      color: 'rgba(60, 60, 67, 0.55)',
                       textTransform: 'uppercase',
+                      fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif',
                     }}
                   >
                     {category.title}
@@ -531,21 +593,20 @@ export default function Sidebar({ drawerWidth, isOpen, onToggle }: SidebarProps)
               </Box>
             )}
 
-            <Collapse in={openCategories[category.title] || category.title === 'PLANUNG'} timeout="auto" unmountOnExit>
+            <Collapse in={openCategories[category.title] || category.title === 'PLANUNG'} timeout={200} unmountOnExit>
               <List component="div" disablePadding>
                 {category.items.map((item) => renderMenuItem(item, category.title))}
-                </List>
-              </Collapse>
+              </List>
+            </Collapse>
 
             <Divider 
               sx={{ 
-                my: 1.8, 
-                mx: 2.5, 
-                borderColor: 'rgba(0, 0, 0, 0.08)',
-                boxShadow: '0 1px 0 rgba(255, 255, 255, 0.6)',
+                my: 1.25, 
+                mx: 2, 
+                borderColor: 'rgba(0, 0, 0, 0.05)',
               }} 
             />
-            </Box>
+          </Box>
         ))}
       </List>
     </Drawer>

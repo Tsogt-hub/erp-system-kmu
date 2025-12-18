@@ -5,6 +5,8 @@ export interface JWTPayload {
   userId: number;
   email: string;
   role: string;
+  permissions: string[];
+  attributes: Record<string, unknown>;
 }
 
 export const generateToken = (payload: JWTPayload): string => {
@@ -16,6 +18,10 @@ export const generateToken = (payload: JWTPayload): string => {
 export const verifyToken = (token: string): JWTPayload => {
   return jwt.verify(token, config.jwt.secret) as JWTPayload;
 };
+
+
+
+
 
 
 

@@ -12,8 +12,36 @@ const app = express();
 
 // Security middleware
 app.use(helmet());
+
+// CORS Configuration - Production und Development
+const allowedOrigins = [
+  'http://localhost:5173',
+  'http://localhost:3000',
+  process.env.FRONTEND_URL,
+  process.env.RAILWAY_PUBLIC_DOMAIN ? `https://${process.env.RAILWAY_PUBLIC_DOMAIN}` : null,
+].filter(Boolean) as string[];
+
 app.use(cors({
-  origin: ['http://localhost:5173', 'http://localhost:3000'],
+  origin: (origin, callback) => {
+    // Erlaubt Requests ohne Origin (z.B. mobile Apps, curl)
+    if (!origin) return callback(null, true);
+    
+    // Erlaubt alle Railway-Domains
+    if (origin.includes('.railway.app') || origin.includes('.up.railway.app')) {
+      return callback(null, true);
+    }
+    
+    if (allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+    
+    // In Production alle Origins erlauben (kann später eingeschränkt werden)
+    if (process.env.NODE_ENV === 'production') {
+      return callback(null, true);
+    }
+    
+    callback(new Error('Not allowed by CORS'));
+  },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
@@ -36,9 +64,13 @@ app.use((req, res, next) => {
   next();
 });
 
-// Health check
+// Health check (both paths for compatibility)
 app.get('/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
+});
+
+app.get('/api/health', (req, res) => {
+  res.json({ status: 'ok', timestamp: new Date().toISOString(), version: '1.0.0' });
 });
 
 // API routes
@@ -84,6 +116,14 @@ async function startServer() {
     logger.warn('⚠️  Offer Items-Migration übersprungen:', error.message);
   }
 
+  // Offer Items Hero-Features-Migration ausführen
+  try {
+    const { migrateOfferItemsHero } = await import('./utils/migrate-offer-items-hero');
+    await migrateOfferItemsHero();
+  } catch (error: any) {
+    logger.warn('⚠️  Offer Items Hero-Migration übersprungen:', error.message);
+  }
+
   // Contact Fields-Migration ausführen
   try {
     const { migrateContactFields } = await import('./utils/migrate-contact-fields');
@@ -91,6 +131,133 @@ async function startServer() {
   } catch (error: any) {
     logger.warn('⚠️  Contact Fields-Migration übersprungen:', error.message);
   }
+
+  // Contacts Hero-Features-Migration ausführen
+  try {
+    const { migrateContactsTable } = await import('./utils/migrate-contacts');
+    await migrateContactsTable();
+  } catch (error: any) {
+    logger.warn('⚠️  Contacts Hero-Migration übersprungen:', error.message);
+  }
+
+  // Tasks-Tabelle initialisieren
+  try {
+    const { initTasksTable } = await import('./models/Task');
+    await initTasksTable();
+    logger.info('✅ Tasks table initialized');
+  } catch (error: any) {
+    logger.warn('⚠️  Tasks-Tabelle Initialisierung übersprungen:', error.message);
+  }
+
+  // LogEntries-Tabelle initialisieren
+  try {
+    const { initLogEntriesTable } = await import('./models/LogEntry');
+    initLogEntriesTable();
+    logger.info('✅ LogEntries table initialized');
+  } catch (error: any) {
+    logger.warn('⚠️  LogEntries-Tabelle Initialisierung übersprungen:', error.message);
+  }
+
+  // Reminders-Tabelle initialisieren
+  try {
+    const { initRemindersTable } = await import('./models/Reminder');
+    await initRemindersTable();
+    logger.info('✅ Reminders table initialized');
+  } catch (error: any) {
+    logger.warn('⚠️  Reminders-Tabelle Initialisierung übersprungen:', error.message);
+  }
+
+  // Documents-Tabelle initialisieren
+  try {
+    const { initDocumentsTable } = await import('./models/Document');
+    await initDocumentsTable();
+    logger.info('✅ Documents table initialized');
+  } catch (error: any) {
+    logger.warn('⚠️  Documents-Tabelle Initialisierung übersprungen:', error.message);
+  }
+
+  // Offer Templates-Tabellen initialisieren
+  try {
+    const { initOfferTemplatesTable } = await import('./models/OfferTemplate');
+    await initOfferTemplatesTable();
+    logger.info('✅ Offer Templates tables initialized');
+  } catch (error: any) {
+    logger.warn('⚠️  Offer Templates-Tabellen Initialisierung übersprungen:', error.message);
+  }
+
+  // PV Project Data-Tabelle initialisieren
+  try {
+    const { initPVProjectDataTable } = await import('./models/PVProjectData');
+    await initPVProjectDataTable();
+    logger.info('✅ PV Project Data table initialized');
+  } catch (error: any) {
+    logger.warn('⚠️  PV Project Data-Tabelle Initialisierung übersprungen:', error.message);
+  }
+
+  // Checklist-Tabellen initialisieren
+  try {
+    const { initChecklistTables } = await import('./models/Checklist');
+    await initChecklistTables();
+    logger.info('✅ Checklist tables initialized');
+  } catch (error: any) {
+    logger.warn('⚠️  Checklist-Tabellen Initialisierung übersprungen:', error.message);
+  }
+
+  // Entity Files-Tabelle initialisieren
+  try {
+    const { initEntityFilesTable } = await import('./models/EntityFile');
+    await initEntityFilesTable();
+    logger.info('✅ Entity Files table initialized');
+  } catch (error: any) {
+    logger.warn('⚠️  Entity Files-Tabelle Initialisierung übersprungen:', error.message);
+  }
+
+  // Open Items-Tabellen initialisieren
+  try {
+    const { initOpenItemsTables } = await import('./models/OpenItem');
+    await initOpenItemsTables();
+    logger.info('✅ Open Items tables initialized');
+  } catch (error: any) {
+    logger.warn('⚠️  Open Items-Tabellen Initialisierung übersprungen:', error.message);
+  }
+
+  // Object Addresses-Tabelle initialisieren
+  try {
+    const { initObjectAddressesTable } = await import('./models/ObjectAddress');
+    await initObjectAddressesTable();
+    logger.info('✅ Object Addresses table initialized');
+  } catch (error: any) {
+    logger.warn('⚠️  Object Addresses-Tabelle Initialisierung übersprungen:', error.message);
+  }
+
+  // Payment Data-Tabelle initialisieren
+  try {
+    const { initPaymentDataTable } = await import('./models/PaymentData');
+    await initPaymentDataTable();
+    logger.info('✅ Payment Data table initialized');
+  } catch (error: any) {
+    logger.warn('⚠️  Payment Data-Tabelle Initialisierung übersprungen:', error.message);
+  }
+
+  // Items-Tabelle initialisieren (für Hero-Artikel)
+  try {
+    const { initItemsTable } = await import('./models/Item');
+    await initItemsTable();
+    logger.info('✅ Items table initialized');
+  } catch (error: any) {
+    logger.warn('⚠️  Items-Tabelle Initialisierung übersprungen:', error.message);
+  }
+
+  // Hero-Artikel aus CSV importieren (bereits importiert - 1.123 Artikel)
+  // Deaktiviert, da bereits importiert
+  // try {
+  //   const { importHeroArticlesFromCSV } = await import('./seeds/import-hero-csv');
+  //   const result = await importHeroArticlesFromCSV();
+  //   logger.info(`✅ Hero articles imported: ${result.imported} new, ${result.skipped} updated, ${result.errors} errors`);
+  // } catch (error: any) {
+  //   logger.warn('⚠️  Hero-Artikel Import übersprungen:', error.message);
+  // }
+  logger.info('✅ Hero articles already imported: 1.123 articles in database');
   
   app.listen(PORT, () => {
     logger.info(`🚀 Server running on port ${PORT}`);

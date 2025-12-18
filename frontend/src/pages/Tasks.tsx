@@ -21,62 +21,105 @@ import {
   InputLabel,
   Select,
   MenuItem,
+  Alert,
+  CircularProgress,
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import { format } from 'date-fns';
-
-interface Task {
-  id: number;
-  title: string;
-  description?: string;
-  status: 'todo' | 'in_progress' | 'done';
-  priority: 'low' | 'medium' | 'high';
-  due_date?: string;
-  created_at: string;
-}
+import { tasksApi, Task, CreateTaskData } from '../services/api/tasks';
 
 export default function Tasks() {
   const [tasks, setTasks] = useState<Task[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [open, setOpen] = useState(false);
-  const [formData, setFormData] = useState({
+  const [editingTask, setEditingTask] = useState<Task | null>(null);
+  const [formData, setFormData] = useState<CreateTaskData>({
     title: '',
     description: '',
-    status: 'todo' as 'todo' | 'in_progress' | 'done',
-    priority: 'medium' as 'low' | 'medium' | 'high',
+    status: 'todo',
+    priority: 'medium',
     due_date: '',
   });
 
-  const handleCreate = () => {
-    const newTask: Task = {
-      id: Date.now(),
-      title: formData.title,
-      description: formData.description,
-      status: formData.status,
-      priority: formData.priority,
-      due_date: formData.due_date || undefined,
-      created_at: new Date().toISOString(),
-    };
-    setTasks([...tasks, newTask]);
-    setOpen(false);
+  useEffect(() => {
+    loadTasks();
+  }, []);
+
+  const loadTasks = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const data = await tasksApi.getAll();
+      setTasks(data);
+    } catch (err) {
+      console.error('Error loading tasks:', err);
+      setError('Fehler beim Laden der Aufgaben');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleCreate = async () => {
+    try {
+      if (editingTask) {
+        // Update
+        await tasksApi.update(editingTask.id, formData);
+      } else {
+        // Create
+        await tasksApi.create(formData);
+      }
+      setOpen(false);
+      setEditingTask(null);
+      setFormData({
+        title: '',
+        description: '',
+        status: 'todo',
+        priority: 'medium',
+        due_date: '',
+      });
+      loadTasks();
+    } catch (err) {
+      console.error('Error saving task:', err);
+      setError('Fehler beim Speichern der Aufgabe');
+    }
+  };
+
+  const handleEdit = (task: Task) => {
+    setEditingTask(task);
     setFormData({
-      title: '',
-      description: '',
-      status: 'todo',
-      priority: 'medium',
-      due_date: '',
+      title: task.title,
+      description: task.description || '',
+      status: task.status,
+      priority: task.priority,
+      due_date: task.due_date || '',
     });
+    setOpen(true);
   };
 
-  const handleDelete = (id: number) => {
-    setTasks(tasks.filter((t) => t.id !== id));
+  const handleDelete = async (id: number) => {
+    if (window.confirm('Möchten Sie diese Aufgabe wirklich löschen?')) {
+      try {
+        await tasksApi.delete(id);
+        loadTasks();
+      } catch (err) {
+        console.error('Error deleting task:', err);
+        setError('Fehler beim Löschen der Aufgabe');
+      }
+    }
   };
 
-  const handleStatusChange = (id: number, status: 'todo' | 'in_progress' | 'done') => {
-    setTasks(tasks.map((t) => (t.id === id ? { ...t, status } : t)));
+  const handleStatusChange = async (id: number, status: 'todo' | 'in_progress' | 'done') => {
+    try {
+      await tasksApi.update(id, { status });
+      loadTasks();
+    } catch (err) {
+      console.error('Error updating task status:', err);
+      setError('Fehler beim Aktualisieren des Status');
+    }
   };
 
   const getStatusColor = (status: string) => {
@@ -97,11 +140,29 @@ export default function Tasks() {
     }
   };
 
+  if (loading) {
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '400px' }}>
+        <CircularProgress />
+      </Box>
+    );
+  }
+
   return (
     <Box>
+      {error && (
+        <Alert severity="error" onClose={() => setError(null)} sx={{ mb: 2 }}>
+          {error}
+        </Alert>
+      )}
+
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
         <Typography variant="h4">Aufgaben</Typography>
-        <Button variant="contained" startIcon={<AddIcon />} onClick={() => setOpen(true)}>
+        <Button variant="contained" startIcon={<AddIcon />} onClick={() => {
+          setEditingTask(null);
+          setFormData({ title: '', description: '', status: 'todo', priority: 'medium', due_date: '' });
+          setOpen(true);
+        }}>
           Neue Aufgabe
         </Button>
       </Box>
@@ -144,13 +205,23 @@ export default function Tasks() {
                       size="small"
                       color="success"
                       onClick={() => handleStatusChange(task.id, 'done')}
+                      title="Als erledigt markieren"
                     >
                       <CheckCircleIcon />
                     </IconButton>
                     <IconButton
                       size="small"
+                      color="primary"
+                      onClick={() => handleEdit(task)}
+                      title="Bearbeiten"
+                    >
+                      <EditIcon />
+                    </IconButton>
+                    <IconButton
+                      size="small"
                       color="error"
                       onClick={() => handleDelete(task.id)}
+                      title="Löschen"
                     >
                       <DeleteIcon />
                     </IconButton>
@@ -162,8 +233,8 @@ export default function Tasks() {
         </Table>
       </TableContainer>
 
-      <Dialog open={open} onClose={() => setOpen(false)} maxWidth="sm" fullWidth>
-        <DialogTitle>Neue Aufgabe</DialogTitle>
+      <Dialog open={open} onClose={() => { setOpen(false); setEditingTask(null); }} maxWidth="sm" fullWidth>
+        <DialogTitle>{editingTask ? 'Aufgabe bearbeiten' : 'Neue Aufgabe'}</DialogTitle>
         <DialogContent>
           <TextField
             fullWidth
@@ -217,15 +288,25 @@ export default function Tasks() {
           />
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setOpen(false)}>Abbrechen</Button>
+          <Button onClick={() => { setOpen(false); setEditingTask(null); }}>Abbrechen</Button>
           <Button variant="contained" onClick={handleCreate} disabled={!formData.title}>
-            Erstellen
+            {editingTask ? 'Speichern' : 'Erstellen'}
           </Button>
         </DialogActions>
       </Dialog>
     </Box>
   );
 }
+
+
+
+
+
+
+
+
+
+
 
 
 

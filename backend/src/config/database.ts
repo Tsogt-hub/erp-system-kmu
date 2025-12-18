@@ -72,6 +72,18 @@ export const query = async (text: string, params?: any[]): Promise<any> => {
     console.log('Executed query', { text, duration, rows: res.rowCount });
     return res;
   } catch (error) {
+    const code = (error as any)?.code;
+    const name = (error as any)?.name;
+    const message = (error as any)?.message ?? '';
+    if (code === 'ECONNREFUSED' || name === 'AggregateError' || message.includes('ECONNREFUSED')) {
+      if (!useSQLite) {
+        console.warn('⚠️  PostgreSQL nicht erreichbar, wechsle zu SQLite...', { message: (error as any)?.message });
+        useSQLite = true;
+        const { initSQLiteDatabase } = await import('../utils/init-sqlite');
+        await initSQLiteDatabase();
+      }
+      return query(text, params);
+    }
     console.error('Database query error:', error);
     throw error;
   }

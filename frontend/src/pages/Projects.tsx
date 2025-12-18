@@ -29,6 +29,7 @@ import { projectsApi, Project, CreateProjectData } from '../services/api/project
 export default function Projects() {
   const navigate = useNavigate();
   const [projects, setProjects] = useState<Project[]>([]);
+  const [filteredProjects, setFilteredProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
   const [open, setOpen] = useState(false);
   const [formData, setFormData] = useState<CreateProjectData>({
@@ -36,10 +37,44 @@ export default function Projects() {
     description: '',
     status: 'draft',
   });
+  
+  // Filter States
+  const [filters, setFilters] = useState({
+    name: '',
+    reference: '',
+    customer: '',
+    status: '',
+  });
 
   useEffect(() => {
     loadProjects();
   }, []);
+
+  // Filter-Logik
+  useEffect(() => {
+    let result = projects;
+    
+    if (filters.name) {
+      result = result.filter(p => 
+        p.name.toLowerCase().includes(filters.name.toLowerCase())
+      );
+    }
+    if (filters.reference) {
+      result = result.filter(p => 
+        p.reference?.toLowerCase().includes(filters.reference.toLowerCase())
+      );
+    }
+    if (filters.customer) {
+      result = result.filter(p => 
+        p.customer_name?.toLowerCase().includes(filters.customer.toLowerCase())
+      );
+    }
+    if (filters.status) {
+      result = result.filter(p => p.status === filters.status);
+    }
+    
+    setFilteredProjects(result);
+  }, [projects, filters]);
 
   const loadProjects = async () => {
     try {
@@ -107,6 +142,8 @@ export default function Projects() {
                   placeholder="Name"
                   fullWidth
                   variant="outlined"
+                  value={filters.name}
+                  onChange={(e) => setFilters({ ...filters, name: e.target.value })}
                   sx={{ '& .MuiOutlinedInput-root': { backgroundColor: '#FFFFFF' } }}
                 />
               </TableCell>
@@ -116,6 +153,8 @@ export default function Projects() {
                   placeholder="Referenz"
                   fullWidth
                   variant="outlined"
+                  value={filters.reference}
+                  onChange={(e) => setFilters({ ...filters, reference: e.target.value })}
                   sx={{ '& .MuiOutlinedInput-root': { backgroundColor: '#FFFFFF' } }}
                 />
               </TableCell>
@@ -125,6 +164,8 @@ export default function Projects() {
                   placeholder="Kunde"
                   fullWidth
                   variant="outlined"
+                  value={filters.customer}
+                  onChange={(e) => setFilters({ ...filters, customer: e.target.value })}
                   sx={{ '& .MuiOutlinedInput-root': { backgroundColor: '#FFFFFF' } }}
                 />
               </TableCell>
@@ -132,6 +173,8 @@ export default function Projects() {
                 <FormControl size="small" fullWidth>
                   <Select
                     displayEmpty
+                    value={filters.status}
+                    onChange={(e) => setFilters({ ...filters, status: e.target.value })}
                     sx={{ backgroundColor: '#FFFFFF' }}
                   >
                     <MenuItem value="">Alle</MenuItem>
@@ -149,13 +192,16 @@ export default function Projects() {
                     variant="contained"
                     startIcon={<SearchIcon />}
                     sx={{ minWidth: 'auto', px: 1 }}
+                    onClick={() => {
+                      // Filter wird automatisch durch useEffect angewendet
+                    }}
                   >
                     Suchen
                   </Button>
                   <IconButton
                     size="small"
                     onClick={() => {
-                      // Reset filters
+                      setFilters({ name: '', reference: '', customer: '', status: '' });
                     }}
                   >
                     <ClearIcon />
@@ -171,14 +217,14 @@ export default function Projects() {
                   Lädt...
                 </TableCell>
               </TableRow>
-            ) : projects.length === 0 ? (
+            ) : filteredProjects.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={6} align="center">
                   Keine Projekte gefunden
                 </TableCell>
               </TableRow>
             ) : (
-              projects.map((project) => (
+              filteredProjects.map((project) => (
                 <TableRow key={project.id}>
                   <TableCell>{project.name}</TableCell>
                   <TableCell>{project.reference}</TableCell>

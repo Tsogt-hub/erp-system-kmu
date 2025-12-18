@@ -30,12 +30,56 @@ import { useNavigate } from 'react-router-dom';
 export default function Offers() {
   const navigate = useNavigate();
   const [offers, setOffers] = useState<Offer[]>([]);
+  const [filteredOffers, setFilteredOffers] = useState<Offer[]>([]);
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState<string>('all');
+  
+  // Tabellen-Filter
+  const [tableFilters, setTableFilters] = useState({
+    offerNumber: '',
+    customer: '',
+    project: '',
+    status: '',
+  });
 
   useEffect(() => {
     loadOffers();
   }, [statusFilter]);
+  
+  // Filter-Logik
+  useEffect(() => {
+    let result = offers;
+    
+    if (tableFilters.offerNumber) {
+      result = result.filter(o => 
+        o.offer_number?.toLowerCase().includes(tableFilters.offerNumber.toLowerCase())
+      );
+    }
+    if (tableFilters.customer) {
+      result = result.filter(o => 
+        o.customer_name?.toLowerCase().includes(tableFilters.customer.toLowerCase())
+      );
+    }
+    if (tableFilters.project) {
+      result = result.filter(o => 
+        o.project_name?.toLowerCase().includes(tableFilters.project.toLowerCase())
+      );
+    }
+    if (tableFilters.status) {
+      result = result.filter(o => o.status === tableFilters.status);
+    }
+    
+    setFilteredOffers(result);
+  }, [offers, tableFilters]);
+  
+  const resetFilters = () => {
+    setTableFilters({
+      offerNumber: '',
+      customer: '',
+      project: '',
+      status: '',
+    });
+  };
 
   const loadOffers = async () => {
     try {
@@ -129,6 +173,8 @@ export default function Offers() {
                   placeholder="Angebotsnummer"
                   fullWidth
                   variant="outlined"
+                  value={tableFilters.offerNumber}
+                  onChange={(e) => setTableFilters({ ...tableFilters, offerNumber: e.target.value })}
                   sx={{ '& .MuiOutlinedInput-root': { backgroundColor: '#FFFFFF' } }}
                 />
               </TableCell>
@@ -138,6 +184,8 @@ export default function Offers() {
                   placeholder="Kunde"
                   fullWidth
                   variant="outlined"
+                  value={tableFilters.customer}
+                  onChange={(e) => setTableFilters({ ...tableFilters, customer: e.target.value })}
                   sx={{ '& .MuiOutlinedInput-root': { backgroundColor: '#FFFFFF' } }}
                 />
               </TableCell>
@@ -147,6 +195,8 @@ export default function Offers() {
                   placeholder="Projekt"
                   fullWidth
                   variant="outlined"
+                  value={tableFilters.project}
+                  onChange={(e) => setTableFilters({ ...tableFilters, project: e.target.value })}
                   sx={{ '& .MuiOutlinedInput-root': { backgroundColor: '#FFFFFF' } }}
                 />
               </TableCell>
@@ -156,6 +206,8 @@ export default function Offers() {
                 <FormControl size="small" fullWidth>
                   <Select
                     displayEmpty
+                    value={tableFilters.status}
+                    onChange={(e) => setTableFilters({ ...tableFilters, status: e.target.value })}
                     sx={{ backgroundColor: '#FFFFFF' }}
                   >
                     <MenuItem value="">Alle</MenuItem>
@@ -179,9 +231,7 @@ export default function Offers() {
                   </Button>
                   <IconButton
                     size="small"
-                    onClick={() => {
-                      // Reset filters
-                    }}
+                    onClick={resetFilters}
                   >
                     <ClearIcon />
                   </IconButton>
@@ -194,12 +244,12 @@ export default function Offers() {
               <TableRow>
                 <TableCell colSpan={8} align="center">Lädt...</TableCell>
               </TableRow>
-            ) : offers.length === 0 ? (
+            ) : filteredOffers.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={8} align="center">Keine Angebote gefunden</TableCell>
               </TableRow>
             ) : (
-              offers.map((offer) => (
+              filteredOffers.map((offer) => (
                 <TableRow
                   key={offer.id}
                   hover

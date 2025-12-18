@@ -42,6 +42,69 @@ export async function initSQLiteDatabase() {
         FOREIGN KEY (role_id) REFERENCES roles(id)
       );
 
+      CREATE TABLE IF NOT EXISTS data_assets (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL,
+        domain TEXT NOT NULL,
+        owner TEXT NOT NULL,
+        description TEXT,
+        source TEXT,
+        tags TEXT DEFAULT '[]',
+        sensitivity TEXT DEFAULT 'internal',
+        retention_policy TEXT,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      );
+
+      CREATE TABLE IF NOT EXISTS data_quality_rules (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        asset_id INTEGER NOT NULL,
+        name TEXT NOT NULL,
+        dimension TEXT NOT NULL,
+        threshold REAL NOT NULL,
+        severity TEXT DEFAULT 'medium',
+        description TEXT,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (asset_id) REFERENCES data_assets(id) ON DELETE CASCADE
+      );
+
+      CREATE TABLE IF NOT EXISTS audit_logs (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER,
+        action TEXT NOT NULL,
+        resource TEXT,
+        level TEXT DEFAULT 'info',
+        metadata TEXT DEFAULT '{}',
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (user_id) REFERENCES users(id)
+      );
+
+      CREATE TABLE IF NOT EXISTS feature_definitions (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT UNIQUE NOT NULL,
+        entity TEXT NOT NULL,
+        description TEXT,
+        version INTEGER DEFAULT 1,
+        config TEXT DEFAULT '{}',
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      );
+
+      CREATE TABLE IF NOT EXISTS feature_snapshots (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        feature_id INTEGER NOT NULL,
+        entity_id TEXT NOT NULL,
+        ts DATETIME NOT NULL,
+        value TEXT NOT NULL,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE(feature_id, entity_id, ts),
+        FOREIGN KEY (feature_id) REFERENCES feature_definitions(id) ON DELETE CASCADE
+      );
+
+      CREATE INDEX IF NOT EXISTS idx_feature_snapshots_feature_entity_ts
+        ON feature_snapshots (feature_id, entity_id, ts DESC);
+
       CREATE TABLE IF NOT EXISTS companies (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         name TEXT NOT NULL,
@@ -199,6 +262,10 @@ export async function initSQLiteDatabase() {
         status TEXT DEFAULT 'draft',
         valid_until DATE,
         notes TEXT,
+        intro_text TEXT,
+        footer_text TEXT,
+        payment_terms TEXT,
+        finalized_at DATETIME,
         created_by INTEGER,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,

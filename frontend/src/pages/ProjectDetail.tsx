@@ -22,13 +22,29 @@ import {
   InputLabel,
   Select,
   MenuItem,
+  IconButton,
+  Tooltip,
+  List,
+  ListItem,
+  ListItemIcon,
+  ListItemText,
+  ListItemSecondaryAction,
+  Divider,
 } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import AddIcon from '@mui/icons-material/Add';
+import DescriptionIcon from '@mui/icons-material/Description';
+import EditIcon from '@mui/icons-material/Edit';
+import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
+import ReceiptIcon from '@mui/icons-material/Receipt';
 import { projectsApi, Project } from '../services/api/projects';
 import { timeTrackingApi, TimeEntry } from '../services/api/timeTracking';
 import { ticketsApi, Ticket } from '../services/api/tickets';
 import { pipelinesApi, PipelineConfig } from '../services/api/pipelines';
+import { offersApi, Offer } from '../services/api/offers';
 import { format } from 'date-fns';
+import LogbookPanel from '../components/common/LogbookPanel';
+import ReminderPanel from '../components/common/ReminderPanel';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -51,6 +67,7 @@ export default function ProjectDetail() {
   const [project, setProject] = useState<Project | null>(null);
   const [timeEntries, setTimeEntries] = useState<TimeEntry[]>([]);
   const [tickets, setTickets] = useState<Ticket[]>([]);
+  const [offers, setOffers] = useState<Offer[]>([]);
   const [loading, setLoading] = useState(true);
   const [tabValue, setTabValue] = useState(0);
   const [pipelineConfig, setPipelineConfig] = useState<PipelineConfig | null>(null);
@@ -93,10 +110,52 @@ export default function ProjectDetail() {
       const ticketsData = await ticketsApi.getAll();
       const projectTickets = ticketsData.filter(t => t.project_id === projectId);
       setTickets(projectTickets);
+
+      // Load offers
+      try {
+        const offersData = await offersApi.getByProject(projectId);
+        setOffers(offersData);
+      } catch (error) {
+        console.error('Error loading offers:', error);
+        setOffers([]);
+      }
     } catch (error) {
       console.error('Error loading project data:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleCreateOffer = async () => {
+    try {
+      const newOffer = await offersApi.createForProject(parseInt(id!));
+      // Navigiere zum Angebots-Editor
+      navigate(`/offers/${newOffer.id}/edit`);
+    } catch (error) {
+      console.error('Error creating offer:', error);
+      alert('Fehler beim Erstellen des Angebots');
+    }
+  };
+
+  const getOfferStatusColor = (status: string) => {
+    switch (status) {
+      case 'draft': return 'default';
+      case 'finalized': return 'primary';
+      case 'sent': return 'info';
+      case 'accepted': return 'success';
+      case 'rejected': return 'error';
+      default: return 'default';
+    }
+  };
+
+  const getOfferStatusLabel = (status: string) => {
+    switch (status) {
+      case 'draft': return 'Entwurf';
+      case 'finalized': return 'Abgeschlossen';
+      case 'sent': return 'Versendet';
+      case 'accepted': return 'Angenommen';
+      case 'rejected': return 'Abgelehnt';
+      default: return status;
     }
   };
 
@@ -234,12 +293,137 @@ export default function ProjectDetail() {
       {/* Tabs */}
       <Paper>
         <Tabs value={tabValue} onChange={(_e, newValue) => setTabValue(newValue)}>
+          <Tab label="Dokumente" />
+          <Tab label="Logbuch" />
           <Tab label="Zeiteinträge" />
           <Tab label="Tickets" />
           <Tab label="Details" />
         </Tabs>
 
+        {/* Dokumente Tab */}
         <TabPanel value={tabValue} index={0}>
+          <Box sx={{ mb: 3 }}>
+            <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <DescriptionIcon color="primary" />
+                Angebote
+              </Box>
+              <Button
+                variant="contained"
+                startIcon={<AddIcon />}
+                onClick={handleCreateOffer}
+                size="small"
+              >
+                Neues Angebot
+              </Button>
+            </Typography>
+            
+            {offers.length === 0 ? (
+              <Paper variant="outlined" sx={{ p: 3, textAlign: 'center' }}>
+                <Typography color="text.secondary">
+                  Noch keine Angebote für dieses Projekt erstellt.
+                </Typography>
+                <Button
+                  variant="outlined"
+                  startIcon={<AddIcon />}
+                  onClick={handleCreateOffer}
+                  sx={{ mt: 2 }}
+                >
+                  Erstes Angebot erstellen
+                </Button>
+              </Paper>
+            ) : (
+              <List>
+                {offers.map((offer, index) => (
+                  <Box key={offer.id}>
+                    {index > 0 && <Divider />}
+                    <ListItem
+                      sx={{ 
+                        cursor: 'pointer',
+                        '&:hover': { backgroundColor: 'action.hover' }
+                      }}
+                      onClick={() => navigate(`/offers/${offer.id}/edit`)}
+                    >
+                      <ListItemIcon>
+                        <PictureAsPdfIcon color={offer.status === 'draft' ? 'action' : 'primary'} />
+                      </ListItemIcon>
+                      <ListItemText
+                        primary={
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                            <Typography variant="subtitle1">
+                              {offer.offer_number}
+                            </Typography>
+                            <Chip
+                              label={getOfferStatusLabel(offer.status)}
+                              size="small"
+                              color={getOfferStatusColor(offer.status) as any}
+                            />
+                          </Box>
+                        }
+                        secondary={
+                          <Box>
+                            <Typography variant="body2" color="text.secondary">
+                              Erstellt: {format(new Date(offer.created_at), 'dd.MM.yyyy HH:mm')}
+                              {offer.valid_until && ` · Gültig bis: ${format(new Date(offer.valid_until), 'dd.MM.yyyy')}`}
+                            </Typography>
+                            <Typography variant="body2" fontWeight="bold">
+                              {new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' }).format(offer.amount)}
+                            </Typography>
+                          </Box>
+                        }
+                      />
+                      <ListItemSecondaryAction>
+                        <Tooltip title="Bearbeiten">
+                          <IconButton 
+                            edge="end" 
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              navigate(`/offers/${offer.id}/edit`);
+                            }}
+                          >
+                            <EditIcon />
+                          </IconButton>
+                        </Tooltip>
+                      </ListItemSecondaryAction>
+                    </ListItem>
+                  </Box>
+                ))}
+              </List>
+            )}
+          </Box>
+
+          <Divider sx={{ my: 3 }} />
+
+          <Box>
+            <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <ReceiptIcon color="primary" />
+              Rechnungen
+            </Typography>
+            <Paper variant="outlined" sx={{ p: 3, textAlign: 'center' }}>
+              <Typography color="text.secondary">
+                Noch keine Rechnungen für dieses Projekt erstellt.
+              </Typography>
+            </Paper>
+          </Box>
+        </TabPanel>
+
+        {/* Logbuch Tab */}
+        <TabPanel value={tabValue} index={1}>
+          <ReminderPanel
+            entityType="project"
+            entityId={parseInt(id!)}
+            title="Wiedervorlagen"
+          />
+          <LogbookPanel
+            entityType="project"
+            entityId={parseInt(id!)}
+            title="Projekt-Logbuch"
+            maxHeight={500}
+          />
+        </TabPanel>
+
+        {/* Zeiteinträge Tab */}
+        <TabPanel value={tabValue} index={2}>
           <TableContainer>
             <Table>
               <TableHead>
@@ -282,7 +466,8 @@ export default function ProjectDetail() {
           </TableContainer>
         </TabPanel>
 
-        <TabPanel value={tabValue} index={1}>
+        {/* Tickets Tab */}
+        <TabPanel value={tabValue} index={3}>
           <TableContainer>
             <Table>
               <TableHead>
@@ -331,7 +516,8 @@ export default function ProjectDetail() {
           </TableContainer>
         </TabPanel>
 
-        <TabPanel value={tabValue} index={2}>
+        {/* Details Tab */}
+        <TabPanel value={tabValue} index={4}>
           <Grid container spacing={2}>
             <Grid item xs={12} md={6}>
               <Typography variant="h6" gutterBottom>

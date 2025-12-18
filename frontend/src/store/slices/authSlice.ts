@@ -6,6 +6,9 @@ interface User {
   email: string;
   first_name: string;
   last_name: string;
+  role: string;
+  permissions: string[];
+  attributes: Record<string, unknown>;
 }
 
 interface AuthState {
@@ -53,7 +56,7 @@ export const fetchUser = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const user = await authApi.me();
-      return user;
+      return user as User;
     } catch (error: any) {
       return rejectWithValue(error.response?.data?.error || 'Failed to fetch user');
     }
@@ -112,6 +115,10 @@ const authSlice = createSlice({
 
 export const { logout, clearError } = authSlice.actions;
 export default authSlice.reducer;
+
+
+
+
 
 
 

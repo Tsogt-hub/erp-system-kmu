@@ -29,3 +29,13 @@ echo "✅ Datenbank initialisiert!"
 
 
 
+
+
+
+
+
+
+
+
+
+

@@ -1,5 +1,46 @@
 import { apiClient } from './client';
 
+// Lead-Quellen wie in Hero
+export const LEAD_SOURCES = [
+  'E-Mail',
+  'Persönlicher Kontakt',
+  'Messe',
+  'Social Media',
+  'Online-Portal',
+  'Telefon',
+  'Eigene Webseite',
+  'Empfehlung',
+  'Bestandskunde',
+  'Außenwerbung',
+  'Netzwerk',
+  'Interessent',
+  'Flyer / Prospekt',
+  'Fahrzeugwerbung',
+  'Sonstige',
+];
+
+// Erreichbarkeit wie in Hero
+export const REACHABILITY_OPTIONS = [
+  'Vormittags',
+  'Nachmittags',
+  'Abends',
+  'Ganztags',
+  'Nur am Wochenende',
+  'ausschließlich per E-Mail',
+  'Sonstige',
+];
+
+// Anrede-Optionen wie in Hero
+export const SALUTATION_OPTIONS = [
+  'Herr',
+  'Frau',
+  'Familie',
+  'Eheleute',
+  'Dr.',
+  'Prof.',
+  'Prof. Dr.',
+];
+
 export interface Company {
   id: number;
   name: string;
@@ -12,6 +53,8 @@ export interface Company {
   tax_id?: string;
   website?: string;
   notes?: string;
+  category?: string;
+  customer_number?: string;
   created_at: string;
   updated_at: string;
 }
@@ -33,7 +76,17 @@ export interface Contact {
   customer_number?: string;
   address?: string;
   postal_code?: string;
+  city?: string;
+  country?: string;
   availability?: string;
+  // Neue Hero-Felder
+  salutation?: string;
+  lead_source?: string;
+  website?: string;
+  fax?: string;
+  birthday?: string;
+  is_invoice_recipient?: boolean;
+  additional_salutation?: string;
   created_at: string;
   updated_at: string;
 }
@@ -49,6 +102,8 @@ export interface CreateCompanyData {
   tax_id?: string;
   website?: string;
   notes?: string;
+  category?: string;
+  customer_number?: string;
 }
 
 export interface CreateContactData {
@@ -66,7 +121,17 @@ export interface CreateContactData {
   customer_number?: string;
   address?: string;
   postal_code?: string;
+  city?: string;
+  country?: string;
   availability?: string;
+  // Neue Hero-Felder
+  salutation?: string;
+  lead_source?: string;
+  website?: string;
+  fax?: string;
+  birthday?: string;
+  is_invoice_recipient?: boolean;
+  additional_salutation?: string;
 }
 
 export const crmApi = {

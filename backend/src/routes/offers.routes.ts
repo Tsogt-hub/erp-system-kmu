@@ -33,11 +33,18 @@ router.get('/:offerId/titles', OfferTitleController.getByOfferId);
 
 // Offer routes
 router.get('/', OfferController.getAll);
+router.get('/project/:projectId', OfferController.getByProject);
 router.get('/:id', OfferController.getById);
 router.get('/:id/pdf', PDFController.generateOfferPDF);
 router.post('/', OfferController.create);
+router.post('/project/:projectId', OfferController.createForProject);
 router.put('/:id', OfferController.update);
 router.delete('/:id', OfferController.delete);
+
+// PDF und Finalisierung
+router.post('/:id/preview-pdf', OfferController.previewPdf);
+router.get('/:id/download-pdf', OfferController.downloadPdf);
+router.post('/:id/finalize', OfferController.finalize);
 
 export default router;
 

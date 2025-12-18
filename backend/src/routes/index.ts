@@ -12,6 +12,19 @@ import dashboardRoutes from './dashboard.routes';
 import usersRoutes from './users.routes';
 import notificationsRoutes from './notifications.routes';
 import calendarEventRoutes from './calendarEvent.routes';
+import metadataRoutes from './metadata.routes';
+import auditRoutes from './audit.routes';
+import featureStoreRoutes from './feature-store.routes';
+import taskRoutes from './task.routes';
+import logEntryRoutes from './logEntry.routes';
+import reminderRoutes from './reminder.routes';
+import documentRoutes from './document.routes';
+import offerTemplateRoutes from './offerTemplate.routes';
+import checklistRoutes from './checklist.routes';
+import pvProjectDataRoutes from './pvProjectData.routes';
+import openItemRoutes from './openItem.routes';
+import entityFileRoutes from './entityFile.routes';
+import objectAddressRoutes from './objectAddress.routes';
 
 const router = Router();
 
@@ -28,6 +41,19 @@ router.use('/invoices', invoicesRoutes);
 router.use('/pipelines', pipelinesRoutes);
 router.use('/notifications', notificationsRoutes);
 router.use('/calendar-events', calendarEventRoutes);
+router.use('/metadata', metadataRoutes);
+router.use('/audit', auditRoutes);
+router.use('/feature-store', featureStoreRoutes);
+router.use('/tasks', taskRoutes);
+router.use('/log-entries', logEntryRoutes);
+router.use('/reminders', reminderRoutes);
+router.use('/documents', documentRoutes);
+router.use('/offer-templates', offerTemplateRoutes);
+router.use('/checklists', checklistRoutes);
+router.use('/pv-project-data', pvProjectDataRoutes);
+router.use('/open-items', openItemRoutes);
+router.use('/entity-files', entityFileRoutes);
+router.use('/object-addresses', objectAddressRoutes);
 
 export default router;
 

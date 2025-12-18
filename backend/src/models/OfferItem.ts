@@ -1,6 +1,15 @@
 import { query } from '../config/database';
 import { getRows, getRow } from '../utils/fix-models';
 
+// Position-Typen wie in Hero
+export const OFFER_ITEM_TYPES = [
+  'standard',      // Normale Position
+  'optional',      // Bedarfsposition (wird nicht in Summe berechnet)
+  'alternative',   // Alternative Position (wird nicht in Summe berechnet)
+  'header',        // Überschrift/Kategorie (keine Preise)
+  'text',          // Freitext (keine Preise)
+];
+
 export interface OfferItem {
   id: number;
   offer_id: number;
@@ -9,9 +18,16 @@ export interface OfferItem {
   quantity: number;
   unit: string;
   unit_price: number;
+  purchase_price?: number;  // Einkaufspreis für Marge
   discount_percent?: number;
   tax_rate: number;
   position_order: number;
+  // Neue Hero-Felder
+  item_type: string;        // standard, optional, alternative, header, text
+  parent_item_id?: number;  // Für Gruppen/Alternativen
+  image_url?: string;       // Artikelbild
+  notes?: string;           // Interne Notizen
+  is_visible: boolean;      // Sichtbar im Angebot
   created_at: Date;
   updated_at: Date;
   item_name?: string;
@@ -25,9 +41,16 @@ export interface CreateOfferItemData {
   quantity: number;
   unit: string;
   unit_price: number;
+  purchase_price?: number;
   discount_percent?: number;
   tax_rate?: number;
   position_order?: number;
+  // Neue Hero-Felder
+  item_type?: string;
+  parent_item_id?: number;
+  image_url?: string;
+  notes?: string;
+  is_visible?: boolean;
 }
 
 export class OfferItemModel {
@@ -69,8 +92,12 @@ export class OfferItemModel {
     }
 
     const result = await query(
-      `INSERT INTO offer_items (offer_id, item_id, description, quantity, unit, unit_price, discount_percent, tax_rate, position_order)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+      `INSERT INTO offer_items (
+        offer_id, item_id, description, quantity, unit, unit_price, purchase_price,
+        discount_percent, tax_rate, position_order, item_type, parent_item_id,
+        image_url, notes, is_visible
+      )
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
        RETURNING *`,
       [
         data.offer_id,
@@ -79,9 +106,15 @@ export class OfferItemModel {
         data.quantity,
         data.unit,
         data.unit_price,
+        data.purchase_price || null,
         data.discount_percent || 0,
         data.tax_rate || 19.00,
         positionOrder,
+        data.item_type || 'standard',
+        data.parent_item_id || null,
+        data.image_url || null,
+        data.notes || null,
+        data.is_visible !== false ? 1 : 0,
       ]
     );
     return getRow(result)!;
@@ -94,8 +127,14 @@ export class OfferItemModel {
 
     Object.entries(data).forEach(([key, value]) => {
       if (value !== undefined && key !== 'offer_id') {
-        fields.push(`${key} = $${paramCount++}`);
-        values.push(value);
+        // Handle boolean values for SQLite
+        if (key === 'is_visible' && typeof value === 'boolean') {
+          fields.push(`${key} = $${paramCount++}`);
+          values.push(value ? 1 : 0);
+        } else {
+          fields.push(`${key} = $${paramCount++}`);
+          values.push(value);
+        }
       }
     });
 
@@ -118,6 +157,11 @@ export class OfferItemModel {
   }
 
   static calculateItemTotal(item: OfferItem): number {
+    // Optional und Alternative Positionen werden nicht berechnet
+    if (item.item_type === 'optional' || item.item_type === 'alternative' || 
+        item.item_type === 'header' || item.item_type === 'text') {
+      return 0;
+    }
     const subtotal = item.quantity * item.unit_price;
     const discount = item.discount_percent ? (subtotal * item.discount_percent / 100) : 0;
     return subtotal - discount;
@@ -127,7 +171,38 @@ export class OfferItemModel {
     const total = this.calculateItemTotal(item);
     return total * (1 + item.tax_rate / 100);
   }
+
+  // Berechnet die Marge für einen Artikel
+  static calculateItemMargin(item: OfferItem): { marginAmount: number; marginPercent: number } {
+    if (!item.purchase_price || item.purchase_price === 0) {
+      return { marginAmount: 0, marginPercent: 0 };
+    }
+    const sellPrice = item.unit_price;
+    const marginAmount = sellPrice - item.purchase_price;
+    const marginPercent = (marginAmount / item.purchase_price) * 100;
+    return { marginAmount, marginPercent };
+  }
+
+  // Berechnet den Rohertrag für eine Position
+  static calculateItemProfit(item: OfferItem): number {
+    if (!item.purchase_price || item.item_type !== 'standard') {
+      return 0;
+    }
+    const total = this.calculateItemTotal(item);
+    const purchaseTotal = item.quantity * item.purchase_price;
+    return total - purchaseTotal;
+  }
 }
+
+
+
+
+
+
+
+
+
+
 
 
 

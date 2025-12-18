@@ -48,23 +48,40 @@ export class AuthController {
 
       // Fetch user from database
       const { UserModel } = await import('../models/User');
+      const { RoleModel } = await import('../models/Role');
+      const { getRolePermissions } = await import('../auth/roles');
+      const { resolveUserAttributes } = await import('../auth/attributes');
+
       const user = await UserModel.findById(userId);
 
       if (!user) {
         return res.status(404).json({ error: 'User not found' });
       }
 
+      const role = await RoleModel.findById(user.role_id);
+      const customPermissions = role?.permissions ?? [];
+      const derivedPermissions = getRolePermissions(role?.name ?? 'employee');
+      const permissions = Array.from(new Set([...customPermissions, ...derivedPermissions]));
+      const attributes = await resolveUserAttributes(user.id);
+
       res.json({
         id: user.id,
         email: user.email,
         first_name: user.first_name,
         last_name: user.last_name,
+        role: role?.name ?? 'employee',
+        permissions,
+        attributes,
       });
     } catch (error: any) {
       next(error);
     }
   }
 }
+
+
+
+
 
 
 

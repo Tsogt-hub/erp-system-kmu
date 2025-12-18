@@ -1,6 +1,8 @@
 import { query } from '../config/database';
 import { getRows, getRow } from '../utils/fix-models';
 
+export type OfferStatus = 'draft' | 'finalized' | 'sent' | 'accepted' | 'rejected';
+
 export interface Offer {
   id: number;
   offer_number: string;
@@ -8,12 +10,16 @@ export interface Offer {
   customer_id?: number;
   amount: number;
   tax_rate: number;
-  status: string;
+  status: OfferStatus;
   valid_until?: Date;
   notes?: string;
+  intro_text?: string;
+  footer_text?: string;
+  payment_terms?: string;
   created_by: number;
   created_at: Date;
   updated_at: Date;
+  finalized_at?: Date;
   customer_name?: string;
   project_name?: string;
   created_user_name?: string;
@@ -25,9 +31,12 @@ export interface CreateOfferData {
   customer_id?: number;
   amount: number;
   tax_rate?: number;
-  status?: string;
+  status?: OfferStatus;
   valid_until?: Date;
   notes?: string;
+  intro_text?: string;
+  footer_text?: string;
+  payment_terms?: string;
   created_by: number;
 }
 
@@ -74,23 +83,65 @@ export class OfferModel {
     return getRows(result);
   }
 
-  static async generateOfferNumber(): Promise<string> {
-    const year = new Date().getFullYear();
+  static async findByProject(projectId: number): Promise<Offer[]> {
     const result = await query(
-      `SELECT COUNT(*) as count FROM offers WHERE offer_number LIKE $1`,
-      [`ANG-${year}-%`]
+      `SELECT o.*, c.name as customer_name, p.name as project_name,
+              u.first_name || ' ' || u.last_name as created_user_name
+       FROM offers o
+       LEFT JOIN companies c ON o.customer_id = c.id
+       LEFT JOIN projects p ON o.project_id = p.id
+       LEFT JOIN users u ON o.created_by = u.id
+       WHERE o.project_id = $1
+       ORDER BY o.created_at DESC`,
+      [projectId]
+    );
+    return getRows(result);
+  }
+
+  static async generateDraftNumber(): Promise<string> {
+    // Entwürfe bekommen temporäre Nummern
+    return `ENTWURF-${Date.now()}`;
+  }
+
+  static async generateOfferNumber(): Promise<string> {
+    // Offizielle Angebotsnummer nur bei Finalisierung
+    const result = await query(
+      `SELECT MAX(CAST(SUBSTR(offer_number, 5) AS INTEGER)) as max_num 
+       FROM offers 
+       WHERE offer_number LIKE 'ANG-%' AND status != 'draft'`
     );
     const rows = getRows(result);
-    const count = parseInt(rows[0]?.count || '0') + 1;
-    return `ANG-${year}-${count.toString().padStart(4, '0')}`;
+    const nextNum = (parseInt(rows[0]?.max_num || '0') || 0) + 1;
+    return `ANG-${nextNum}`;
+  }
+
+  static async finalize(id: number): Promise<Offer> {
+    // Offizielle Nummer vergeben und Status auf finalized setzen
+    const newNumber = await this.generateOfferNumber();
+    const result = await query(
+      `UPDATE offers 
+       SET offer_number = $1, 
+           status = 'finalized', 
+           finalized_at = CURRENT_TIMESTAMP,
+           updated_at = CURRENT_TIMESTAMP
+       WHERE id = $2 AND status = 'draft'
+       RETURNING *`,
+      [newNumber, id]
+    );
+    const offer = getRow(result);
+    if (!offer) {
+      throw new Error('Angebot nicht gefunden oder bereits finalisiert');
+    }
+    return offer;
   }
 
   static async create(data: CreateOfferData): Promise<Offer> {
-    const offerNumber = data.offer_number || await this.generateOfferNumber();
+    // Für neue Angebote: Entwurfsnummer verwenden
+    const offerNumber = data.offer_number || await this.generateDraftNumber();
     
     const result = await query(
-      `INSERT INTO offers (offer_number, project_id, customer_id, amount, tax_rate, status, valid_until, notes, created_by)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+      `INSERT INTO offers (offer_number, project_id, customer_id, amount, tax_rate, status, valid_until, notes, intro_text, footer_text, payment_terms, created_by)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
        RETURNING *`,
       [
         offerNumber,
@@ -101,6 +152,9 @@ export class OfferModel {
         data.status || 'draft',
         data.valid_until || null,
         data.notes || null,
+        data.intro_text || 'Vielen Dank für Ihr Interesse. Gerne unterbreiten wir Ihnen folgendes Angebot:',
+        data.footer_text || null,
+        data.payment_terms || 'Zahlbar innerhalb von 14 Tagen nach Rechnungserhalt ohne Abzug.',
         data.created_by,
       ]
     );

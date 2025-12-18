@@ -12,27 +12,47 @@ export async function migratePipelineColumns() {
       PRAGMA table_info(projects)
     `);
 
-    const columns = Array.isArray(checkColumns) ? checkColumns : checkColumns.rows;
+    const columns = Array.isArray(checkColumns) ? checkColumns : checkColumns.rows || [];
     const columnNames = columns.map((col: any) => col.name);
+
+    console.log('📋 Existierende Spalten:', columnNames.join(', '));
 
     // Füge project_type hinzu, falls nicht vorhanden
     if (!columnNames.includes('project_type')) {
       console.log('➕ Füge project_type Spalte hinzu...');
-      await query(`
-        ALTER TABLE projects 
-        ADD COLUMN project_type TEXT DEFAULT 'general'
-      `);
-      console.log('✅ project_type Spalte hinzugefügt');
+      try {
+        await query(`
+          ALTER TABLE projects 
+          ADD COLUMN project_type TEXT DEFAULT 'general'
+        `);
+        console.log('✅ project_type Spalte hinzugefügt');
+      } catch (e: any) {
+        if (!e.message?.includes('duplicate column')) {
+          throw e;
+        }
+        console.log('⏭️ project_type existiert bereits');
+      }
+    } else {
+      console.log('✅ project_type existiert bereits');
     }
 
     // Füge pipeline_step hinzu, falls nicht vorhanden
     if (!columnNames.includes('pipeline_step')) {
       console.log('➕ Füge pipeline_step Spalte hinzu...');
-      await query(`
-        ALTER TABLE projects 
-        ADD COLUMN pipeline_step TEXT DEFAULT 'new_contact'
-      `);
-      console.log('✅ pipeline_step Spalte hinzugefügt');
+      try {
+        await query(`
+          ALTER TABLE projects 
+          ADD COLUMN pipeline_step TEXT DEFAULT 'new_contact'
+        `);
+        console.log('✅ pipeline_step Spalte hinzugefügt');
+      } catch (e: any) {
+        if (!e.message?.includes('duplicate column')) {
+          throw e;
+        }
+        console.log('⏭️ pipeline_step existiert bereits');
+      }
+    } else {
+      console.log('✅ pipeline_step existiert bereits');
     }
 
     // Update bestehende Projekte
@@ -112,6 +132,16 @@ if (require.main === module) {
       }
     });
 }
+
+
+
+
+
+
+
+
+
+
 
 
 

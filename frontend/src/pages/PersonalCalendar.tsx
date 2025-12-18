@@ -17,13 +17,17 @@ import {
   InputLabel,
   Select,
   MenuItem,
+  CircularProgress,
+  Alert,
 } from '@mui/material';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import TodayIcon from '@mui/icons-material/Today';
 import AddIcon from '@mui/icons-material/Add';
-import { format, startOfWeek, addDays, addWeeks, startOfMonth, addMonths, isSameDay, isSameMonth } from 'date-fns';
+import DeleteIcon from '@mui/icons-material/Delete';
+import { format, startOfWeek, addDays, addWeeks, startOfMonth, addMonths, isSameDay, isSameMonth, parseISO } from 'date-fns';
 import { de } from 'date-fns/locale';
+import { calendarEventsApi, CalendarEvent as ApiCalendarEvent } from '../services/api/calendarEvents';
 
 interface CalendarEvent {
   id: number;
@@ -38,8 +42,11 @@ export default function PersonalCalendar() {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [view, setView] = useState<'month' | 'week' | 'day'>('month');
   const [events, setEvents] = useState<CalendarEvent[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [eventDialogOpen, setEventDialogOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  const [editingEvent, setEditingEvent] = useState<CalendarEvent | null>(null);
   const [newEvent, setNewEvent] = useState({
     title: '',
     description: '',
@@ -47,6 +54,34 @@ export default function PersonalCalendar() {
     end_time: '',
     type: 'personal' as 'personal' | 'meeting' | 'task',
   });
+
+  // Lade Events beim Mount und bei Datumsänderung
+  useEffect(() => {
+    loadEvents();
+  }, [currentDate]);
+
+  const loadEvents = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const apiEvents = await calendarEventsApi.getAll();
+      // Konvertiere API-Events zu lokalem Format
+      const convertedEvents: CalendarEvent[] = apiEvents.map(e => ({
+        id: e.id,
+        title: e.title,
+        description: e.description,
+        start_time: parseISO(e.start_time),
+        end_time: parseISO(e.end_time),
+        type: (e.resource_type as 'personal' | 'meeting' | 'task') || 'personal',
+      }));
+      setEvents(convertedEvents);
+    } catch (err) {
+      console.error('Error loading events:', err);
+      setError('Fehler beim Laden der Termine');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const weekStart = startOfWeek(currentDate, { weekStartsOn: 1 });
   const monthStart = startOfMonth(currentDate);
@@ -91,27 +126,70 @@ export default function PersonalCalendar() {
     setEventDialogOpen(true);
   };
 
-  const handleCreateEvent = () => {
-    if (!selectedDate || !newEvent.title || !newEvent.start_time) return;
+  const handleCreateEvent = async () => {
+    if (!newEvent.title || !newEvent.start_time) return;
 
-    const event: CalendarEvent = {
-      id: Date.now(),
-      title: newEvent.title,
-      description: newEvent.description,
-      start_time: new Date(newEvent.start_time),
-      end_time: new Date(newEvent.end_time || newEvent.start_time),
-      type: newEvent.type,
-    };
+    try {
+      if (editingEvent) {
+        // Update existing event
+        await calendarEventsApi.update(editingEvent.id, {
+          title: newEvent.title,
+          description: newEvent.description,
+          start_time: newEvent.start_time,
+          end_time: newEvent.end_time || newEvent.start_time,
+          resource_type: newEvent.type,
+          resource_id: 1, // Default resource
+        });
+      } else {
+        // Create new event
+        await calendarEventsApi.create({
+          title: newEvent.title,
+          description: newEvent.description,
+          start_time: newEvent.start_time,
+          end_time: newEvent.end_time || newEvent.start_time,
+          resource_type: newEvent.type,
+          resource_id: 1, // Default resource
+        });
+      }
 
-    setEvents([...events, event]);
-    setEventDialogOpen(false);
+      setEventDialogOpen(false);
+      setEditingEvent(null);
+      setNewEvent({
+        title: '',
+        description: '',
+        start_time: '',
+        end_time: '',
+        type: 'personal',
+      });
+      loadEvents();
+    } catch (err) {
+      console.error('Error saving event:', err);
+      setError('Fehler beim Speichern des Termins');
+    }
+  };
+
+  const handleDeleteEvent = async (id: number) => {
+    if (window.confirm('Möchten Sie diesen Termin wirklich löschen?')) {
+      try {
+        await calendarEventsApi.delete(id);
+        loadEvents();
+      } catch (err) {
+        console.error('Error deleting event:', err);
+        setError('Fehler beim Löschen des Termins');
+      }
+    }
+  };
+
+  const handleEditEvent = (event: CalendarEvent) => {
+    setEditingEvent(event);
     setNewEvent({
-      title: '',
-      description: '',
-      start_time: '',
-      end_time: '',
-      type: 'personal',
+      title: event.title,
+      description: event.description || '',
+      start_time: format(event.start_time, "yyyy-MM-dd'T'HH:mm"),
+      end_time: format(event.end_time, "yyyy-MM-dd'T'HH:mm"),
+      type: event.type,
     });
+    setEventDialogOpen(true);
   };
 
   const getEventsForDate = (date: Date) => {
@@ -264,8 +342,22 @@ export default function PersonalCalendar() {
     );
   };
 
+  if (loading) {
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '400px' }}>
+        <CircularProgress />
+      </Box>
+    );
+  }
+
   return (
     <Box>
+      {error && (
+        <Alert severity="error" onClose={() => setError(null)} sx={{ mb: 2 }}>
+          {error}
+        </Alert>
+      )}
+
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
         <Typography variant="h4">Persönlicher Kalender</Typography>
         <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
@@ -286,7 +378,11 @@ export default function PersonalCalendar() {
           <Button variant="outlined" endIcon={<ChevronRightIcon />} onClick={handleNext}>
             Vor
           </Button>
-          <Button variant="contained" startIcon={<AddIcon />} onClick={() => setEventDialogOpen(true)}>
+          <Button variant="contained" startIcon={<AddIcon />} onClick={() => {
+            setEditingEvent(null);
+            setNewEvent({ title: '', description: '', start_time: '', end_time: '', type: 'personal' });
+            setEventDialogOpen(true);
+          }}>
             Neuer Termin
           </Button>
         </Box>
@@ -326,8 +422,8 @@ export default function PersonalCalendar() {
         )}
       </Paper>
 
-      <Dialog open={eventDialogOpen} onClose={() => setEventDialogOpen(false)} maxWidth="sm" fullWidth>
-        <DialogTitle>Neuer Termin</DialogTitle>
+      <Dialog open={eventDialogOpen} onClose={() => { setEventDialogOpen(false); setEditingEvent(null); }} maxWidth="sm" fullWidth>
+        <DialogTitle>{editingEvent ? 'Termin bearbeiten' : 'Neuer Termin'}</DialogTitle>
         <DialogContent>
           <TextField
             fullWidth
@@ -379,15 +475,38 @@ export default function PersonalCalendar() {
           />
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setEventDialogOpen(false)}>Abbrechen</Button>
+          {editingEvent && (
+            <Button 
+              color="error" 
+              onClick={() => {
+                handleDeleteEvent(editingEvent.id);
+                setEventDialogOpen(false);
+                setEditingEvent(null);
+              }}
+              sx={{ mr: 'auto' }}
+            >
+              Löschen
+            </Button>
+          )}
+          <Button onClick={() => { setEventDialogOpen(false); setEditingEvent(null); }}>Abbrechen</Button>
           <Button variant="contained" onClick={handleCreateEvent} disabled={!newEvent.title || !newEvent.start_time}>
-            Erstellen
+            {editingEvent ? 'Speichern' : 'Erstellen'}
           </Button>
         </DialogActions>
       </Dialog>
     </Box>
   );
 }
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -1,6 +1,47 @@
 import { query } from '../config/database';
 import { getRows, getRow } from '../utils/fix-models';
 
+// Lead-Quellen wie in Hero
+export const LEAD_SOURCES = [
+  'E-Mail',
+  'Persönlicher Kontakt',
+  'Messe',
+  'Social Media',
+  'Online-Portal',
+  'Telefon',
+  'Eigene Webseite',
+  'Empfehlung',
+  'Bestandskunde',
+  'Außenwerbung',
+  'Netzwerk',
+  'Interessent',
+  'Flyer / Prospekt',
+  'Fahrzeugwerbung',
+  'Sonstige',
+];
+
+// Erreichbarkeit wie in Hero
+export const REACHABILITY_OPTIONS = [
+  'Vormittags',
+  'Nachmittags',
+  'Abends',
+  'Ganztags',
+  'Nur am Wochenende',
+  'ausschließlich per E-Mail',
+  'Sonstige',
+];
+
+// Anrede-Optionen wie in Hero
+export const SALUTATION_OPTIONS = [
+  'Herr',
+  'Frau',
+  'Familie',
+  'Eheleute',
+  'Dr.',
+  'Prof.',
+  'Prof. Dr.',
+];
+
 export interface Contact {
   id: number;
   company_id?: number;
@@ -17,7 +58,17 @@ export interface Contact {
   customer_number?: string;
   address?: string;
   postal_code?: string;
+  city?: string;
+  country?: string;
   availability?: string;
+  // Neue Hero-Felder
+  salutation?: string;
+  lead_source?: string;
+  website?: string;
+  fax?: string;
+  birthday?: string;
+  is_invoice_recipient?: boolean;
+  additional_salutation?: string;
   created_at: Date;
   updated_at: Date;
   company_name?: string;
@@ -38,7 +89,17 @@ export interface CreateContactData {
   customer_number?: string;
   address?: string;
   postal_code?: string;
+  city?: string;
+  country?: string;
   availability?: string;
+  // Neue Hero-Felder
+  salutation?: string;
+  lead_source?: string;
+  website?: string;
+  fax?: string;
+  birthday?: string;
+  is_invoice_recipient?: boolean;
+  additional_salutation?: string;
 }
 
 export class ContactModel {
@@ -112,8 +173,12 @@ export class ContactModel {
 
   static async create(data: CreateContactData): Promise<Contact> {
     const result = await query(
-      `INSERT INTO contacts (company_id, first_name, last_name, email, phone, mobile, position, notes, category, type, customer_number, address, postal_code, availability)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
+      `INSERT INTO contacts (
+        company_id, first_name, last_name, email, phone, mobile, position, notes, 
+        category, type, customer_number, address, postal_code, city, country, availability,
+        salutation, lead_source, website, fax, birthday, is_invoice_recipient, additional_salutation
+      )
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23)
        RETURNING *`,
       [
         data.company_id || null,
@@ -124,12 +189,21 @@ export class ContactModel {
         data.mobile || null,
         data.position || null,
         data.notes || null,
-        (data as any).category || 'contact',
-        (data as any).type || 'person',
+        data.category || 'contact',
+        data.type || 'person',
         data.customer_number || null,
         data.address || null,
         data.postal_code || null,
+        data.city || null,
+        data.country || null,
         data.availability || null,
+        data.salutation || null,
+        data.lead_source || null,
+        data.website || null,
+        data.fax || null,
+        data.birthday || null,
+        data.is_invoice_recipient ? 1 : 0,
+        data.additional_salutation || null,
       ]
     );
     return getRow(result)!;

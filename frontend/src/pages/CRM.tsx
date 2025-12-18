@@ -32,7 +32,7 @@ import ArchiveIcon from '@mui/icons-material/Archive';
 import UnarchiveIcon from '@mui/icons-material/Unarchive';
 import SearchIcon from '@mui/icons-material/Search';
 import ClearIcon from '@mui/icons-material/Clear';
-import { crmApi, Company, Contact, CreateCompanyData, CreateContactData } from '../services/api/crm';
+import { crmApi, Company, Contact, CreateCompanyData, CreateContactData, LEAD_SOURCES, REACHABILITY_OPTIONS, SALUTATION_OPTIONS } from '../services/api/crm';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -57,8 +57,9 @@ export default function CRM() {
   const [loading, setLoading] = useState(true);
   const [companyDialogOpen, setCompanyDialogOpen] = useState(false);
   const [contactDialogOpen, setContactDialogOpen] = useState(false);
+  const [editingCompany, setEditingCompany] = useState<Company | null>(null);
   const [companyForm, setCompanyForm] = useState<CreateCompanyData>({ name: '' });
-  const [contactForm, setContactForm] = useState<CreateContactData & { category?: string; type?: string }>({
+  const [contactForm, setContactForm] = useState<CreateContactData & { category?: string; type?: string; id?: number }>({
     first_name: '',
     last_name: '',
     category: 'contact',
@@ -66,13 +67,96 @@ export default function CRM() {
     customer_number: '',
     address: '',
     postal_code: '',
+    city: '',
+    country: 'Deutschland',
     availability: '',
+    salutation: '',
+    lead_source: '',
+    website: '',
+    fax: '',
+    birthday: '',
+    is_invoice_recipient: false,
+    additional_salutation: '',
   });
   const [contactFilters, setContactFilters] = useState({
     category: '',
     type: '',
     showArchived: false,
   });
+  
+  // Erweiterte Filter für Kontakte-Tabelle
+  const [contactTableFilters, setContactTableFilters] = useState({
+    type: '',
+    customerNumber: '',
+    companyName: '',
+    firstName: '',
+    lastName: '',
+    email: '',
+    category: '',
+    location: '',
+    leadSource: '',
+  });
+  
+  // Erweiterte Filter für Unternehmen-Tabelle
+  const [companyTableFilters, setCompanyTableFilters] = useState({
+    customerNumber: '',
+    companyName: '',
+    email: '',
+    category: '',
+    location: '',
+  });
+  
+  // Gefilterte Kontakte
+  const filteredContacts = contacts.filter(contact => {
+    if (contactTableFilters.type && contact.type !== contactTableFilters.type) return false;
+    if (contactTableFilters.customerNumber && !contact.customer_number?.toLowerCase().includes(contactTableFilters.customerNumber.toLowerCase())) return false;
+    if (contactTableFilters.companyName && !contact.company_name?.toLowerCase().includes(contactTableFilters.companyName.toLowerCase())) return false;
+    if (contactTableFilters.firstName && !contact.first_name?.toLowerCase().includes(contactTableFilters.firstName.toLowerCase())) return false;
+    if (contactTableFilters.lastName && !contact.last_name?.toLowerCase().includes(contactTableFilters.lastName.toLowerCase())) return false;
+    if (contactTableFilters.email && !contact.email?.toLowerCase().includes(contactTableFilters.email.toLowerCase())) return false;
+    if (contactTableFilters.category && contact.category !== contactTableFilters.category) return false;
+    if (contactTableFilters.leadSource && contact.lead_source !== contactTableFilters.leadSource) return false;
+    if (contactTableFilters.location) {
+      const locationStr = `${contact.address || ''} ${contact.postal_code || ''}`.toLowerCase();
+      if (!locationStr.includes(contactTableFilters.location.toLowerCase())) return false;
+    }
+    return true;
+  });
+  
+  // Gefilterte Unternehmen
+  const filteredCompanies = companies.filter(company => {
+    if (companyTableFilters.customerNumber && !company.customer_number?.toLowerCase().includes(companyTableFilters.customerNumber.toLowerCase())) return false;
+    if (companyTableFilters.companyName && !company.name?.toLowerCase().includes(companyTableFilters.companyName.toLowerCase())) return false;
+    if (companyTableFilters.email && !company.email?.toLowerCase().includes(companyTableFilters.email.toLowerCase())) return false;
+    if (companyTableFilters.category && company.category !== companyTableFilters.category) return false;
+    if (companyTableFilters.location && !company.city?.toLowerCase().includes(companyTableFilters.location.toLowerCase())) return false;
+    return true;
+  });
+  
+  // Reset Filter Funktionen
+  const resetContactFilters = () => {
+    setContactTableFilters({
+      type: '',
+      customerNumber: '',
+      companyName: '',
+      firstName: '',
+      lastName: '',
+      email: '',
+      category: '',
+      location: '',
+      leadSource: '',
+    });
+  };
+  
+  const resetCompanyFilters = () => {
+    setCompanyTableFilters({
+      customerNumber: '',
+      companyName: '',
+      email: '',
+      category: '',
+      location: '',
+    });
+  };
 
   useEffect(() => {
     loadData();
@@ -111,27 +195,44 @@ export default function CRM() {
 
   const handleCompanyCreate = async () => {
     try {
-      await crmApi.createCompany(companyForm);
+      if (editingCompany) {
+        await crmApi.updateCompany(editingCompany.id, companyForm);
+      } else {
+        await crmApi.createCompany(companyForm);
+      }
       setCompanyDialogOpen(false);
+      setEditingCompany(null);
       setCompanyForm({ name: '' });
       loadData();
     } catch (error) {
-      console.error('Error creating company:', error);
+      console.error('Error saving company:', error);
     }
+  };
+
+  const handleEditCompany = (company: Company) => {
+    setEditingCompany(company);
+    setCompanyForm({
+      name: company.name,
+      email: company.email,
+      phone: company.phone,
+      city: company.city,
+      category: company.category,
+      customer_number: company.customer_number,
+    });
+    setCompanyDialogOpen(true);
   };
 
   const handleContactCreate = async () => {
     try {
       if (contactForm.first_name && contactForm.last_name) {
-        // Edit existing contact
-        const contactId = (contactForm as any).id;
-        if (contactId) {
-          await crmApi.updateContact(contactId, contactForm);
+        const { id, ...dataToSave } = contactForm;
+        if (id) {
+          await crmApi.updateContact(id, dataToSave);
         } else {
-          await crmApi.createContact(contactForm);
+          await crmApi.createContact(dataToSave);
         }
         setContactDialogOpen(false);
-        setContactForm({ first_name: '', last_name: '', category: 'contact', type: 'person', customer_number: '', address: '', postal_code: '', availability: '' });
+        resetContactForm();
         loadData();
       }
     } catch (error) {
@@ -139,12 +240,54 @@ export default function CRM() {
     }
   };
 
+  const resetContactForm = () => {
+    setContactForm({ 
+      first_name: '', 
+      last_name: '', 
+      category: 'contact', 
+      type: 'person',
+      customer_number: '',
+      address: '',
+      postal_code: '',
+      city: '',
+      country: 'Deutschland',
+      availability: '',
+      salutation: '',
+      lead_source: '',
+      website: '',
+      fax: '',
+      birthday: '',
+      is_invoice_recipient: false,
+      additional_salutation: '',
+    });
+  };
+
   const handleEditContact = (contact: Contact) => {
     setContactForm({
-      ...contact,
+      id: contact.id,
+      first_name: contact.first_name,
+      last_name: contact.last_name,
+      email: contact.email || '',
+      phone: contact.phone || '',
+      mobile: contact.mobile || '',
+      position: contact.position || '',
+      notes: contact.notes || '',
       category: contact.category || 'contact',
       type: contact.type || 'person',
-    } as any);
+      customer_number: contact.customer_number || '',
+      address: contact.address || '',
+      postal_code: contact.postal_code || '',
+      city: contact.city || '',
+      country: contact.country || 'Deutschland',
+      availability: contact.availability || '',
+      salutation: contact.salutation || '',
+      lead_source: contact.lead_source || '',
+      website: contact.website || '',
+      fax: contact.fax || '',
+      birthday: contact.birthday || '',
+      is_invoice_recipient: contact.is_invoice_recipient || false,
+      additional_salutation: contact.additional_salutation || '',
+    });
     setContactDialogOpen(true);
   };
 
@@ -224,15 +367,16 @@ export default function CRM() {
           <Table sx={{ tableLayout: 'fixed' }}>
             <TableHead>
               <TableRow>
-                <TableCell sx={{ width: '8%', fontWeight: 600 }}>Typ</TableCell>
-                <TableCell sx={{ width: '10%', fontWeight: 600 }}>Kundennummer</TableCell>
-                <TableCell sx={{ width: '12%', fontWeight: 600 }}>Firmenname</TableCell>
-                <TableCell sx={{ width: '10%', fontWeight: 600 }}>Vorname</TableCell>
-                <TableCell sx={{ width: '10%', fontWeight: 600 }}>Nachname</TableCell>
+                <TableCell sx={{ width: '6%', fontWeight: 600 }}>Typ</TableCell>
+                <TableCell sx={{ width: '8%', fontWeight: 600 }}>Kundennr.</TableCell>
+                <TableCell sx={{ width: '10%', fontWeight: 600 }}>Firmenname</TableCell>
+                <TableCell sx={{ width: '9%', fontWeight: 600 }}>Vorname</TableCell>
+                <TableCell sx={{ width: '9%', fontWeight: 600 }}>Nachname</TableCell>
                 <TableCell sx={{ width: '12%', fontWeight: 600 }}>E-Mail</TableCell>
-                <TableCell sx={{ width: '10%', fontWeight: 600 }}>Kategorie</TableCell>
-                <TableCell sx={{ width: '12%', fontWeight: 600 }}>Ort</TableCell>
-                <TableCell sx={{ width: '16%', fontWeight: 600 }}>Aktionen</TableCell>
+                <TableCell sx={{ width: '8%', fontWeight: 600 }}>Kategorie</TableCell>
+                <TableCell sx={{ width: '10%', fontWeight: 600 }}>Lead-Quelle</TableCell>
+                <TableCell sx={{ width: '10%', fontWeight: 600 }}>Ort</TableCell>
+                <TableCell sx={{ width: '18%', fontWeight: 600 }}>Aktionen</TableCell>
               </TableRow>
               {/* Filter-Zeile wie bei Hero ERP */}
               <TableRow sx={{ 
@@ -246,6 +390,8 @@ export default function CRM() {
                   <FormControl size="small" fullWidth>
                     <Select
                       displayEmpty
+                      value={contactTableFilters.type}
+                      onChange={(e) => setContactTableFilters({ ...contactTableFilters, type: e.target.value })}
                       sx={{ 
                         backgroundColor: '#FFFFFF',
                         fontSize: '0.875rem',
@@ -264,6 +410,8 @@ export default function CRM() {
                     placeholder="Kundennr."
                     fullWidth
                     variant="outlined"
+                    value={contactTableFilters.customerNumber}
+                    onChange={(e) => setContactTableFilters({ ...contactTableFilters, customerNumber: e.target.value })}
                     sx={{ 
                       '& .MuiOutlinedInput-root': { 
                         backgroundColor: '#FFFFFF',
@@ -279,6 +427,8 @@ export default function CRM() {
                     placeholder="Firma"
                     fullWidth
                     variant="outlined"
+                    value={contactTableFilters.companyName}
+                    onChange={(e) => setContactTableFilters({ ...contactTableFilters, companyName: e.target.value })}
                     sx={{ 
                       '& .MuiOutlinedInput-root': { 
                         backgroundColor: '#FFFFFF',
@@ -294,6 +444,8 @@ export default function CRM() {
                     placeholder="Vorname"
                     fullWidth
                     variant="outlined"
+                    value={contactTableFilters.firstName}
+                    onChange={(e) => setContactTableFilters({ ...contactTableFilters, firstName: e.target.value })}
                     sx={{ 
                       '& .MuiOutlinedInput-root': { 
                         backgroundColor: '#FFFFFF',
@@ -309,6 +461,8 @@ export default function CRM() {
                     placeholder="Nachname"
                     fullWidth
                     variant="outlined"
+                    value={contactTableFilters.lastName}
+                    onChange={(e) => setContactTableFilters({ ...contactTableFilters, lastName: e.target.value })}
                     sx={{ 
                       '& .MuiOutlinedInput-root': { 
                         backgroundColor: '#FFFFFF',
@@ -324,6 +478,8 @@ export default function CRM() {
                     placeholder="E-Mail"
                     fullWidth
                     variant="outlined"
+                    value={contactTableFilters.email}
+                    onChange={(e) => setContactTableFilters({ ...contactTableFilters, email: e.target.value })}
                     sx={{ 
                       '& .MuiOutlinedInput-root': { 
                         backgroundColor: '#FFFFFF',
@@ -337,6 +493,8 @@ export default function CRM() {
                   <FormControl size="small" fullWidth>
                     <Select
                       displayEmpty
+                      value={contactTableFilters.category}
+                      onChange={(e) => setContactTableFilters({ ...contactTableFilters, category: e.target.value })}
                       sx={{ 
                         backgroundColor: '#FFFFFF',
                         fontSize: '0.875rem',
@@ -352,11 +510,32 @@ export default function CRM() {
                   </FormControl>
                 </TableCell>
                 <TableCell>
+                  <FormControl size="small" fullWidth>
+                    <Select
+                      displayEmpty
+                      value={contactTableFilters.leadSource}
+                      onChange={(e) => setContactTableFilters({ ...contactTableFilters, leadSource: e.target.value })}
+                      sx={{ 
+                        backgroundColor: '#FFFFFF',
+                        fontSize: '0.75rem',
+                        '& .MuiSelect-select': { py: 0.75 }
+                      }}
+                    >
+                      <MenuItem value="">Alle</MenuItem>
+                      {LEAD_SOURCES.map(source => (
+                        <MenuItem key={source} value={source}>{source}</MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                </TableCell>
+                <TableCell>
                   <TextField
                     size="small"
                     placeholder="Ort"
                     fullWidth
                     variant="outlined"
+                    value={contactTableFilters.location}
+                    onChange={(e) => setContactTableFilters({ ...contactTableFilters, location: e.target.value })}
                     sx={{ 
                       '& .MuiOutlinedInput-root': { 
                         backgroundColor: '#FFFFFF',
@@ -383,9 +562,7 @@ export default function CRM() {
                     </Button>
                     <IconButton
                       size="small"
-                      onClick={() => {
-                        // Reset filters
-                      }}
+                      onClick={resetContactFilters}
                       sx={{ padding: '4px' }}
                     >
                       <ClearIcon sx={{ fontSize: '1.1rem' }} />
@@ -397,15 +574,20 @@ export default function CRM() {
             <TableBody>
               {loading ? (
                 <TableRow>
-                  <TableCell colSpan={9} align="center">Lädt...</TableCell>
+                  <TableCell colSpan={10} align="center">Lädt...</TableCell>
                 </TableRow>
-              ) : contacts.length === 0 ? (
+              ) : filteredContacts.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={9} align="center">Keine Kontakte gefunden</TableCell>
+                  <TableCell colSpan={10} align="center">Keine Kontakte gefunden</TableCell>
                 </TableRow>
               ) : (
-                contacts.map((contact) => (
-                  <TableRow key={contact.id} hover sx={{ cursor: 'pointer' }}>
+                filteredContacts.map((contact) => (
+                  <TableRow 
+                    key={contact.id} 
+                    hover 
+                    sx={{ cursor: 'pointer' }}
+                    onClick={() => navigate(`/crm/contacts/${contact.id}`)}
+                  >
                     <TableCell>
                       <Chip
                         label={contact.type === 'company' ? 'Firma' : 'Person'}
@@ -417,7 +599,7 @@ export default function CRM() {
                     <TableCell>{contact.company_name || '-'}</TableCell>
                     <TableCell>{contact.first_name || '-'}</TableCell>
                     <TableCell>{contact.last_name || '-'}</TableCell>
-                    <TableCell>{contact.email || '-'}</TableCell>
+                    <TableCell sx={{ fontSize: '0.8rem' }}>{contact.email || '-'}</TableCell>
                     <TableCell>
                       <Chip
                         label={
@@ -431,9 +613,20 @@ export default function CRM() {
                       />
                     </TableCell>
                     <TableCell>
-                      {contact.address && contact.postal_code 
-                        ? `${contact.address}, ${contact.postal_code}` 
-                        : contact.address || contact.postal_code || '-'}
+                      {contact.lead_source ? (
+                        <Chip
+                          label={contact.lead_source}
+                          size="small"
+                          color="primary"
+                          variant="outlined"
+                          sx={{ fontSize: '0.7rem' }}
+                        />
+                      ) : '-'}
+                    </TableCell>
+                    <TableCell>
+                      {contact.city || contact.postal_code 
+                        ? `${contact.postal_code || ''} ${contact.city || ''}`.trim()
+                        : '-'}
                     </TableCell>
                     <TableCell onClick={(e) => e.stopPropagation()}>
                       <IconButton
@@ -505,13 +698,14 @@ export default function CRM() {
                   <FormControl size="small" fullWidth>
                     <Select
                       displayEmpty
+                      value="company"
+                      disabled
                       sx={{ 
                         backgroundColor: '#FFFFFF',
                         fontSize: '0.875rem',
                         '& .MuiSelect-select': { py: 0.75 }
                       }}
                     >
-                      <MenuItem value="">Alle</MenuItem>
                       <MenuItem value="company">Firma</MenuItem>
                     </Select>
                   </FormControl>
@@ -522,6 +716,8 @@ export default function CRM() {
                     placeholder="Kundennr."
                     fullWidth
                     variant="outlined"
+                    value={companyTableFilters.customerNumber}
+                    onChange={(e) => setCompanyTableFilters({ ...companyTableFilters, customerNumber: e.target.value })}
                     sx={{ 
                       '& .MuiOutlinedInput-root': { 
                         backgroundColor: '#FFFFFF',
@@ -537,6 +733,8 @@ export default function CRM() {
                     placeholder="Firma"
                     fullWidth
                     variant="outlined"
+                    value={companyTableFilters.companyName}
+                    onChange={(e) => setCompanyTableFilters({ ...companyTableFilters, companyName: e.target.value })}
                     sx={{ 
                       '& .MuiOutlinedInput-root': { 
                         backgroundColor: '#FFFFFF',
@@ -547,34 +745,10 @@ export default function CRM() {
                   />
                 </TableCell>
                 <TableCell>
-                  <TextField
-                    size="small"
-                    placeholder="Vorname"
-                    fullWidth
-                    variant="outlined"
-                    sx={{ 
-                      '& .MuiOutlinedInput-root': { 
-                        backgroundColor: '#FFFFFF',
-                        fontSize: '0.875rem',
-                      },
-                      '& .MuiOutlinedInput-input': { py: 0.75 }
-                    }}
-                  />
+                  {/* Vorname nicht relevant für Unternehmen */}
                 </TableCell>
                 <TableCell>
-                  <TextField
-                    size="small"
-                    placeholder="Nachname"
-                    fullWidth
-                    variant="outlined"
-                    sx={{ 
-                      '& .MuiOutlinedInput-root': { 
-                        backgroundColor: '#FFFFFF',
-                        fontSize: '0.875rem',
-                      },
-                      '& .MuiOutlinedInput-input': { py: 0.75 }
-                    }}
-                  />
+                  {/* Nachname nicht relevant für Unternehmen */}
                 </TableCell>
                 <TableCell>
                   <TextField
@@ -582,6 +756,8 @@ export default function CRM() {
                     placeholder="E-Mail"
                     fullWidth
                     variant="outlined"
+                    value={companyTableFilters.email}
+                    onChange={(e) => setCompanyTableFilters({ ...companyTableFilters, email: e.target.value })}
                     sx={{ 
                       '& .MuiOutlinedInput-root': { 
                         backgroundColor: '#FFFFFF',
@@ -595,6 +771,8 @@ export default function CRM() {
                   <FormControl size="small" fullWidth>
                     <Select
                       displayEmpty
+                      value={companyTableFilters.category}
+                      onChange={(e) => setCompanyTableFilters({ ...companyTableFilters, category: e.target.value })}
                       sx={{ 
                         backgroundColor: '#FFFFFF',
                         fontSize: '0.875rem',
@@ -614,6 +792,8 @@ export default function CRM() {
                     placeholder="Ort"
                     fullWidth
                     variant="outlined"
+                    value={companyTableFilters.location}
+                    onChange={(e) => setCompanyTableFilters({ ...companyTableFilters, location: e.target.value })}
                     sx={{ 
                       '& .MuiOutlinedInput-root': { 
                         backgroundColor: '#FFFFFF',
@@ -640,9 +820,7 @@ export default function CRM() {
                     </Button>
                     <IconButton
                       size="small"
-                      onClick={() => {
-                        // Reset filters
-                      }}
+                      onClick={resetCompanyFilters}
                       sx={{ padding: '4px' }}
                     >
                       <ClearIcon sx={{ fontSize: '1.1rem' }} />
@@ -656,12 +834,12 @@ export default function CRM() {
                 <TableRow>
                   <TableCell colSpan={9} align="center">Lädt...</TableCell>
                 </TableRow>
-              ) : companies.length === 0 ? (
+              ) : filteredCompanies.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={9} align="center">Keine Unternehmen gefunden</TableCell>
                 </TableRow>
               ) : (
-                companies.map((company) => (
+                filteredCompanies.map((company) => (
                   <TableRow key={company.id} hover sx={{ cursor: 'pointer' }}>
                     <TableCell>
                       <Chip label="Firma" size="small" color="primary" />
@@ -680,7 +858,7 @@ export default function CRM() {
                     </TableCell>
                     <TableCell>{company.city || '-'}</TableCell>
                     <TableCell onClick={(e) => e.stopPropagation()}>
-                      <IconButton size="small" color="primary">
+                      <IconButton size="small" color="primary" onClick={() => handleEditCompany(company)}>
                         <EditIcon />
                       </IconButton>
                       <IconButton size="small" color="error" onClick={() => handleDelete('company', company.id)}>
@@ -696,8 +874,8 @@ export default function CRM() {
       </TabPanel>
 
       {/* Company Dialog */}
-      <Dialog open={companyDialogOpen} onClose={() => setCompanyDialogOpen(false)} maxWidth="sm" fullWidth>
-        <DialogTitle>Neues Unternehmen erstellen</DialogTitle>
+      <Dialog open={companyDialogOpen} onClose={() => { setCompanyDialogOpen(false); setEditingCompany(null); }} maxWidth="sm" fullWidth>
+        <DialogTitle>{editingCompany ? 'Unternehmen bearbeiten' : 'Neues Unternehmen erstellen'}</DialogTitle>
         <DialogContent>
           <TextField
             fullWidth
@@ -731,120 +909,265 @@ export default function CRM() {
           />
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setCompanyDialogOpen(false)}>Abbrechen</Button>
+          <Button onClick={() => { setCompanyDialogOpen(false); setEditingCompany(null); }}>Abbrechen</Button>
           <Button onClick={handleCompanyCreate} variant="contained" disabled={!companyForm.name}>
-            Erstellen
+            {editingCompany ? 'Speichern' : 'Erstellen'}
           </Button>
         </DialogActions>
       </Dialog>
 
-      {/* Contact Dialog */}
-      <Dialog open={contactDialogOpen} onClose={() => setContactDialogOpen(false)} maxWidth="sm" fullWidth>
-        <DialogTitle>{(contactForm as any).id ? 'Kontakt bearbeiten' : 'Neuen Kontakt erstellen'}</DialogTitle>
-        <DialogContent>
+      {/* Contact Dialog - Hero-Style mit allen Feldern */}
+      <Dialog open={contactDialogOpen} onClose={() => setContactDialogOpen(false)} maxWidth="md" fullWidth>
+        <DialogTitle sx={{ borderBottom: '1px solid rgba(0,0,0,0.1)', pb: 2 }}>
+          {contactForm.id ? 'Kontakt bearbeiten' : 'Neuen Kontakt erstellen'}
+        </DialogTitle>
+        <DialogContent sx={{ pt: 3 }}>
           {/* Typ ist immer 'person' für Kontakte */}
           <input type="hidden" value="person" />
-          <FormControl fullWidth margin="normal">
-            <InputLabel>Kategorie</InputLabel>
-            <Select
-              value={contactForm.category || 'contact'}
-              label="Kategorie"
-              onChange={(e) => setContactForm({ ...contactForm, category: e.target.value })}
-            >
-              <MenuItem value="customer">Kunde</MenuItem>
-              <MenuItem value="supplier">Lieferant</MenuItem>
-              <MenuItem value="partner">Partner</MenuItem>
-              <MenuItem value="contact">Ansprechpartner</MenuItem>
-            </Select>
-          </FormControl>
+          
+          {/* Grunddaten */}
+          <Typography variant="subtitle2" sx={{ mb: 2, color: 'primary.main', fontWeight: 600 }}>
+            Grunddaten
+          </Typography>
+          <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2, mb: 3 }}>
+            <FormControl fullWidth size="small">
+              <InputLabel>Kategorie *</InputLabel>
+              <Select
+                value={contactForm.category || 'contact'}
+                label="Kategorie *"
+                onChange={(e) => setContactForm({ ...contactForm, category: e.target.value })}
+              >
+                <MenuItem value="customer">Kunde</MenuItem>
+                <MenuItem value="supplier">Lieferant</MenuItem>
+                <MenuItem value="partner">Partner</MenuItem>
+                <MenuItem value="contact">Ansprechpartner</MenuItem>
+              </Select>
+            </FormControl>
+            <TextField
+              fullWidth
+              size="small"
+              label="Kundennummer"
+              value={contactForm.customer_number || ''}
+              onChange={(e) => setContactForm({ ...contactForm, customer_number: e.target.value })}
+            />
+          </Box>
+          
+          {/* Persönliche Daten */}
+          <Typography variant="subtitle2" sx={{ mb: 2, color: 'primary.main', fontWeight: 600 }}>
+            Persönliche Daten
+          </Typography>
+          <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 2, mb: 3 }}>
+            <FormControl fullWidth size="small">
+              <InputLabel>Anrede</InputLabel>
+              <Select
+                value={contactForm.salutation || ''}
+                label="Anrede"
+                onChange={(e) => setContactForm({ ...contactForm, salutation: e.target.value })}
+              >
+                <MenuItem value="">Keine Angabe</MenuItem>
+                {SALUTATION_OPTIONS.map(opt => (
+                  <MenuItem key={opt} value={opt}>{opt}</MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+            <TextField
+              fullWidth
+              size="small"
+              label="Vorname *"
+              value={contactForm.first_name}
+              onChange={(e) => setContactForm({ ...contactForm, first_name: e.target.value })}
+              required
+            />
+            <TextField
+              fullWidth
+              size="small"
+              label="Nachname *"
+              value={contactForm.last_name}
+              onChange={(e) => setContactForm({ ...contactForm, last_name: e.target.value })}
+              required
+            />
+          </Box>
+          <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2, mb: 3 }}>
+            <TextField
+              fullWidth
+              size="small"
+              label="Zusätzliche Anrede"
+              placeholder="z.B. z.Hd., c/o"
+              value={contactForm.additional_salutation || ''}
+              onChange={(e) => setContactForm({ ...contactForm, additional_salutation: e.target.value })}
+            />
+            <TextField
+              fullWidth
+              size="small"
+              label="Geburtstag"
+              type="date"
+              value={contactForm.birthday || ''}
+              onChange={(e) => setContactForm({ ...contactForm, birthday: e.target.value })}
+              InputLabelProps={{ shrink: true }}
+            />
+          </Box>
           <TextField
             fullWidth
-            label="Kundennummer"
-            value={contactForm.customer_number || ''}
-            onChange={(e) => setContactForm({ ...contactForm, customer_number: e.target.value })}
-            margin="normal"
-          />
-          <TextField
-            fullWidth
-            label="Vorname"
-            value={contactForm.first_name}
-            onChange={(e) => setContactForm({ ...contactForm, first_name: e.target.value })}
-            margin="normal"
-            required
-          />
-          <TextField
-            fullWidth
-            label="Nachname"
-            value={contactForm.last_name}
-            onChange={(e) => setContactForm({ ...contactForm, last_name: e.target.value })}
-            margin="normal"
-            required
-          />
-          <TextField
-            fullWidth
-            label="Straße"
-            value={contactForm.address || ''}
-            onChange={(e) => setContactForm({ ...contactForm, address: e.target.value })}
-            margin="normal"
-          />
-          <TextField
-            fullWidth
-            label="Postleitzahl"
-            value={contactForm.postal_code || ''}
-            onChange={(e) => setContactForm({ ...contactForm, postal_code: e.target.value })}
-            margin="normal"
-          />
-          <FormControl fullWidth margin="normal">
-            <InputLabel>Erreichbarkeit</InputLabel>
-            <Select
-              value={contactForm.availability || ''}
-              label="Erreichbarkeit"
-              onChange={(e) => setContactForm({ ...contactForm, availability: e.target.value })}
-            >
-              <MenuItem value="">Nicht angegeben</MenuItem>
-              <MenuItem value="Vormittags">Vormittags</MenuItem>
-              <MenuItem value="Nachmittags">Nachmittags</MenuItem>
-              <MenuItem value="Abends">Abends</MenuItem>
-              <MenuItem value="Ganztags">Ganztags</MenuItem>
-            </Select>
-          </FormControl>
-          <TextField
-            fullWidth
-            label="E-Mail"
-            value={contactForm.email || ''}
-            onChange={(e) => setContactForm({ ...contactForm, email: e.target.value })}
-            margin="normal"
-            type="email"
-          />
-          <TextField
-            fullWidth
-            label="Telefon"
-            value={contactForm.phone || ''}
-            onChange={(e) => setContactForm({ ...contactForm, phone: e.target.value })}
-            margin="normal"
-          />
-          <TextField
-            fullWidth
-            label="Mobil"
-            value={contactForm.mobile || ''}
-            onChange={(e) => setContactForm({ ...contactForm, mobile: e.target.value })}
-            margin="normal"
-          />
-          <TextField
-            fullWidth
-            label="Position"
+            size="small"
+            label="Position / Funktion"
             value={contactForm.position || ''}
             onChange={(e) => setContactForm({ ...contactForm, position: e.target.value })}
-            margin="normal"
+            sx={{ mb: 3 }}
+          />
+
+          {/* Adresse */}
+          <Typography variant="subtitle2" sx={{ mb: 2, color: 'primary.main', fontWeight: 600 }}>
+            Adresse
+          </Typography>
+          <TextField
+            fullWidth
+            size="small"
+            label="Straße und Hausnummer"
+            value={contactForm.address || ''}
+            onChange={(e) => setContactForm({ ...contactForm, address: e.target.value })}
+            sx={{ mb: 2 }}
+          />
+          <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 2fr 1fr', gap: 2, mb: 3 }}>
+            <TextField
+              fullWidth
+              size="small"
+              label="PLZ"
+              value={contactForm.postal_code || ''}
+              onChange={(e) => setContactForm({ ...contactForm, postal_code: e.target.value })}
+            />
+            <TextField
+              fullWidth
+              size="small"
+              label="Stadt"
+              value={contactForm.city || ''}
+              onChange={(e) => setContactForm({ ...contactForm, city: e.target.value })}
+            />
+            <TextField
+              fullWidth
+              size="small"
+              label="Land"
+              value={contactForm.country || 'Deutschland'}
+              onChange={(e) => setContactForm({ ...contactForm, country: e.target.value })}
+            />
+          </Box>
+
+          {/* Kontaktdaten */}
+          <Typography variant="subtitle2" sx={{ mb: 2, color: 'primary.main', fontWeight: 600 }}>
+            Kontaktdaten
+          </Typography>
+          <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2, mb: 2 }}>
+            <TextField
+              fullWidth
+              size="small"
+              label="E-Mail"
+              type="email"
+              value={contactForm.email || ''}
+              onChange={(e) => setContactForm({ ...contactForm, email: e.target.value })}
+            />
+            <TextField
+              fullWidth
+              size="small"
+              label="Website"
+              value={contactForm.website || ''}
+              onChange={(e) => setContactForm({ ...contactForm, website: e.target.value })}
+            />
+          </Box>
+          <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 2, mb: 3 }}>
+            <TextField
+              fullWidth
+              size="small"
+              label="Telefon"
+              value={contactForm.phone || ''}
+              onChange={(e) => setContactForm({ ...contactForm, phone: e.target.value })}
+            />
+            <TextField
+              fullWidth
+              size="small"
+              label="Mobil"
+              value={contactForm.mobile || ''}
+              onChange={(e) => setContactForm({ ...contactForm, mobile: e.target.value })}
+            />
+            <TextField
+              fullWidth
+              size="small"
+              label="Fax"
+              value={contactForm.fax || ''}
+              onChange={(e) => setContactForm({ ...contactForm, fax: e.target.value })}
+            />
+          </Box>
+
+          {/* Lead-Informationen */}
+          <Typography variant="subtitle2" sx={{ mb: 2, color: 'primary.main', fontWeight: 600 }}>
+            Lead-Informationen
+          </Typography>
+          <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2, mb: 3 }}>
+            <FormControl fullWidth size="small">
+              <InputLabel>Lead-Quelle</InputLabel>
+              <Select
+                value={contactForm.lead_source || ''}
+                label="Lead-Quelle"
+                onChange={(e) => setContactForm({ ...contactForm, lead_source: e.target.value })}
+              >
+                <MenuItem value="">Keine Angabe</MenuItem>
+                {LEAD_SOURCES.map(source => (
+                  <MenuItem key={source} value={source}>{source}</MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+            <FormControl fullWidth size="small">
+              <InputLabel>Erreichbarkeit</InputLabel>
+              <Select
+                value={contactForm.availability || ''}
+                label="Erreichbarkeit"
+                onChange={(e) => setContactForm({ ...contactForm, availability: e.target.value })}
+              >
+                <MenuItem value="">Keine Angabe</MenuItem>
+                {REACHABILITY_OPTIONS.map(opt => (
+                  <MenuItem key={opt} value={opt}>{opt}</MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </Box>
+
+          {/* Notizen */}
+          <Typography variant="subtitle2" sx={{ mb: 2, color: 'primary.main', fontWeight: 600 }}>
+            Notizen
+          </Typography>
+          <TextField
+            fullWidth
+            size="small"
+            label="Notizen"
+            multiline
+            rows={3}
+            value={contactForm.notes || ''}
+            onChange={(e) => setContactForm({ ...contactForm, notes: e.target.value })}
           />
         </DialogContent>
-        <DialogActions>
+        <DialogActions sx={{ borderTop: '1px solid rgba(0,0,0,0.1)', p: 2 }}>
           <Button onClick={() => {
             setContactDialogOpen(false);
-            setContactForm({ first_name: '', last_name: '', category: 'contact', type: 'person' });
+            setContactForm({ 
+              first_name: '', 
+              last_name: '', 
+              category: 'contact', 
+              type: 'person',
+              customer_number: '',
+              address: '',
+              postal_code: '',
+              city: '',
+              country: 'Deutschland',
+              availability: '',
+              salutation: '',
+              lead_source: '',
+              website: '',
+              fax: '',
+              birthday: '',
+              is_invoice_recipient: false,
+              additional_salutation: '',
+            });
           }}>Abbrechen</Button>
           <Button onClick={handleContactCreate} variant="contained" disabled={!contactForm.first_name || !contactForm.last_name}>
-            {(contactForm as any).id ? 'Aktualisieren' : 'Erstellen'}
+            {contactForm.id ? 'Aktualisieren' : 'Erstellen'}
           </Button>
         </DialogActions>
       </Dialog>

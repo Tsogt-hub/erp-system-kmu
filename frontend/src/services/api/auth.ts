@@ -18,6 +18,9 @@ export interface AuthResponse {
     email: string;
     first_name: string;
     last_name: string;
+    role: string;
+    permissions: string[];
+    attributes: Record<string, unknown>;
   };
   token: string;
 }
@@ -38,6 +41,10 @@ export const authApi = {
     return response.data;
   },
 };
+
+
+
+
 
 
 

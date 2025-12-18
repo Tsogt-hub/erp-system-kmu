@@ -12,6 +12,22 @@ export async function seedDatabase() {
       return;
     }
 
+    await query(
+      `INSERT INTO roles (name, permissions)
+       VALUES 
+        ('admin', $1),
+        ('operations_lead', $2),
+        ('project_manager', $3),
+        ('employee', $4)
+       ON CONFLICT (name) DO NOTHING`,
+      [
+        JSON.stringify(['metadata:read', 'metadata:write', 'governance:manage', 'users:manage', 'audit:read', 'pipelines:run', 'feature-store:read', 'feature-store:write', 'feature-store:sync']),
+        JSON.stringify(['metadata:read', 'pipelines:run', 'audit:read']),
+        JSON.stringify(['metadata:read']),
+        JSON.stringify([]),
+      ]
+    );
+
     // Erstelle Admin-Benutzer
     const passwordHash = await bcrypt.hash('admin123', 10);
     await query(
@@ -61,6 +77,10 @@ if (require.main === module) {
       process.exit(1);
     });
 }
+
+
+
+
 
 
 

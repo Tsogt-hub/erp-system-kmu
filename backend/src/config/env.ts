@@ -3,7 +3,7 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 export const config = {
-  port: process.env.PORT || 3000,
+  port: process.env.PORT || 3001,
   nodeEnv: process.env.NODE_ENV || 'development',
   db: {
     host: process.env.DB_HOST || 'localhost',
@@ -24,6 +24,16 @@ export const config = {
     origin: process.env.CORS_ORIGIN || 'http://localhost:5173',
   },
 };
+
+
+
+
+
+
+
+
+
+
 
 
 

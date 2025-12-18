@@ -25,6 +25,66 @@ CREATE TABLE IF NOT EXISTS users (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+CREATE TABLE IF NOT EXISTS data_assets (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    domain VARCHAR(100) NOT NULL,
+    owner VARCHAR(150) NOT NULL,
+    description TEXT,
+    source VARCHAR(150),
+    tags JSONB DEFAULT '[]'::jsonb,
+    sensitivity VARCHAR(50) DEFAULT 'internal',
+    retention_policy VARCHAR(255),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS data_quality_rules (
+    id SERIAL PRIMARY KEY,
+    asset_id INTEGER REFERENCES data_assets(id) ON DELETE CASCADE,
+    name VARCHAR(255) NOT NULL,
+    dimension VARCHAR(50) NOT NULL,
+    threshold NUMERIC(10,2) NOT NULL,
+    severity VARCHAR(20) DEFAULT 'medium',
+    description TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS audit_logs (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER REFERENCES users(id),
+    action VARCHAR(100) NOT NULL,
+    resource VARCHAR(255),
+    level VARCHAR(20) DEFAULT 'info',
+    metadata JSONB DEFAULT '{}'::jsonb,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS feature_definitions (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(100) UNIQUE NOT NULL,
+    entity VARCHAR(100) NOT NULL,
+    description TEXT,
+    version INTEGER DEFAULT 1,
+    config JSONB DEFAULT '{}'::jsonb,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS feature_snapshots (
+    id SERIAL PRIMARY KEY,
+    feature_id INTEGER REFERENCES feature_definitions(id) ON DELETE CASCADE,
+    entity_id VARCHAR(100) NOT NULL,
+    ts TIMESTAMP NOT NULL,
+    value JSONB NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(feature_id, entity_id, ts)
+);
+
+CREATE INDEX IF NOT EXISTS idx_feature_snapshots_feature_entity_ts
+ON feature_snapshots (feature_id, entity_id, ts DESC);
+
 -- Companies Table (CRM)
 CREATE TABLE IF NOT EXISTS companies (
     id SERIAL PRIMARY KEY,
@@ -171,6 +231,10 @@ CREATE TABLE IF NOT EXISTS offers (
     status VARCHAR(50) DEFAULT 'draft',
     valid_until DATE,
     notes TEXT,
+    intro_text TEXT,
+    footer_text TEXT,
+    payment_terms TEXT,
+    finalized_at TIMESTAMP,
     created_by INTEGER REFERENCES users(id),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP

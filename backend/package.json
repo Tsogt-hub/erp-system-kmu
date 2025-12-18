@@ -7,12 +7,16 @@
     "dev": "tsx watch src/app.ts",
     "build": "tsc",
     "start": "node dist/app.js",
+    "start:prod": "node dist/app.js",
     "migrate": "tsx src/utils/migrate.ts",
     "seed": "tsx src/utils/seed.ts",
     "seed-sqlite": "tsx src/utils/seed-sqlite.ts",
     "init-db": "tsx src/utils/init-db.ts",
+    "init-db:prod": "node dist/utils/init-sqlite.js",
     "test": "jest",
-    "init": "npm run init-db && npm run seed"
+    "init": "npm run init-db && npm run seed",
+    "pipeline": "tsx src/scripts/run-pipeline.ts",
+    "postbuild": "mkdir -p dist/data"
   },
   "keywords": [
     "erp",
@@ -34,9 +38,11 @@
     "helmet": "^7.1.0",
     "joi": "^17.11.0",
     "jsonwebtoken": "^9.0.2",
+    "ml-regression-simple-linear": "^3.0.1",
     "multer": "^1.4.5-lts.1",
     "pdfkit": "^0.17.2",
     "pg": "^8.11.3",
+    "puppeteer": "^23.0.0",
     "redis": "^4.6.10",
     "winston": "^3.11.0"
   },
@@ -48,6 +54,7 @@
     "@types/multer": "^1.4.11",
     "@types/node": "^20.10.5",
     "@types/pg": "^8.10.9",
+    "@types/puppeteer": "^5.4.7",
     "tsx": "^4.20.6",
     "typescript": "^5.3.3"
   }
