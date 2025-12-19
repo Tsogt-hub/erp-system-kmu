@@ -1,6 +1,7 @@
 import { db } from '../config/database.sqlite';
 import { initSQLiteDatabase } from './init-sqlite';
 import * as bcrypt from 'bcrypt';
+import { ELITE_PV_COMPANY, ELITE_PV_OFFER_TEXTS } from '../seeds/elite-pv-config';
 
 interface QueryResult {
   rows: any[];
@@ -112,30 +113,45 @@ export async function seedSQLiteDatabase() {
     const userId1 = user1Result.rows?.[0]?.id;
 
     // Erstelle Test-Unternehmen
-    const company1Result = await query(
-      `INSERT INTO companies (name, email, phone, city, address, postal_code, country)
-       VALUES ($1, $2, $3, $4, $5, $6, $7)`,
-      ['Solar-Energie GmbH', 'info@solar-energie.de', '030-12345678', 'Berlin', 'Hauptstraße 1', '10115', 'Deutschland']
+    const company1Result =     // Elite PV GmbH - Hauptfirma (aus Hero Software übernommen)
+    await query(
+      `INSERT INTO companies (name, email, phone, city, address, postal_code, country, website, tax_number, bank_name, iban, bic)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)`,
+      [
+        ELITE_PV_COMPANY.name,
+        ELITE_PV_COMPANY.email,
+        ELITE_PV_COMPANY.phone,
+        ELITE_PV_COMPANY.city,
+        ELITE_PV_COMPANY.street,
+        ELITE_PV_COMPANY.postal_code,
+        'Deutschland',
+        ELITE_PV_COMPANY.website,
+        ELITE_PV_COMPANY.tax_number,
+        ELITE_PV_COMPANY.bank_name,
+        ELITE_PV_COMPANY.iban,
+        ELITE_PV_COMPANY.bic
+      ]
     );
     
+    // Beispiel-Kunde
     const company2Result = await query(
       `INSERT INTO companies (name, email, phone, city, address, postal_code)
        VALUES ($1, $2, $3, $4, $5, $6)`,
-      ['PV-Installation Müller', 'kontakt@pv-mueller.de', '089-98765432', 'München', 'Sonnenweg 5', '80331']
+      ['Mustermann Bau GmbH', 'kontakt@mustermann-bau.de', '0961-12345678', 'Weiden', 'Musterstraße 1', '92637']
     );
 
     // Hole Unternehmen-IDs
-    const company1IdResult = await query('SELECT id FROM companies WHERE name = $1', ['Solar-Energie GmbH']);
-    const company2IdResult = await query('SELECT id FROM companies WHERE name = $1', ['PV-Installation Müller']);
+    const company1IdResult = await query('SELECT id FROM companies WHERE name = $1', [ELITE_PV_COMPANY.name]);
+    const company2IdResult = await query('SELECT id FROM companies WHERE name = $1', ['Mustermann Bau GmbH']);
     
     const company1Id = company1IdResult.rows?.[0]?.id;
     const company2Id = company2IdResult.rows?.[0]?.id;
 
-    // Erstelle Kontakte
+    // Erstelle Kontakte (Beispiel-Ansprechpartner)
     await query(
       `INSERT INTO contacts (company_id, first_name, last_name, email, phone, position)
        VALUES ($1, $2, $3, $4, $5, $6)`,
-      [company1Id, 'Thomas', 'Meyer', 'thomas.meyer@solar-energie.de', '030-12345679', 'Geschäftsführer']
+      [company1Id, 'Levin', 'Schober', ELITE_PV_COMPANY.email, ELITE_PV_COMPANY.phone, 'Geschäftsführer']
     );
 
     await query(
@@ -293,6 +309,49 @@ export async function seedSQLiteDatabase() {
         'pending',
         new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
         adminId
+      ]
+    );
+
+    // PDF-Einstellungen für Angebote (aus Hero Software übernommen)
+    await query(
+      `INSERT INTO pdf_settings (
+        document_type, 
+        primary_color, secondary_color,
+        font_family, font_size, footer_font_size,
+        margin_top, margin_right, margin_bottom, margin_left,
+        address_position_x, address_position_y,
+        logo_position_x, logo_position_y, logo_width,
+        show_sender_line, show_fold_marks,
+        intro_text_template, footer_text_template
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19)`,
+      [
+        'offer',
+        '#1976D2', '#FF9800',
+        'Helvetica', 9, 7,
+        113, 57, 99, 71,  // Ränder in Punkten (aus Hero: 40mm, 20mm, 35mm, 25mm)
+        71, 127,          // Adressblock-Position (25mm, 45mm)
+        425, 28, 127,     // Logo-Position (150mm, 10mm, 45mm breit)
+        1, 1,             // Absenderzeile und Falzmarken aktiviert
+        ELITE_PV_OFFER_TEXTS.intro_text,
+        ELITE_PV_OFFER_TEXTS.footer_text
+      ]
+    );
+
+    // PDF-Einstellungen für Standard (Fallback)
+    await query(
+      `INSERT INTO pdf_settings (
+        document_type, 
+        primary_color, secondary_color,
+        font_family, font_size, footer_font_size,
+        margin_top, margin_right, margin_bottom, margin_left,
+        show_sender_line, show_fold_marks
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)`,
+      [
+        'default',
+        '#1976D2', '#FF9800',
+        'Helvetica', 9, 7,
+        113, 57, 99, 71,
+        1, 1
       ]
     );
 

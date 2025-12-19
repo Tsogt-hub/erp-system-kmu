@@ -1,9 +1,11 @@
 // PDF-Service für Dokumentengenerierung
 // Verwendet PDFKit (pure Node.js, keine Browser-Abhängigkeit)
+// Konfiguration übernommen aus Hero Software für Elite PV GmbH
 
 import PDFDocument from 'pdfkit';
 import { logger } from '../utils/logger';
 import { PDFSettingsModel, PDFSettings, DEFAULT_PDF_SETTINGS } from '../models/PDFSettings';
+import { ELITE_PV_COMPANY, ELITE_PV_OFFER_TEXTS } from '../seeds/elite-pv-config';
 import fs from 'fs';
 import path from 'path';
 
