@@ -152,7 +152,7 @@ export class TimeEntryModel {
     await query('DELETE FROM time_entries WHERE id = $1', [id]);
   }
 
-  static async calculateDuration(startTime: Date, endTime: Date, breakDuration: number = 0): number {
+  static calculateDuration(startTime: Date, endTime: Date, breakDuration: number = 0): number {
     const diff = endTime.getTime() - startTime.getTime();
     const minutes = Math.floor((diff / 1000 / 60) - breakDuration);
     return Math.max(0, minutes);

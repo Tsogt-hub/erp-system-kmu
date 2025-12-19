@@ -1,11 +1,9 @@
-import Database from 'better-sqlite3';
-import bcrypt from 'bcryptjs';
-import path from 'path';
-import { fileURLToPath } from 'url';
-import { dirname } from 'path';
+// Admin User Creation Script
+// Dieses Script wird mit tsx ausgeführt, nicht kompiliert
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
+import Database from 'better-sqlite3';
+import * as bcrypt from 'bcrypt';
+import * as path from 'path';
 
 const dbPath = path.join(__dirname, '../../data/erp.db');
 const db = new Database(dbPath);

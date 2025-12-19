@@ -10,9 +10,10 @@ export interface JWTPayload {
 }
 
 export const generateToken = (payload: JWTPayload): string => {
+  // Cast to any to avoid TypeScript issues with newer jsonwebtoken versions
   return jwt.sign(payload, config.jwt.secret, {
     expiresIn: config.jwt.expiresIn,
-  });
+  } as any);
 };
 
 export const verifyToken = (token: string): JWTPayload => {

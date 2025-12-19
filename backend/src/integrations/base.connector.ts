@@ -8,7 +8,7 @@ export abstract class BaseConnector<T = any> implements DataConnector<T> {
   public readonly config: DataSourceConfig;
   private initialized = false;
 
-  protected constructor(config: DataSourceConfig, capabilities: ConnectorCapability[]) {
+  constructor(config: DataSourceConfig, capabilities: ConnectorCapability[]) {
     this.name = config.name;
     this.capabilities = capabilities;
     this.config = config;

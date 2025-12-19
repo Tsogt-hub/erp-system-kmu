@@ -1,9 +1,14 @@
 import { db } from '../config/database.sqlite';
 import { initSQLiteDatabase } from './init-sqlite';
-import bcrypt from 'bcrypt';
+import * as bcrypt from 'bcrypt';
+
+interface QueryResult {
+  rows: any[];
+  rowCount: number;
+}
 
 // Direkte SQLite-Query-Funktion
-const query = async (text: string, params: any[] = []) => {
+const query = async (text: string, params: any[] = []): Promise<QueryResult> => {
   try {
     let sqliteText = text.replace(/\$(\d+)/g, '?');
     const stmt = db.prepare(sqliteText);

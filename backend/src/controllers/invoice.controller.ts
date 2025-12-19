@@ -1,12 +1,13 @@
 import { Request, Response } from 'express';
+import { AuthRequest } from '../middleware/auth.middleware';
 import invoiceService from '../services/invoice.service';
 
 export class InvoiceController {
-  async createInvoice(req: Request, res: Response) {
+  async createInvoice(req: AuthRequest, res: Response) {
     try {
       const invoice = await invoiceService.createInvoice({
         ...req.body,
-        created_by: req.user?.userId,
+        created_by: req.user?.userId || 1,
       });
       res.status(201).json(invoice);
     } catch (error: any) {
