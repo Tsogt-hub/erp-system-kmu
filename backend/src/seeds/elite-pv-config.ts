@@ -93,3 +93,4 @@ export const ELITE_PV_PAYMENT_TERMS = {
   freifläche: '50% Vorauskasse, 20% Lieferung UK, 10% Lieferung WR, 15% Betriebsbereitschaft, 5% nach 3 Monaten',
   waermepumpe: '50% bei Auftragserteilung, 50% bei Fertigstellung vor Inbetriebnahme',
 };
+

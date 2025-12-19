@@ -33,9 +33,32 @@ import CategoryIcon from '@mui/icons-material/Category';
 import WorkIcon from '@mui/icons-material/Work';
 import SettingsIcon from '@mui/icons-material/Settings';
 import FileDownloadIcon from '@mui/icons-material/FileDownload';
+import WarningAmberIcon from '@mui/icons-material/WarningAmber';
+import ContentCopyIcon from '@mui/icons-material/ContentCopy';
+import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
+import Tooltip from '@mui/material/Tooltip';
+import Badge from '@mui/material/Badge';
+import Snackbar from '@mui/material/Snackbar';
 
 interface CalendarEvent extends ApiCalendarEvent {
   resource_name?: string;
+}
+
+// Konflikt-Interface
+interface Conflict {
+  eventId: number;
+  conflictingEventId: number;
+  resourceId: number;
+  type: 'overlap' | 'double_booking';
+  message: string;
+}
+
+// Kapazität pro Ressource (Stunden pro Tag)
+interface ResourceCapacity {
+  resourceId: number;
+  maxHoursPerDay: number;
+  currentHours: number;
+  isOverloaded: boolean;
 }
 
 interface Resource {
@@ -92,6 +115,14 @@ export default function PlanningScheduler() {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [newEventDialogOpen, setNewEventDialogOpen] = useState(false);
   const [editingEvent, setEditingEvent] = useState<CalendarEvent | null>(null);
+  
+  // Neue States für Kapazitätsplanung & Konflikt-Erkennung
+  const [conflicts, setConflicts] = useState<Conflict[]>([]);
+  const [resourceCapacities, setResourceCapacities] = useState<ResourceCapacity[]>([]);
+  const [showConflictWarnings, setShowConflictWarnings] = useState(true);
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState('');
+  const [quickActionsAnchor, setQuickActionsAnchor] = useState<{ event: CalendarEvent; x: number; y: number } | null>(null);
 
   // Resource-Kategorien mit Farbcodierung
   const [resourceCategories, setResourceCategories] = useState<ResourceCategory[]>([
@@ -159,6 +190,116 @@ export default function PlanningScheduler() {
       ],
     },
   ]);
+
+  // ============ KONFLIKT-ERKENNUNG ============
+  const detectConflicts = (eventList: CalendarEvent[]): Conflict[] => {
+    const foundConflicts: Conflict[] = [];
+    
+    for (let i = 0; i < eventList.length; i++) {
+      for (let j = i + 1; j < eventList.length; j++) {
+        const event1 = eventList[i];
+        const event2 = eventList[j];
+        
+        // Nur gleiche Ressource prüfen
+        if (event1.resource_id !== event2.resource_id) continue;
+        
+        const start1 = parseISO(event1.start_time);
+        const end1 = parseISO(event1.end_time);
+        const start2 = parseISO(event2.start_time);
+        const end2 = parseISO(event2.end_time);
+        
+        // Überschneidung prüfen
+        if (start1 < end2 && start2 < end1) {
+          foundConflicts.push({
+            eventId: event1.id,
+            conflictingEventId: event2.id,
+            resourceId: event1.resource_id,
+            type: 'overlap',
+            message: `Überschneidung: "${event1.title || 'Termin'}" und "${event2.title || 'Termin'}"`,
+          });
+        }
+      }
+    }
+    
+    return foundConflicts;
+  };
+
+  // ============ KAPAZITÄTSBERECHNUNG ============
+  const calculateResourceCapacity = (resourceId: number, day: Date): ResourceCapacity => {
+    const MAX_HOURS = 8; // Standard 8-Stunden-Tag
+    
+    const dayEvents = events.filter(event => {
+      if (event.resource_id !== resourceId) return false;
+      const eventStart = parseISO(event.start_time);
+      return isSameDay(eventStart, day);
+    });
+    
+    const totalMinutes = dayEvents.reduce((sum, event) => {
+      const start = parseISO(event.start_time);
+      const end = parseISO(event.end_time);
+      return sum + differenceInMinutes(end, start);
+    }, 0);
+    
+    const currentHours = totalMinutes / 60;
+    
+    return {
+      resourceId,
+      maxHoursPerDay: MAX_HOURS,
+      currentHours,
+      isOverloaded: currentHours > MAX_HOURS,
+    };
+  };
+
+  // ============ QUICK ACTIONS ============
+  const handleDuplicateEvent = async (event: CalendarEvent) => {
+    try {
+      const startTime = parseISO(event.start_time);
+      const endTime = parseISO(event.end_time);
+      
+      // Nächster Tag
+      const newStart = addDays(startTime, 1);
+      const newEnd = addDays(endTime, 1);
+      
+      const newEvent = await calendarEventsApi.create({
+        title: `${event.title} (Kopie)`,
+        project_id: event.project_id,
+        start_time: newStart.toISOString(),
+        end_time: newEnd.toISOString(),
+        resource_id: event.resource_id,
+        resource_type: event.resource_type,
+        notes: event.notes,
+      });
+      
+      setEvents([...events, newEvent]);
+      setSnackbarMessage('Termin dupliziert');
+      setSnackbarOpen(true);
+    } catch (err) {
+      console.error('Error duplicating event:', err);
+      setError('Fehler beim Duplizieren');
+    }
+    setQuickActionsAnchor(null);
+  };
+
+  const handleDeleteEvent = async (event: CalendarEvent) => {
+    if (!window.confirm('Termin wirklich löschen?')) return;
+    
+    try {
+      await calendarEventsApi.delete(event.id);
+      setEvents(events.filter(e => e.id !== event.id));
+      setSnackbarMessage('Termin gelöscht');
+      setSnackbarOpen(true);
+    } catch (err) {
+      console.error('Error deleting event:', err);
+      setError('Fehler beim Löschen');
+    }
+    setQuickActionsAnchor(null);
+  };
+
+  // Konflikt-Check bei Events-Änderung
+  useEffect(() => {
+    const foundConflicts = detectConflicts(events);
+    setConflicts(foundConflicts);
+  }, [events]);
 
   // Dynamische Tage-Berechnung basierend auf ViewType
   const getVisibleDays = () => {
@@ -498,6 +639,22 @@ export default function PlanningScheduler() {
             <Button startIcon={<WorkIcon />} variant="outlined" size="small">
               Gewerk
             </Button>
+            {/* Konflikt-Badge */}
+            {conflicts.length > 0 && (
+              <Tooltip title={`${conflicts.length} Konflikte erkannt`}>
+                <Badge badgeContent={conflicts.length} color="error">
+                  <Button
+                    variant="outlined"
+                    color="error"
+                    size="small"
+                    startIcon={<WarningAmberIcon />}
+                    onClick={() => setShowConflictWarnings(true)}
+                  >
+                    Konflikte
+                  </Button>
+                </Badge>
+              </Tooltip>
+            )}
             <Button
               startIcon={<AddIcon />}
               variant="contained"
@@ -965,6 +1122,14 @@ export default function PlanningScheduler() {
                               const position = calculateEventPosition(event);
                               const project = projects.find(p => p.id === event.project_id);
                               
+                              // Konflikt-Check
+                              const hasConflict = conflicts.some(
+                                c => c.eventId === event.id || c.conflictingEventId === event.id
+                              );
+                              
+                              // Kapazitäts-Check
+                              const capacity = calculateResourceCapacity(resource.id, day);
+                              
                               // Kompakte Darstellung für Monatsansicht
                               const isMonthView = !showResourceSidebar;
 
@@ -973,6 +1138,10 @@ export default function PlanningScheduler() {
                                   key={event.id}
                                   draggable
                                   onDragStart={(e) => handleDragStart(e, event)}
+                                  onContextMenu={(e) => {
+                                    e.preventDefault();
+                                    setQuickActionsAnchor({ event, x: e.clientX, y: e.clientY });
+                                  }}
                                   onClick={() => {
                                     setEditingEvent(event);
                                     setEventForm({
@@ -994,7 +1163,7 @@ export default function PlanningScheduler() {
                                     top: isMonthView ? 2 : 4,
                                     height: isMonthView ? 16 : 'auto',
                                     bottom: isMonthView ? 'auto' : 4,
-                                    bgcolor: resourceColor,
+                                    bgcolor: hasConflict ? '#FF5252' : resourceColor,
                                     borderRadius: isMonthView ? '3px' : '6px',
                                     px: isMonthView ? 0.5 : 1,
                                     py: isMonthView ? 0.25 : 0.5,
@@ -1003,8 +1172,15 @@ export default function PlanningScheduler() {
                                     justifyContent: 'center',
                                     cursor: 'grab',
                                     overflow: 'hidden',
-                                    boxShadow: isMonthView ? '0 1px 2px rgba(0,0,0,0.1)' : '0 2px 4px rgba(0,0,0,0.1)',
-                                    border: '1px solid rgba(255,255,255,0.2)',
+                                    boxShadow: hasConflict 
+                                      ? '0 0 0 2px #FF1744, 0 2px 8px rgba(255,23,68,0.4)' 
+                                      : (isMonthView ? '0 1px 2px rgba(0,0,0,0.1)' : '0 2px 4px rgba(0,0,0,0.1)'),
+                                    border: hasConflict ? '2px solid #FF1744' : '1px solid rgba(255,255,255,0.2)',
+                                    animation: hasConflict ? 'conflictPulse 2s infinite' : 'none',
+                                    '@keyframes conflictPulse': {
+                                      '0%, 100%': { boxShadow: '0 0 0 2px #FF1744, 0 2px 8px rgba(255,23,68,0.4)' },
+                                      '50%': { boxShadow: '0 0 0 4px #FF1744, 0 4px 16px rgba(255,23,68,0.6)' },
+                                    },
                                     '&:hover': {
                                       boxShadow: isMonthView ? '0 2px 4px rgba(0,0,0,0.15)' : '0 4px 8px rgba(0,0,0,0.2)',
                                       transform: 'translateY(-1px)',
@@ -1082,6 +1258,106 @@ export default function PlanningScheduler() {
           {error}
         </Alert>
       )}
+
+      {/* Konflikt-Warnungen */}
+      {showConflictWarnings && conflicts.length > 0 && (
+        <Alert 
+          severity="warning" 
+          onClose={() => setShowConflictWarnings(false)}
+          icon={<WarningAmberIcon />}
+          sx={{ 
+            position: 'fixed', 
+            top: 80, 
+            left: '50%', 
+            transform: 'translateX(-50%)',
+            zIndex: 9999,
+            maxWidth: 500,
+            boxShadow: '0 4px 20px rgba(0,0,0,0.15)',
+          }}
+        >
+          <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
+            {conflicts.length} Konflikt(e) erkannt
+          </Typography>
+          {conflicts.slice(0, 3).map((conflict, idx) => (
+            <Typography key={idx} variant="body2" sx={{ fontSize: '0.8rem' }}>
+              • {conflict.message}
+            </Typography>
+          ))}
+          {conflicts.length > 3 && (
+            <Typography variant="body2" sx={{ fontSize: '0.8rem', fontStyle: 'italic' }}>
+              ...und {conflicts.length - 3} weitere
+            </Typography>
+          )}
+        </Alert>
+      )}
+
+      {/* Quick Actions Popup */}
+      {quickActionsAnchor && (
+        <Paper
+          sx={{
+            position: 'fixed',
+            left: quickActionsAnchor.x,
+            top: quickActionsAnchor.y,
+            zIndex: 10000,
+            p: 1,
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 0.5,
+            minWidth: 150,
+            boxShadow: '0 4px 20px rgba(0,0,0,0.15)',
+          }}
+          onMouseLeave={() => setQuickActionsAnchor(null)}
+        >
+          <Button
+            size="small"
+            startIcon={<ContentCopyIcon />}
+            onClick={() => handleDuplicateEvent(quickActionsAnchor.event)}
+            sx={{ justifyContent: 'flex-start' }}
+          >
+            Duplizieren
+          </Button>
+          <Button
+            size="small"
+            startIcon={<EditIcon />}
+            onClick={() => {
+              setEditingEvent(quickActionsAnchor.event);
+              setEventForm({
+                title: quickActionsAnchor.event.title || '',
+                project_id: quickActionsAnchor.event.project_id?.toString() || '',
+                start_time: quickActionsAnchor.event.start_time,
+                end_time: quickActionsAnchor.event.end_time,
+                resource_id: quickActionsAnchor.event.resource_id,
+                resource_type: quickActionsAnchor.event.resource_type || 'employee',
+                employee_ids: [],
+                notes: quickActionsAnchor.event.notes || '',
+              });
+              setNewEventDialogOpen(true);
+              setQuickActionsAnchor(null);
+            }}
+            sx={{ justifyContent: 'flex-start' }}
+          >
+            Bearbeiten
+          </Button>
+          <Button
+            size="small"
+            startIcon={<DeleteOutlineIcon />}
+            color="error"
+            onClick={() => handleDeleteEvent(quickActionsAnchor.event)}
+            sx={{ justifyContent: 'flex-start' }}
+          >
+            Löschen
+          </Button>
+        </Paper>
+      )}
+
+      {/* Snackbar für Benachrichtigungen */}
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={3000}
+        onClose={() => setSnackbarOpen(false)}
+        message={snackbarMessage}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      />
 
       {/* Neuer Termin Dialog - Zentriert und etwas tiefer */}
       <Drawer

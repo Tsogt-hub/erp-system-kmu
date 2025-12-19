@@ -14,6 +14,8 @@ import {
   ListItemIcon,
   ListItemText,
   Fade,
+  Tooltip,
+  useTheme,
 } from '@mui/material';
 import { useSelector, useDispatch } from 'react-redux';
 import { useLocation, useNavigate } from 'react-router-dom';
@@ -28,7 +30,10 @@ import PeopleAltOutlinedIcon from '@mui/icons-material/PeopleAltOutlined';
 import DescriptionOutlinedIcon from '@mui/icons-material/DescriptionOutlined';
 import SettingsOutlinedIcon from '@mui/icons-material/SettingsOutlined';
 import AccountTreeOutlinedIcon from '@mui/icons-material/AccountTreeOutlined';
+import LightModeRoundedIcon from '@mui/icons-material/LightModeRounded';
+import DarkModeRoundedIcon from '@mui/icons-material/DarkModeRounded';
 import NotificationBell from './NotificationBell';
+import { useThemeMode } from '../../styles/ThemeContext';
 
 // Page titles mapping
 const pageTitles: Record<string, string> = {
@@ -74,6 +79,9 @@ export default function Header() {
   const navigate = useNavigate();
   const [spotlightOpen, setSpotlightOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const { mode, toggleTheme } = useThemeMode();
+  const theme = useTheme();
+  const isDark = mode === 'dark';
 
   const handleLogout = () => {
     dispatch(logout());
@@ -101,19 +109,29 @@ export default function Header() {
         elevation={0}
         sx={{
           mb: 3,
-          // macOS Tahoe Glass Effect - Enhanced
-          background: 'linear-gradient(180deg, rgba(255, 255, 255, 0.88) 0%, rgba(255, 255, 255, 0.72) 100%)',
+          // Dynamic Glass Effect - Light/Dark Mode
+          background: isDark
+            ? 'linear-gradient(180deg, rgba(20, 20, 31, 0.92) 0%, rgba(14, 14, 21, 0.88) 100%)'
+            : 'linear-gradient(180deg, rgba(255, 255, 255, 0.88) 0%, rgba(255, 255, 255, 0.72) 100%)',
           backdropFilter: 'blur(80px) saturate(200%)',
           WebkitBackdropFilter: 'blur(80px) saturate(200%)',
-          color: 'rgba(29, 29, 31, 0.95)',
-          border: '0.5px solid rgba(255, 255, 255, 0.6)',
+          color: isDark ? 'rgba(248, 250, 252, 0.95)' : 'rgba(29, 29, 31, 0.95)',
+          border: isDark 
+            ? '0.5px solid rgba(255, 255, 255, 0.08)' 
+            : '0.5px solid rgba(255, 255, 255, 0.6)',
           borderRadius: '16px',
-          boxShadow: `
-            0 0.5px 0 rgba(255, 255, 255, 0.8) inset,
-            0 1px 2px rgba(0, 0, 0, 0.02),
-            0 4px 8px rgba(0, 0, 0, 0.03),
-            0 8px 16px rgba(0, 0, 0, 0.04)
-          `,
+          boxShadow: isDark
+            ? `
+              0 0.5px 0 rgba(255, 255, 255, 0.05) inset,
+              0 4px 16px rgba(0, 0, 0, 0.3),
+              0 8px 32px rgba(0, 0, 0, 0.2)
+            `
+            : `
+              0 0.5px 0 rgba(255, 255, 255, 0.8) inset,
+              0 1px 2px rgba(0, 0, 0, 0.02),
+              0 4px 8px rgba(0, 0, 0, 0.03),
+              0 8px 16px rgba(0, 0, 0, 0.04)
+            `,
         }}
       >
         <Toolbar sx={{ minHeight: '52px !important', px: 2 }}>
@@ -159,18 +177,65 @@ export default function Header() {
               <SearchRoundedIcon sx={{ color: 'rgba(60, 60, 67, 0.7)', fontSize: '1.05rem' }} />
             </IconButton>
 
+            {/* Theme Toggle Button */}
+            <Tooltip title={isDark ? 'Helles Design' : 'Dunkles Design'}>
+              <IconButton
+                size="small"
+                onClick={toggleTheme}
+                sx={{
+                  width: 34,
+                  height: 34,
+                  background: isDark 
+                    ? 'linear-gradient(180deg, rgba(99, 102, 241, 0.15) 0%, rgba(99, 102, 241, 0.08) 100%)'
+                    : 'linear-gradient(180deg, rgba(255, 255, 255, 0.9) 0%, rgba(255, 255, 255, 0.7) 100%)',
+                  backdropFilter: 'blur(20px)',
+                  WebkitBackdropFilter: 'blur(20px)',
+                  border: isDark 
+                    ? '0.5px solid rgba(99, 102, 241, 0.25)' 
+                    : '0.5px solid rgba(0, 0, 0, 0.06)',
+                  boxShadow: isDark
+                    ? '0 1px 3px rgba(99, 102, 241, 0.15)'
+                    : '0 1px 3px rgba(0, 0, 0, 0.06), inset 0 0.5px 0 rgba(255, 255, 255, 0.8)',
+                  '&:hover': {
+                    background: isDark
+                      ? 'linear-gradient(180deg, rgba(99, 102, 241, 0.25) 0%, rgba(99, 102, 241, 0.15) 100%)'
+                      : 'linear-gradient(180deg, rgba(255, 255, 255, 1) 0%, rgba(255, 255, 255, 0.85) 100%)',
+                    transform: 'scale(1.05)',
+                  },
+                  '&:active': {
+                    transform: 'scale(0.95)',
+                  },
+                  transition: 'all 0.2s cubic-bezier(0.32, 0.72, 0, 1)',
+                }}
+              >
+                {isDark ? (
+                  <LightModeRoundedIcon sx={{ color: '#FBBF24', fontSize: '1.05rem' }} />
+                ) : (
+                  <DarkModeRoundedIcon sx={{ color: 'rgba(60, 60, 67, 0.7)', fontSize: '1.05rem' }} />
+                )}
+              </IconButton>
+            </Tooltip>
+
             {/* Notification Bell */}
             <Box sx={{ 
               '& button': {
                 width: 34,
                 height: 34,
-                background: 'linear-gradient(180deg, rgba(255, 255, 255, 0.9) 0%, rgba(255, 255, 255, 0.7) 100%)',
+                background: isDark
+                  ? 'linear-gradient(180deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.04) 100%)'
+                  : 'linear-gradient(180deg, rgba(255, 255, 255, 0.9) 0%, rgba(255, 255, 255, 0.7) 100%)',
                 backdropFilter: 'blur(20px)',
                 WebkitBackdropFilter: 'blur(20px)',
-                border: '0.5px solid rgba(0, 0, 0, 0.06)',
-                boxShadow: '0 1px 3px rgba(0, 0, 0, 0.06), inset 0 0.5px 0 rgba(255, 255, 255, 0.8)',
+                border: isDark 
+                  ? '0.5px solid rgba(255, 255, 255, 0.1)' 
+                  : '0.5px solid rgba(0, 0, 0, 0.06)',
+                boxShadow: isDark
+                  ? '0 1px 3px rgba(0, 0, 0, 0.2)'
+                  : '0 1px 3px rgba(0, 0, 0, 0.06), inset 0 0.5px 0 rgba(255, 255, 255, 0.8)',
                 '&:hover': {
-                  background: 'linear-gradient(180deg, rgba(255, 255, 255, 1) 0%, rgba(255, 255, 255, 0.85) 100%)',
+                  background: isDark
+                    ? 'linear-gradient(180deg, rgba(255, 255, 255, 0.12) 0%, rgba(255, 255, 255, 0.08) 100%)'
+                    : 'linear-gradient(180deg, rgba(255, 255, 255, 1) 0%, rgba(255, 255, 255, 0.85) 100%)',
                   transform: 'scale(1.05)',
                 },
                 '&:active': {

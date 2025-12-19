@@ -231,3 +231,4 @@ export class PDFSettingsModel {
     return settings;
   }
 }
+

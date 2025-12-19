@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react';
 import { Outlet } from 'react-router-dom';
-import { Box } from '@mui/material';
+import { Box, useTheme } from '@mui/material';
 import { useDispatch, useSelector } from 'react-redux';
 import Sidebar from './Sidebar';
 import Header from './Header';
 import { fetchUser } from '../../store/slices/authSlice';
 import { RootState, AppDispatch } from '../../store/store';
+import { useThemeMode } from '../../styles/ThemeContext';
 
 const drawerWidth = 280;
 const collapsedDrawerWidth = 72;
@@ -26,28 +27,41 @@ export default function Layout() {
   };
 
   const currentDrawerWidth = sidebarOpen ? drawerWidth : collapsedDrawerWidth;
+  const { mode } = useThemeMode();
+  const isDark = mode === 'dark';
 
   return (
     <Box 
       sx={{ 
         display: 'flex', 
         minHeight: '100vh',
-        // macOS Tahoe - Premium Gradient Background
-        background: `
-          linear-gradient(135deg, 
-            #FAFBFC 0%, 
-            #F0F1F5 20%, 
-            #F5F6FA 40%, 
-            #ECEEF2 60%, 
-            #F2F3F7 80%, 
-            #F8F9FB 100%
-          )
-        `,
+        // Dynamic Premium Gradient Background - Light/Dark Mode
+        background: isDark
+          ? `
+            linear-gradient(135deg, 
+              #0A0A0F 0%, 
+              #0E0E15 20%, 
+              #12121A 40%, 
+              #0C0C12 60%, 
+              #101018 80%, 
+              #0A0A0F 100%
+            )
+          `
+          : `
+            linear-gradient(135deg, 
+              #FAFBFC 0%, 
+              #F0F1F5 20%, 
+              #F5F6FA 40%, 
+              #ECEEF2 60%, 
+              #F2F3F7 80%, 
+              #F8F9FB 100%
+            )
+          `,
         position: 'relative',
         overflow: 'hidden',
       }}
     >
-      {/* macOS Tahoe - Dynamic Ambient Light Orbs */}
+      {/* Dynamic Ambient Light Orbs - Light/Dark Mode */}
       <Box
         sx={{
           position: 'fixed',
@@ -55,7 +69,9 @@ export default function Layout() {
           left: '-10%',
           width: '55%',
           height: '75%',
-          background: 'radial-gradient(ellipse, rgba(0, 122, 255, 0.08) 0%, rgba(0, 122, 255, 0.03) 35%, transparent 65%)',
+          background: isDark
+            ? 'radial-gradient(ellipse, rgba(99, 102, 241, 0.15) 0%, rgba(99, 102, 241, 0.05) 35%, transparent 65%)'
+            : 'radial-gradient(ellipse, rgba(0, 122, 255, 0.08) 0%, rgba(0, 122, 255, 0.03) 35%, transparent 65%)',
           filter: 'blur(100px)',
           pointerEvents: 'none',
           zIndex: 0,
@@ -74,7 +90,9 @@ export default function Layout() {
           right: '-15%',
           width: '50%',
           height: '65%',
-          background: 'radial-gradient(ellipse, rgba(175, 82, 222, 0.07) 0%, rgba(175, 82, 222, 0.02) 35%, transparent 65%)',
+          background: isDark
+            ? 'radial-gradient(ellipse, rgba(139, 92, 246, 0.12) 0%, rgba(139, 92, 246, 0.04) 35%, transparent 65%)'
+            : 'radial-gradient(ellipse, rgba(175, 82, 222, 0.07) 0%, rgba(175, 82, 222, 0.02) 35%, transparent 65%)',
           filter: 'blur(100px)',
           pointerEvents: 'none',
           zIndex: 0,
@@ -92,7 +110,9 @@ export default function Layout() {
           left: '25%',
           width: '45%',
           height: '55%',
-          background: 'radial-gradient(ellipse, rgba(90, 200, 250, 0.06) 0%, rgba(90, 200, 250, 0.02) 35%, transparent 65%)',
+          background: isDark
+            ? 'radial-gradient(ellipse, rgba(34, 211, 238, 0.1) 0%, rgba(34, 211, 238, 0.03) 35%, transparent 65%)'
+            : 'radial-gradient(ellipse, rgba(90, 200, 250, 0.06) 0%, rgba(90, 200, 250, 0.02) 35%, transparent 65%)',
           filter: 'blur(100px)',
           pointerEvents: 'none',
           zIndex: 0,
@@ -105,7 +125,7 @@ export default function Layout() {
         }}
       />
       
-      {/* Accent Orb - Green */}
+      {/* Accent Orb - Green/Emerald */}
       <Box
         sx={{
           position: 'fixed',
@@ -113,7 +133,9 @@ export default function Layout() {
           left: '5%',
           width: '25%',
           height: '35%',
-          background: 'radial-gradient(ellipse, rgba(52, 199, 89, 0.05) 0%, transparent 60%)',
+          background: isDark
+            ? 'radial-gradient(ellipse, rgba(16, 185, 129, 0.08) 0%, transparent 60%)'
+            : 'radial-gradient(ellipse, rgba(52, 199, 89, 0.05) 0%, transparent 60%)',
           filter: 'blur(80px)',
           pointerEvents: 'none',
           zIndex: 0,
