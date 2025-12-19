@@ -296,18 +296,25 @@ export async function seedSQLiteDatabase() {
       ]
     );
 
-    // Erstelle Rechnungen
+    // Erstelle Rechnungen (basierend auf dem korrekten Schema)
+    // Zuerst einen Kontakt-ID holen
+    const contactResult = await query('SELECT id FROM contacts LIMIT 1');
+    const contactId = contactResult.rows?.[0]?.id || 1;
+    
     await query(
-      `INSERT INTO invoices (invoice_number, project_id, customer_id, amount, tax_rate, status, due_date, created_by)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
+      `INSERT INTO invoices (invoice_number, invoice_date, due_date, contact_id, company_id, status, subtotal, tax_rate, tax_amount, total_amount, created_by)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`,
       [
         'RE-2024-001',
-        project1Id,
-        company1Id,
-        25000.00,
-        19.00,
-        'pending',
+        new Date().toISOString().split('T')[0],
         new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+        contactId,
+        company1Id,
+        'pending',
+        21008.40,  // Netto
+        19.00,
+        3991.60,   // MwSt
+        25000.00,  // Brutto
         adminId
       ]
     );
