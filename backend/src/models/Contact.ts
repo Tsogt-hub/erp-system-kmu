@@ -124,7 +124,7 @@ export class ContactModel {
     const params: any[] = [];
 
     if (!includeArchived) {
-      conditions.push(`(c.is_archived = 0 OR c.is_archived IS NULL OR c.is_archived = false)`);
+      conditions.push(`(c.is_archived = false OR c.is_archived IS NULL)`);
     }
 
     if (category) {

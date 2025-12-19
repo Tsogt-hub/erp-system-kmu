@@ -34,8 +34,7 @@ export class OfferService {
   static async createForProject(projectId: number, userId: number) {
     // Projekt-Daten laden für Kundenzuordnung
     const projectResult = await query(
-      `SELECT p.*, c.id as company_id FROM projects p 
-       LEFT JOIN companies c ON p.company_id = c.id 
+      `SELECT p.*, p.customer_id as company_id FROM projects p 
        WHERE p.id = $1`,
       [projectId]
     );
@@ -51,7 +50,7 @@ export class OfferService {
 
     return await OfferModel.create({
       project_id: projectId,
-      customer_id: project.company_id,
+      customer_id: project.customer_id || project.company_id,
       amount: 0,
       tax_rate: 19.00,
       status: 'draft',

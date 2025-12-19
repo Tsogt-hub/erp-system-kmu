@@ -109,6 +109,12 @@ const authSlice = createSlice({
       // Fetch User
       .addCase(fetchUser.fulfilled, (state, action) => {
         state.user = action.payload;
+      })
+      .addCase(fetchUser.rejected, (state) => {
+        // Bei Fehler Token entfernen und User zurücksetzen
+        state.user = null;
+        state.token = null;
+        localStorage.removeItem('token');
       });
   },
 });

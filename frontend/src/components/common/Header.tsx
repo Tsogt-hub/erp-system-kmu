@@ -262,10 +262,10 @@ export default function Header() {
                     boxShadow: '0 1px 4px rgba(0, 113, 227, 0.3)',
                   }}
                 >
-                  {user?.first_name?.[0]}{user?.last_name?.[0]}
+                  {(user?.first_name?.[0] || '')}{(user?.last_name?.[0] || '')}
                 </Avatar>
               }
-              label={`${user?.first_name} ${user?.last_name}`}
+              label={user?.first_name && user?.last_name ? `${user.first_name} ${user.last_name}` : (user?.email || 'Benutzer')}
               sx={{
                 height: 34,
                 pl: 0.25,
