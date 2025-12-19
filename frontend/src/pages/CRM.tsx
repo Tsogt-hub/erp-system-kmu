@@ -33,6 +33,7 @@ import UnarchiveIcon from '@mui/icons-material/Unarchive';
 import SearchIcon from '@mui/icons-material/Search';
 import ClearIcon from '@mui/icons-material/Clear';
 import { crmApi, Company, Contact, CreateCompanyData, CreateContactData, LEAD_SOURCES, REACHABILITY_OPTIONS, SALUTATION_OPTIONS } from '../services/api/crm';
+import { apiClient } from '../services/api/client';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -167,20 +168,12 @@ export default function CRM() {
       setLoading(true);
       if (tabValue === 0) {
         // Kontakte - nur Personen (type='person')
-        const params = new URLSearchParams();
-        params.append('type', 'person'); // Nur Personen, keine Unternehmen
-        if (contactFilters.category) params.append('category', contactFilters.category);
-        if (contactFilters.showArchived) params.append('archived', 'true');
+        const params: any = { type: 'person' }; // Nur Personen, keine Unternehmen
+        if (contactFilters.category) params.category = contactFilters.category;
+        if (contactFilters.showArchived) params.archived = 'true';
         
-        const queryString = params.toString();
-        const url = queryString ? `/api/crm/contacts?${queryString}` : '/api/crm/contacts';
-        const response = await fetch(url, {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem('token')}`,
-          },
-        });
-        const data = await response.json();
-        setContacts(data);
+        const response = await apiClient.get('/crm/contacts', { params });
+        setContacts(response.data);
       } else {
         // Unternehmen - nur Unternehmen (type='company')
         const data = await crmApi.getCompanies();
