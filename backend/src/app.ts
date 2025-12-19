@@ -243,28 +243,26 @@ async function startServer() {
   try {
     const { initItemsTable } = await import('./models/Item');
     await initItemsTable();
-    logger.info('✅ Items table initialized');
+    console.log('APP: Items table initialized');
   } catch (error: any) {
-    logger.warn('⚠️  Items-Tabelle Initialisierung übersprungen:', error.message);
+    console.log('APP: Items-Tabelle übersprungen:', error.message);
   }
 
-  // Hero-Artikel aus CSV importieren (bereits importiert - 1.123 Artikel)
-  // Deaktiviert, da bereits importiert
-  // try {
-  //   const { importHeroArticlesFromCSV } = await import('./seeds/import-hero-csv');
-  //   const result = await importHeroArticlesFromCSV();
-  //   logger.info(`✅ Hero articles imported: ${result.imported} new, ${result.skipped} updated, ${result.errors} errors`);
-  // } catch (error: any) {
-  //   logger.warn('⚠️  Hero-Artikel Import übersprungen:', error.message);
-  // }
-  logger.info('✅ Hero articles already imported: 1.123 articles in database');
+  console.log('APP: Preparing to start server...');
+  console.log('APP: PORT =', PORT);
   
   // Bind to 0.0.0.0 for Railway deployment
   const HOST = '0.0.0.0';
-  app.listen(Number(PORT), HOST, () => {
-    logger.info(`🚀 Server running on ${HOST}:${PORT}`);
-    logger.info(`📝 Environment: ${config.nodeEnv}`);
+  const serverPort = Number(PORT) || 3001;
+  console.log('APP: Starting server on', HOST, ':', serverPort);
+  
+  app.listen(serverPort, HOST, () => {
+    console.log(`🚀 Server running on ${HOST}:${serverPort}`);
+    console.log(`📝 Environment: ${config.nodeEnv}`);
+    logger.info(`🚀 Server running on ${HOST}:${serverPort}`);
   });
+  
+  console.log('APP: app.listen called');
 }
 
 startServer().catch((error) => {
