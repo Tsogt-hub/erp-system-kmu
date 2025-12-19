@@ -497,7 +497,7 @@ export default function CustomKanbanBoard() {
       {/* Kanban Board */}
       <Box sx={{ 
         flex: 1, 
-        overflowX: 'hidden',
+        overflowX: 'auto', // Allow horizontal scroll only when columns exceed min-width
         overflowY: 'hidden',
         p: 2,
         display: 'flex',
@@ -507,9 +507,9 @@ export default function CustomKanbanBoard() {
           <Box
             key={column.id}
             sx={{
-              flex: 1,
-              minWidth: 0, // Allow columns to shrink below content size
-              maxWidth: `calc((100% - ${(board.columns.length - 1) * 12}px) / ${board.columns.length})`,
+              flex: '1 1 0', // Grow and shrink equally
+              minWidth: 150, // Minimum readable width
+              maxWidth: 350, // Maximum width to prevent too wide columns
               display: 'flex',
               flexDirection: 'column',
               height: '100%',
