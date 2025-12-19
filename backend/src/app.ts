@@ -259,8 +259,10 @@ async function startServer() {
   // }
   logger.info('✅ Hero articles already imported: 1.123 articles in database');
   
-  app.listen(PORT, () => {
-    logger.info(`🚀 Server running on port ${PORT}`);
+  // Bind to 0.0.0.0 for Railway deployment
+  const HOST = '0.0.0.0';
+  app.listen(Number(PORT), HOST, () => {
+    logger.info(`🚀 Server running on ${HOST}:${PORT}`);
     logger.info(`📝 Environment: ${config.nodeEnv}`);
   });
 }

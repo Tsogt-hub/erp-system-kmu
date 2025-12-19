@@ -105,10 +105,13 @@ export async function initItemsTable(): Promise<void> {
       await query(`ALTER TABLE items ADD COLUMN ${col.name} ${col.type}`);
       console.log(`  ✅ Spalte ${col.name} hinzugefügt`);
     } catch (error: any) {
-      if (error.message?.includes('duplicate column') || error.code === 'SQLITE_ERROR') {
+      // Ignoriere "duplicate column" Fehler (Spalte existiert bereits)
+      const errMsg = error.message || '';
+      if (errMsg.includes('duplicate column') || errMsg.includes('already exists')) {
         console.log(`  ℹ️ Spalte ${col.name} existiert bereits`);
       } else {
-        throw error;
+        // Bei anderen Fehlern nur warnen, nicht abbrechen
+        console.log(`  ⚠️ Spalte ${col.name} übersprungen: ${errMsg}`);
       }
     }
   }
