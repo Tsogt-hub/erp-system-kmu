@@ -1,0 +1,30 @@
+# Nixpacks configuration for Railway
+# Includes Chromium dependencies for Puppeteer PDF generation
+
+[phases.setup]
+nixPkgs = [
+  "nodejs_20",
+  "python311",
+  "gcc",
+  "gnumake",
+  # Chromium dependencies for Puppeteer
+  "chromium",
+  "nss",
+  "freetype",
+  "fontconfig",
+  "harfbuzz"
+]
+
+# Set Puppeteer to use system Chromium
+[variables]
+PUPPETEER_SKIP_CHROMIUM_DOWNLOAD = "true"
+PUPPETEER_EXECUTABLE_PATH = "/nix/var/nix/profiles/default/bin/chromium"
+
+[phases.install]
+cmds = ["npm ci --legacy-peer-deps"]
+
+[phases.build]
+cmds = ["npm run build"]
+
+[start]
+cmd = "npm run start"
