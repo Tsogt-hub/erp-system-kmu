@@ -202,62 +202,80 @@ class PDFService {
         }
 
         // ==================== HEADER ====================
-        // Firmenname/Logo links
-        doc.fontSize(20)
-           .fillColor(primaryRgb)
-           .font('Helvetica-Bold')
-           .text(offer.company.name, leftMargin, 40, { width: 250 });
+        // Hero-Layout: Wenn kein Briefpapier-PDF vorhanden, generiere Header
+        // Sonst wird das Briefpapier den Header enthalten
+        
+        const hasLetterhead = settings.letterhead_url && fs.existsSync(
+          path.join(process.cwd(), settings.letterhead_url)
+        );
+        
+        if (!hasLetterhead) {
+          // Firmenname/Logo links (nur wenn kein Briefpapier)
+          doc.fontSize(20)
+             .fillColor(primaryRgb)
+             .font('Helvetica-Bold')
+             .text(offer.company.name, leftMargin, 40, { width: 250 });
 
-        // Firmeninfo rechts
-        const companyInfoX = 350;
-        doc.fontSize(8)
-           .fillColor('#555555')
-           .font('Helvetica')
-           .text(offer.company.street || offer.company.address, companyInfoX, 40, { align: 'right', width: 195 })
-           .text(`${offer.company.postal_code || ''} ${offer.company.city || ''}`, { align: 'right', width: 195 })
-           .text(`Tel: ${offer.company.phone}`, { align: 'right', width: 195 })
-           .text(`E-Mail: ${offer.company.email}`, { align: 'right', width: 195 })
-           .text(offer.company.website, { align: 'right', width: 195 });
+          // Firmeninfo rechts (nur wenn kein Briefpapier)
+          const companyInfoX = 350;
+          doc.fontSize(8)
+             .fillColor('#555555')
+             .font('Helvetica')
+             .text(offer.company.street || offer.company.address, companyInfoX, 40, { align: 'right', width: 195 })
+             .text(`${offer.company.postal_code || ''} ${offer.company.city || ''}`, { align: 'right', width: 195 })
+             .text(`Tel: ${offer.company.phone}`, { align: 'right', width: 195 })
+             .text(`E-Mail: ${offer.company.email}`, { align: 'right', width: 195 });
+        }
+        
+        // Falzmarken (wie in Hero konfiguriert)
+        if (settings.show_fold_marks) {
+          doc.strokeColor('#CCCCCC')
+             .lineWidth(0.5);
+          // Obere Falzmarke (87mm = ~247pt)
+          doc.moveTo(0, 247).lineTo(15, 247).stroke();
+          // Mittlere Falzmarke (148.5mm = ~421pt)  
+          doc.moveTo(0, 421).lineTo(15, 421).stroke();
+        }
+        
+        // Absenderzeile wie in Hero (Position: 45mm = ~127pt von oben)
+        if (settings.show_sender_line) {
+          doc.fontSize(7)
+             .fillColor('#666666')
+             .font('Helvetica')
+             .text(
+               `${offer.company.name}, ${offer.company.street || offer.company.address}, ${offer.company.postal_code || ''} ${offer.company.city || ''}`,
+               settings.address_position_x,
+               settings.address_position_y,
+               { width: contentWidth }
+             );
+        }
 
-        // Trennlinie unter Header
-        doc.moveTo(leftMargin, 95)
-           .lineTo(rightMargin, 95)
-           .strokeColor(primaryRgb)
-           .lineWidth(2)
-           .stroke();
-
-        // ==================== ABSENDER-ZEILE ====================
-        const companyFullAddress = offer.company.street
-          ? `${offer.company.name} · ${offer.company.street}, ${offer.company.postal_code} ${offer.company.city}`
-          : `${offer.company.name} · ${offer.company.address}`;
-
-        doc.fontSize(7)
-           .fillColor('#888888')
-           .font('Helvetica')
-           .text(companyFullAddress, leftMargin, 115);
-
-        // Linie unter Absender
-        doc.moveTo(leftMargin, 125)
-           .lineTo(leftMargin + 200, 125)
+        // Trennlinie unter Absenderzeile (wie in Hero)
+        doc.moveTo(settings.address_position_x, settings.address_position_y + 12)
+           .lineTo(settings.address_position_x + 200, settings.address_position_y + 12)
            .strokeColor('#888888')
            .lineWidth(0.5)
            .stroke();
 
         // ==================== EMPFÄNGER-ADRESSE ====================
+        // Position direkt unter Absenderzeile (Hero-Stil)
+        const recipientY = settings.address_position_y + 20;
+        
         doc.fontSize(11)
            .fillColor('#000000')
            .font('Helvetica-Bold')
-           .text(offer.customer.name, leftMargin, 135);
+           .text(offer.customer.name, settings.address_position_x, recipientY);
 
         doc.fontSize(10)
            .font('Helvetica')
-           .text(offer.customer.address || '', leftMargin, 150)
-           .text(`${offer.customer.postal_code || ''} ${offer.customer.city || ''}`, leftMargin, 163);
+           .text(offer.customer.address || '', settings.address_position_x, recipientY + 15)
+           .text(`${offer.customer.postal_code || ''} ${offer.customer.city || ''}`, settings.address_position_x, recipientY + 28);
 
         // ==================== DOKUMENT-INFO-BOX ====================
+        // Position rechts neben Empfängeradresse (Hero-Stil)
         const infoBoxX = 370;
-        const infoBoxY = 115;
-        const infoBoxWidth = 175;
+        const infoBoxY = recipientY - 5;
+        const infoBoxWidth = pageWidth - infoBoxX - settings.margin_right;
         const infoBoxHeight = 80;
 
         // Box-Hintergrund
@@ -320,10 +338,22 @@ class PDFService {
           doc.opacity(1);
         }
 
-        // ==================== TITEL ====================
-        let currentY = 210;
+        // ==================== BETREFFZEILE / TITEL ====================
+        // Hauptblock beginnt bei 100mm = ~283pt (wie in Hero konfiguriert)
+        const mainBlockStart = 283;
+        let currentY = mainBlockStart;
 
-        doc.fontSize(16)
+        // Betreffzeile 1: Projektadresse (wie in Hero)
+        if (offer.project?.address) {
+          doc.fontSize(14)
+             .fillColor('#000000')
+             .font('Helvetica-Bold')
+             .text(`BV: ${offer.project.address}`, leftMargin, currentY);
+          currentY += 20;
+        }
+
+        // Betreffzeile 2: Angebotsnummer (wie in Hero: 14pt, fett)
+        doc.fontSize(14)
            .fillColor(primaryRgb)
            .font('Helvetica-Bold')
            .text(`Angebot ${offer.offer_number}`, leftMargin, currentY);

@@ -72,26 +72,31 @@ export interface CreatePDFSettingsData {
   footer_text_template?: string;
 }
 
-// Standardwerte für neue Einstellungen
+// Standardwerte für neue Einstellungen (basierend auf Hero Software Elite PV Konfiguration)
 export const DEFAULT_PDF_SETTINGS: Omit<PDFSettings, 'id' | 'created_at' | 'updated_at'> = {
   document_type: 'default',
   letterhead_first_page_only: true,
-  primary_color: '#1976D2',
-  secondary_color: '#FF9800',
-  logo_position_x: 450,
-  logo_position_y: 30,
-  logo_width: 100,
-  font_family: 'Helvetica',
-  font_size: 10,
-  margin_top: 40,
-  margin_right: 50,
-  margin_bottom: 40,
-  margin_left: 50,
-  address_position_x: 50,
-  address_position_y: 130,
-  show_sender_line: true,
-  show_fold_marks: false,
-  footer_font_size: 7,
+  // Elite PV Firmenfarben
+  primary_color: '#1976D2',      // Elite PV Blau
+  secondary_color: '#FF9800',     // Elite PV Orange/Akzent
+  // Logo-Positionierung wie in Hero (rechts oben)
+  logo_position_x: 425,           // 150mm = ~425pt (Position links in Hero)
+  logo_position_y: 28,            // 10mm = ~28pt (Position oben in Hero)
+  logo_width: 127,                // 45mm = ~127pt (Breite in Hero)
+  // Schriftart und Größe wie in Hero
+  font_family: 'Helvetica',       // Arial → Helvetica in PDFKit
+  font_size: 9,                   // 9pt wie in Hero
+  // Seitenränder wie in Hero (in Punkten, 1mm = 2.835pt)
+  margin_top: 113,                // 40mm = ~113pt
+  margin_right: 57,               // 20mm = ~57pt (Hauptblock rechts)
+  margin_bottom: 99,              // 35mm = ~99pt
+  margin_left: 71,                // 25mm = ~71pt (Hauptblock links)
+  // Adressblock-Position wie in Hero
+  address_position_x: 71,         // 25mm = ~71pt
+  address_position_y: 127,        // 45mm = ~127pt
+  show_sender_line: true,         // Eigene Adresszeile aktiviert
+  show_fold_marks: true,          // Falzmarken aktiviert wie in Hero
+  footer_font_size: 7,            // 7pt wie in Hero
 };
 
 export class PDFSettingsModel {
