@@ -1,11 +1,4 @@
-import axios from 'axios';
-
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
-
-const getAuthHeader = () => {
-  const token = localStorage.getItem('token');
-  return token ? { Authorization: `Bearer ${token}` } : {};
-};
+import { apiClient } from './api/client';
 
 // Types
 export interface KanbanBoard {
@@ -116,37 +109,27 @@ export interface CreateActivityData {
 export const kanbanService = {
   // Boards
   async getAllBoards(): Promise<KanbanBoard[]> {
-    const response = await axios.get(`${API_URL}/kanban/boards`, {
-      headers: getAuthHeader(),
-    });
+    const response = await apiClient.get('/kanban/boards');
     return response.data;
   },
 
   async getBoardById(id: number): Promise<KanbanBoard & { columns: (KanbanColumn & { cards: KanbanCard[] })[] }> {
-    const response = await axios.get(`${API_URL}/kanban/boards/${id}`, {
-      headers: getAuthHeader(),
-    });
+    const response = await apiClient.get(`/kanban/boards/${id}`);
     return response.data;
   },
 
   async createBoard(data: CreateBoardData): Promise<KanbanBoard> {
-    const response = await axios.post(`${API_URL}/kanban/boards`, data, {
-      headers: getAuthHeader(),
-    });
+    const response = await apiClient.post('/kanban/boards', data);
     return response.data;
   },
 
   async updateBoard(id: number, data: Partial<CreateBoardData>): Promise<KanbanBoard> {
-    const response = await axios.put(`${API_URL}/kanban/boards/${id}`, data, {
-      headers: getAuthHeader(),
-    });
+    const response = await apiClient.put(`/kanban/boards/${id}`, data);
     return response.data;
   },
 
   async deleteBoard(id: number): Promise<void> {
-    await axios.delete(`${API_URL}/kanban/boards/${id}`, {
-      headers: getAuthHeader(),
-    });
+    await apiClient.delete(`/kanban/boards/${id}`);
   },
 
   async getBoardStats(id: number): Promise<{
@@ -155,102 +138,74 @@ export const kanbanService = {
     cardsByPriority: { priority: string; count: number }[];
     totalAmount: number;
   }> {
-    const response = await axios.get(`${API_URL}/kanban/boards/${id}/stats`, {
-      headers: getAuthHeader(),
-    });
+    const response = await apiClient.get(`/kanban/boards/${id}/stats`);
     return response.data;
   },
 
   // Columns
   async createColumn(boardId: number, data: CreateColumnData): Promise<KanbanColumn> {
-    const response = await axios.post(`${API_URL}/kanban/boards/${boardId}/columns`, data, {
-      headers: getAuthHeader(),
-    });
+    const response = await apiClient.post(`/kanban/boards/${boardId}/columns`, data);
     return response.data;
   },
 
   async updateColumn(id: number, data: Partial<CreateColumnData>): Promise<KanbanColumn> {
-    const response = await axios.put(`${API_URL}/kanban/columns/${id}`, data, {
-      headers: getAuthHeader(),
-    });
+    const response = await apiClient.put(`/kanban/columns/${id}`, data);
     return response.data;
   },
 
   async deleteColumn(id: number): Promise<void> {
-    await axios.delete(`${API_URL}/kanban/columns/${id}`, {
-      headers: getAuthHeader(),
-    });
+    await apiClient.delete(`/kanban/columns/${id}`);
   },
 
   async reorderColumns(boardId: number, columnIds: number[]): Promise<void> {
-    await axios.put(`${API_URL}/kanban/boards/${boardId}/columns/reorder`, { columnIds }, {
-      headers: getAuthHeader(),
-    });
+    await apiClient.put(`/kanban/boards/${boardId}/columns/reorder`, { columnIds });
   },
 
   // Cards
   async getCardById(id: number): Promise<KanbanCard & { activities: KanbanActivity[] }> {
-    const response = await axios.get(`${API_URL}/kanban/cards/${id}`, {
-      headers: getAuthHeader(),
-    });
+    const response = await apiClient.get(`/kanban/cards/${id}`);
     return response.data;
   },
 
   async createCard(data: CreateCardData): Promise<KanbanCard> {
-    const response = await axios.post(`${API_URL}/kanban/cards`, data, {
-      headers: getAuthHeader(),
-    });
+    const response = await apiClient.post('/kanban/cards', data);
     return response.data;
   },
 
   async updateCard(id: number, data: Partial<CreateCardData>): Promise<KanbanCard> {
-    const response = await axios.put(`${API_URL}/kanban/cards/${id}`, data, {
-      headers: getAuthHeader(),
-    });
+    const response = await apiClient.put(`/kanban/cards/${id}`, data);
     return response.data;
   },
 
   async moveCard(cardId: number, columnId: number, position: number): Promise<KanbanCard> {
-    const response = await axios.put(`${API_URL}/kanban/cards/${cardId}/move`, {
+    const response = await apiClient.put(`/kanban/cards/${cardId}/move`, {
       column_id: columnId,
       position,
-    }, {
-      headers: getAuthHeader(),
     });
     return response.data;
   },
 
   async deleteCard(id: number): Promise<void> {
-    await axios.delete(`${API_URL}/kanban/cards/${id}`, {
-      headers: getAuthHeader(),
-    });
+    await apiClient.delete(`/kanban/cards/${id}`);
   },
 
   async reorderCards(columnId: number, cardIds: number[]): Promise<void> {
-    await axios.put(`${API_URL}/kanban/columns/${columnId}/cards/reorder`, { cardIds }, {
-      headers: getAuthHeader(),
-    });
+    await apiClient.put(`/kanban/columns/${columnId}/cards/reorder`, { cardIds });
   },
 
   // Activities
   async getCardActivities(cardId: number): Promise<KanbanActivity[]> {
-    const response = await axios.get(`${API_URL}/kanban/cards/${cardId}/activities`, {
-      headers: getAuthHeader(),
-    });
+    const response = await apiClient.get(`/kanban/cards/${cardId}/activities`);
     return response.data;
   },
 
   async addActivity(cardId: number, data: CreateActivityData): Promise<KanbanActivity> {
-    const response = await axios.post(`${API_URL}/kanban/cards/${cardId}/activities`, data, {
-      headers: getAuthHeader(),
-    });
+    const response = await apiClient.post(`/kanban/cards/${cardId}/activities`, data);
     return response.data;
   },
 
   async deleteActivity(id: number): Promise<void> {
-    await axios.delete(`${API_URL}/kanban/activities/${id}`, {
-      headers: getAuthHeader(),
-    });
+    await apiClient.delete(`/kanban/activities/${id}`);
   },
 };
 
