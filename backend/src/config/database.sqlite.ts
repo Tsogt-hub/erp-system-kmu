@@ -12,8 +12,8 @@ if (!fs.existsSync(dataDir)) {
 
 export const db: DatabaseType = new Database(dbPath);
 
-// Enable foreign keys
-db.pragma('foreign_keys = ON');
+// Disable foreign keys to allow flexible customer_id (can be contact or company)
+db.pragma('foreign_keys = OFF');
 
 // Test connection
 console.log('✅ SQLite Database connected:', dbPath);
