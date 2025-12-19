@@ -497,19 +497,19 @@ export default function CustomKanbanBoard() {
       {/* Kanban Board */}
       <Box sx={{ 
         flex: 1, 
-        overflowX: 'auto', // Allow horizontal scroll only when columns exceed min-width
+        overflowX: 'hidden', // Never scroll - all columns always visible
         overflowY: 'hidden',
         p: 2,
         display: 'flex',
-        gap: 1.5,
+        gap: 1,
+        alignItems: 'flex-start',
       }}>
         {board.columns.map((column) => (
           <Box
             key={column.id}
             sx={{
-              flex: '1 1 0', // Grow and shrink equally
-              minWidth: 150, // Minimum readable width
-              maxWidth: 350, // Maximum width to prevent too wide columns
+              flex: 1, // Equal distribution
+              minWidth: 0, // Allow shrinking
               display: 'flex',
               flexDirection: 'column',
               height: '100%',
@@ -786,30 +786,6 @@ export default function CustomKanbanBoard() {
           </Box>
         ))}
         
-        {/* Add Column Placeholder - only show if there's room */}
-        <Box
-          sx={{
-            flexShrink: 0,
-            width: 'auto',
-            display: 'flex',
-            alignItems: 'flex-start',
-            pt: 2,
-          }}
-        >
-          <Button
-            variant="outlined"
-            startIcon={<AddIcon />}
-            onClick={() => setNewColumnDialogOpen(true)}
-            sx={{ 
-              borderStyle: 'dashed',
-              height: 48,
-              whiteSpace: 'nowrap',
-              px: 2,
-            }}
-          >
-            Spalte hinzufügen
-          </Button>
-        </Box>
       </Box>
 
       {/* Column Menu */}
