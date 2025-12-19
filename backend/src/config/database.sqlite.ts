@@ -69,8 +69,8 @@ export const query = async (text: string, params: any[] = []) => {
     const stmt = db.prepare(sqliteText);
     const upperText = sqliteText.trim().toUpperCase();
     
-    // Prüfe ob es ein SELECT ist
-    if (upperText.startsWith('SELECT')) {
+    // Prüfe ob es ein SELECT oder PRAGMA ist (beide geben Ergebnisse zurück)
+    if (upperText.startsWith('SELECT') || upperText.startsWith('PRAGMA')) {
       if (convertedParams.length > 0) {
         const result = stmt.all(...convertedParams);
         return { rows: result, rowCount: result.length };
