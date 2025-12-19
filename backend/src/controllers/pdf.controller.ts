@@ -4,6 +4,7 @@ import { OfferService } from '../services/offer.service';
 import { pdfService } from '../services/pdf.service';
 import { query } from '../config/database';
 import { getRow } from '../utils/fix-models';
+import { ELITE_PV_COMPANY, ELITE_PV_OFFER_TEXTS } from '../seeds/elite-pv-config';
 
 export class PDFController {
   static async generateOfferPDF(req: AuthRequest, res: Response, next: NextFunction) {
@@ -98,27 +99,27 @@ export class PDFController {
           item_type: item.item_type || 'standard',
           image_url: item.image_url,
         })),
-        intro_text: offerData.intro_text || 'Vielen Dank für Ihr Interesse. Gerne unterbreiten wir Ihnen folgendes Angebot:',
-        footer_text: offerData.footer_text || '',
-        payment_terms: offerData.payment_terms || 'Zahlbar innerhalb von 14 Tagen nach Rechnungserhalt ohne Abzug.',
+        intro_text: offerData.intro_text || ELITE_PV_OFFER_TEXTS.intro_text,
+        footer_text: offerData.footer_text || ELITE_PV_OFFER_TEXTS.footer_text,
+        payment_terms: offerData.payment_terms || '50% bei Auftragserteilung, 50% bei Fertigstellung',
         total_net: totalNet,
         total_tax: totalTax,
         tax_rate: taxRate,
         total_gross: totalGross,
         is_draft: offerData.status === 'draft',
         company: {
-          name: 'Elite PV GmbH',
-          address: 'Musterstraße 1, 12345 Musterstadt',
-          street: 'Musterstraße 1',
-          postal_code: '12345',
-          city: 'Musterstadt',
-          phone: '+49 123 456789',
-          email: 'info@elite-pv.de',
-          website: 'www.elite-pv.de',
-          tax_number: 'DE123456789',
-          bank_name: 'Sparkasse Musterstadt',
-          iban: 'DE89 3704 0044 0532 0130 00',
-          bic: 'COBADEFFXXX',
+          name: ELITE_PV_COMPANY.name,
+          address: ELITE_PV_COMPANY.sender_line,
+          street: ELITE_PV_COMPANY.street,
+          postal_code: ELITE_PV_COMPANY.postal_code,
+          city: ELITE_PV_COMPANY.city,
+          phone: ELITE_PV_COMPANY.phone,
+          email: ELITE_PV_COMPANY.email,
+          website: ELITE_PV_COMPANY.website,
+          tax_number: ELITE_PV_COMPANY.tax_number,
+          bank_name: ELITE_PV_COMPANY.bank_name,
+          iban: ELITE_PV_COMPANY.iban,
+          bic: ELITE_PV_COMPANY.bic,
         },
       };
 

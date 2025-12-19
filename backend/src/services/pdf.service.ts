@@ -28,9 +28,10 @@ export interface PDFBranding {
   fontFamily: string;
 }
 
+// Elite PV Branding - EXAKT wie auf Website/Hero
 export const DEFAULT_BRANDING: PDFBranding = {
-  primaryColor: '#1976D2', // Elite PV Blau
-  secondaryColor: '#FF9800', // Akzentfarbe
+  primaryColor: '#1976D2', // Elite PV Blau (Tabellenkopf)
+  secondaryColor: '#FFC107', // Elite PV Gelb (Hervorhebungen)
   fontFamily: 'Helvetica',
 };
 
@@ -559,6 +560,15 @@ class PDFService {
              .text(offer.footer_text, leftMargin, currentY, { width: contentWidth, lineGap: 3 });
           currentY = doc.y + 20;
         }
+
+        // ==================== GRUßFORMEL ====================
+        // Elite PV Standard: "Mit sonnigen Grüßen ☀️"
+        doc.fontSize(10)
+           .font('Helvetica')
+           .fillColor('#333333')
+           .text('Mit sonnigen Grüßen', leftMargin, currentY);
+        
+        currentY += 30;
 
         // ==================== UNTERSCHRIFTEN ====================
         if (currentY < 650) {

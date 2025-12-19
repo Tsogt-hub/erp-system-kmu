@@ -73,12 +73,13 @@ export interface CreatePDFSettingsData {
 }
 
 // Standardwerte für neue Einstellungen (basierend auf Hero Software Elite PV Konfiguration)
+// EXAKT von Elite PV Website übernommen
 export const DEFAULT_PDF_SETTINGS: Omit<PDFSettings, 'id' | 'created_at' | 'updated_at'> = {
   document_type: 'default',
   letterhead_first_page_only: true,
-  // Elite PV Firmenfarben
-  primary_color: '#1976D2',      // Elite PV Blau
-  secondary_color: '#FF9800',     // Elite PV Orange/Akzent
+  // Elite PV Firmenfarben - EXAKT wie auf Website
+  primary_color: '#1976D2',      // Elite PV Blau (Tabellenkopf, Akzente)
+  secondary_color: '#FFC107',     // Elite PV Gelb (Hervorhebungen, CTAs)
   // Logo-Positionierung wie in Hero (rechts oben)
   logo_position_x: 425,           // 150mm = ~425pt (Position links in Hero)
   logo_position_y: 28,            // 10mm = ~28pt (Position oben in Hero)
@@ -231,4 +232,5 @@ export class PDFSettingsModel {
     return settings;
   }
 }
+
 

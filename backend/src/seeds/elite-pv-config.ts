@@ -1,6 +1,27 @@
 // Elite PV GmbH - Firmenkonfiguration aus Hero Software übernommen
 // Stand: Dezember 2024
 
+// Elite PV Markenfarben (exakt von Website übernommen)
+export const ELITE_PV_COLORS = {
+  // Hauptfarben
+  primary: '#FFC107',        // Elite PV Gelb (CTA-Buttons)
+  primaryDark: '#FFB300',    // Dunkleres Gelb für Hover
+  secondary: '#000000',      // Schwarz (Text, Akzente)
+  accent: '#1976D2',         // Blau (sekundäre Akzente, Links)
+  
+  // Hintergrund
+  background: '#FFFFFF',
+  backgroundAlt: '#F8F9FA',
+  
+  // Text
+  textPrimary: '#212121',
+  textSecondary: '#666666',
+  
+  // PDF-spezifische Farben
+  headerBg: '#1976D2',       // Blau für Tabellenkopf
+  highlight: '#FFC107',      // Gelb für Hervorhebungen
+};
+
 export const ELITE_PV_COMPANY = {
   name: 'Elite PV GmbH',
   street: 'Lindenhof 4b',
@@ -93,4 +114,5 @@ export const ELITE_PV_PAYMENT_TERMS = {
   freifläche: '50% Vorauskasse, 20% Lieferung UK, 10% Lieferung WR, 15% Betriebsbereitschaft, 5% nach 3 Monaten',
   waermepumpe: '50% bei Auftragserteilung, 50% bei Fertigstellung vor Inbetriebnahme',
 };
+
 
