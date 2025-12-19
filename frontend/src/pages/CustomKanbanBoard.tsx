@@ -497,29 +497,19 @@ export default function CustomKanbanBoard() {
       {/* Kanban Board */}
       <Box sx={{ 
         flex: 1, 
-        overflowX: 'auto', 
+        overflowX: 'hidden',
         overflowY: 'hidden',
         p: 2,
         display: 'flex',
-        gap: 2,
-        '&::-webkit-scrollbar': {
-          height: 8,
-        },
-        '&::-webkit-scrollbar-track': {
-          bgcolor: alpha(theme.palette.divider, 0.1),
-          borderRadius: 4,
-        },
-        '&::-webkit-scrollbar-thumb': {
-          bgcolor: alpha(theme.palette.primary.main, 0.3),
-          borderRadius: 4,
-        },
+        gap: 1.5,
       }}>
         {board.columns.map((column) => (
           <Box
             key={column.id}
             sx={{
-              minWidth: 320,
-              maxWidth: 320,
+              flex: 1,
+              minWidth: 0, // Allow columns to shrink below content size
+              maxWidth: `calc((100% - ${(board.columns.length - 1) * 12}px) / ${board.columns.length})`,
               display: 'flex',
               flexDirection: 'column',
               height: '100%',
@@ -538,15 +528,25 @@ export default function CustomKanbanBoard() {
                 backdropFilter: 'blur(8px)',
               }}
             >
-              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <Typography variant="subtitle1" fontWeight={600}>
+              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', minWidth: 0 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, minWidth: 0, flex: 1 }}>
+                  <Typography 
+                    variant="subtitle1" 
+                    fontWeight={600}
+                    sx={{ 
+                      overflow: 'hidden', 
+                      textOverflow: 'ellipsis', 
+                      whiteSpace: 'nowrap',
+                      flex: 1,
+                    }}
+                  >
                     {column.name}
                   </Typography>
                   <Badge 
                     badgeContent={column.cards.length} 
                     color="primary"
                     sx={{ 
+                      flexShrink: 0,
                       '& .MuiBadge-badge': { 
                         bgcolor: column.color || theme.palette.primary.main,
                         color: 'white',
@@ -554,7 +554,7 @@ export default function CustomKanbanBoard() {
                     }}
                   />
                 </Box>
-                <Box>
+                <Box sx={{ flexShrink: 0, display: 'flex' }}>
                   <IconButton 
                     size="small"
                     onClick={(e) => {
@@ -786,10 +786,11 @@ export default function CustomKanbanBoard() {
           </Box>
         ))}
         
-        {/* Add Column Placeholder */}
+        {/* Add Column Placeholder - only show if there's room */}
         <Box
           sx={{
-            minWidth: 280,
+            flexShrink: 0,
+            width: 'auto',
             display: 'flex',
             alignItems: 'flex-start',
             pt: 2,
@@ -802,7 +803,8 @@ export default function CustomKanbanBoard() {
             sx={{ 
               borderStyle: 'dashed',
               height: 48,
-              width: '100%',
+              whiteSpace: 'nowrap',
+              px: 2,
             }}
           >
             Spalte hinzufügen
