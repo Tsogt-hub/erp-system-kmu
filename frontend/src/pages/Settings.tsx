@@ -26,8 +26,10 @@ import EditIcon from '@mui/icons-material/Edit';
 import LockIcon from '@mui/icons-material/Lock';
 import NotificationsIcon from '@mui/icons-material/Notifications';
 import BusinessIcon from '@mui/icons-material/Business';
+import DescriptionIcon from '@mui/icons-material/Description';
 import { RootState } from '../store/store';
 import { usersApi } from '../services/api/users';
+import DocumentDesignTab from '../components/settings/DocumentDesignTab';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -198,6 +200,7 @@ export default function Settings() {
           <Tab icon={<LockIcon />} iconPosition="start" label="Sicherheit" />
           <Tab icon={<NotificationsIcon />} iconPosition="start" label="Benachrichtigungen" />
           <Tab icon={<BusinessIcon />} iconPosition="start" label="Unternehmen" />
+          <Tab icon={<DescriptionIcon />} iconPosition="start" label="Dokumentendesign" />
         </Tabs>
 
         {/* Profil Tab */}
@@ -571,6 +574,13 @@ export default function Settings() {
                 </Button>
               </Grid>
             </Grid>
+          </Box>
+        </TabPanel>
+
+        {/* Dokumentendesign Tab */}
+        <TabPanel value={tabValue} index={4}>
+          <Box sx={{ p: 3 }}>
+            <DocumentDesignTab />
           </Box>
         </TabPanel>
       </Paper>

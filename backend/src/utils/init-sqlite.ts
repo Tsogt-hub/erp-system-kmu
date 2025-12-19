@@ -395,6 +395,56 @@ export async function initSQLiteDatabase() {
         FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
       );
 
+      -- PDF-Einstellungen für Dokumentendesign
+      CREATE TABLE IF NOT EXISTS pdf_settings (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        company_id INTEGER,
+        document_type TEXT NOT NULL DEFAULT 'default',
+        
+        -- Briefpapier
+        letterhead_url TEXT,
+        letterhead_first_page_only INTEGER DEFAULT 1,
+        
+        -- Farben
+        primary_color TEXT DEFAULT '#1976D2',
+        secondary_color TEXT DEFAULT '#FF9800',
+        
+        -- Logo
+        logo_url TEXT,
+        logo_position_x REAL DEFAULT 450,
+        logo_position_y REAL DEFAULT 30,
+        logo_width REAL DEFAULT 100,
+        
+        -- Schrift
+        font_family TEXT DEFAULT 'Helvetica',
+        font_size REAL DEFAULT 10,
+        
+        -- Seitenränder (in Punkten)
+        margin_top REAL DEFAULT 40,
+        margin_right REAL DEFAULT 50,
+        margin_bottom REAL DEFAULT 40,
+        margin_left REAL DEFAULT 50,
+        
+        -- Adressblock
+        address_position_x REAL DEFAULT 50,
+        address_position_y REAL DEFAULT 130,
+        show_sender_line INTEGER DEFAULT 1,
+        
+        -- Header/Footer
+        show_fold_marks INTEGER DEFAULT 0,
+        footer_font_size REAL DEFAULT 7,
+        
+        -- Textvorlagen
+        intro_text_template TEXT,
+        footer_text_template TEXT,
+        
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (company_id) REFERENCES companies(id)
+      );
+
+      CREATE INDEX IF NOT EXISTS idx_pdf_settings_document_type ON pdf_settings(document_type);
+
       CREATE TABLE IF NOT EXISTS calendar_events (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         title TEXT NOT NULL,

@@ -25,6 +25,7 @@ import pvProjectDataRoutes from './pvProjectData.routes';
 import openItemRoutes from './openItem.routes';
 import entityFileRoutes from './entityFile.routes';
 import objectAddressRoutes from './objectAddress.routes';
+import pdfSettingsRoutes from './pdfSettings.routes';
 
 const router = Router();
 
@@ -54,6 +55,7 @@ router.use('/pv-project-data', pvProjectDataRoutes);
 router.use('/open-items', openItemRoutes);
 router.use('/entity-files', entityFileRoutes);
 router.use('/object-addresses', objectAddressRoutes);
+router.use('/pdf-settings', pdfSettingsRoutes);
 
 export default router;
 

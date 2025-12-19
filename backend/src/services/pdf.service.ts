@@ -3,6 +3,9 @@
 
 import PDFDocument from 'pdfkit';
 import { logger } from '../utils/logger';
+import { PDFSettingsModel, PDFSettings, DEFAULT_PDF_SETTINGS } from '../models/PDFSettings';
+import fs from 'fs';
+import path from 'path';
 
 export interface PDFOptions {
   format?: 'A4' | 'A5' | 'Letter';
@@ -56,6 +59,36 @@ function formatDate(date: string | Date): string {
 }
 
 class PDFService {
+  // Lade PDF-Einstellungen aus der Datenbank
+  private getSettings(documentType: string = 'offer'): PDFSettings {
+    try {
+      const settings = PDFSettingsModel.findByDocumentType(documentType);
+      if (settings) return settings;
+      
+      // Fallback zu default
+      const defaultSettings = PDFSettingsModel.findByDocumentType('default');
+      if (defaultSettings) return defaultSettings;
+      
+      // Fallback zu Hardcoded-Werten
+      return {
+        id: 0,
+        ...DEFAULT_PDF_SETTINGS,
+        document_type: documentType,
+        created_at: new Date(),
+        updated_at: new Date(),
+      };
+    } catch (error) {
+      logger.warn('PDF-Einstellungen konnten nicht geladen werden, verwende Standardwerte');
+      return {
+        id: 0,
+        ...DEFAULT_PDF_SETTINGS,
+        document_type: documentType,
+        created_at: new Date(),
+        updated_at: new Date(),
+      };
+    }
+  }
+
   // PDF aus Daten generieren (Angebot)
   async generateOffer(offer: {
     offer_number: string;
@@ -109,16 +142,29 @@ class PDFService {
   }): Promise<Buffer> {
     logger.info('PDF wird mit PDFKit generiert', { offer_number: offer.offer_number });
 
-    const branding = offer.branding || DEFAULT_BRANDING;
+    // Lade Einstellungen aus Datenbank
+    const settings = this.getSettings('offer');
+    
+    // Verwende Branding aus Parametern oder aus Einstellungen
+    const branding = offer.branding || {
+      primaryColor: settings.primary_color,
+      secondaryColor: settings.secondary_color,
+      fontFamily: settings.font_family,
+    };
     const primaryRgb = hexToRgb(branding.primaryColor);
     const secondaryRgb = hexToRgb(branding.secondaryColor);
 
     return new Promise((resolve, reject) => {
       try {
-        // PDF-Dokument erstellen
+        // PDF-Dokument erstellen mit Einstellungen aus DB
         const doc = new PDFDocument({
           size: 'A4',
-          margins: { top: 40, bottom: 40, left: 50, right: 50 },
+          margins: { 
+            top: settings.margin_top, 
+            bottom: settings.margin_bottom, 
+            left: settings.margin_left, 
+            right: settings.margin_right 
+          },
           info: {
             Title: `Angebot ${offer.offer_number}`,
             Author: offer.company.name,
@@ -136,9 +182,24 @@ class PDFService {
         doc.on('error', reject);
 
         const pageWidth = 595.28; // A4 width in points
-        const contentWidth = pageWidth - 100; // 50pt margins on each side
-        const leftMargin = 50;
-        const rightMargin = pageWidth - 50;
+        const leftMargin = settings.margin_left;
+        const rightMargin = pageWidth - settings.margin_right;
+        const contentWidth = pageWidth - settings.margin_left - settings.margin_right;
+        const fontSize = settings.font_size;
+
+        // Logo aus Einstellungen laden (falls vorhanden)
+        if (settings.logo_url) {
+          try {
+            const logoPath = path.join(process.cwd(), settings.logo_url);
+            if (fs.existsSync(logoPath)) {
+              doc.image(logoPath, settings.logo_position_x, settings.logo_position_y, { 
+                width: settings.logo_width 
+              });
+            }
+          } catch (logoError) {
+            logger.warn('Logo konnte nicht geladen werden:', logoError);
+          }
+        }
 
         // ==================== HEADER ====================
         // Firmenname/Logo links
@@ -511,8 +572,9 @@ class PDFService {
         const footerText = `${offer.company.name} · ${offer.company.street || offer.company.address}, ${offer.company.postal_code || ''} ${offer.company.city || ''} · Steuernr.: ${offer.company.tax_number}`;
         const bankText = `${offer.company.bank_name} · IBAN: ${offer.company.iban} · BIC: ${offer.company.bic}`;
 
-        doc.fontSize(7)
-           .font('Helvetica')
+        // Verwende Schriftgröße aus Einstellungen
+        doc.fontSize(settings.footer_font_size)
+           .font(settings.font_family)
            .fillColor('#888888')
            .text(footerText, leftMargin, footerY + 8, { width: contentWidth, align: 'center' })
            .text(bankText, leftMargin, footerY + 18, { width: contentWidth, align: 'center' });
