@@ -26,6 +26,7 @@ import openItemRoutes from './openItem.routes';
 import entityFileRoutes from './entityFile.routes';
 import objectAddressRoutes from './objectAddress.routes';
 import pdfSettingsRoutes from './pdfSettings.routes';
+import setupRoutes from './setup.routes';
 
 const router = Router();
 
@@ -56,6 +57,7 @@ router.use('/open-items', openItemRoutes);
 router.use('/entity-files', entityFileRoutes);
 router.use('/object-addresses', objectAddressRoutes);
 router.use('/pdf-settings', pdfSettingsRoutes);
+router.use('/setup', setupRoutes);
 
 export default router;
 
