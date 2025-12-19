@@ -49,6 +49,7 @@ import MenuBookOutlinedIcon from '@mui/icons-material/MenuBookOutlined';
 import SecurityOutlinedIcon from '@mui/icons-material/SecurityOutlined';
 import InsightsOutlinedIcon from '@mui/icons-material/InsightsOutlined';
 import TimelineOutlinedIcon from '@mui/icons-material/TimelineOutlined';
+import ViewKanbanOutlinedIcon from '@mui/icons-material/ViewKanbanOutlined';
 
 interface SidebarProps {
   drawerWidth: number;
@@ -102,49 +103,11 @@ const menuCategories: MenuCategory[] = [
     title: 'PROJEKTE',
     icon: <AccountTreeOutlinedIcon />,
     items: [
-      { text: 'Alle Projekte', icon: <AccountTreeOutlinedIcon />, path: '/projects' },
+      { text: 'Übersicht', icon: <AccountTreeOutlinedIcon />, path: '/projects' },
       { text: 'Meine Projekte', icon: <FolderOpenOutlinedIcon />, path: '/projects?filter=my' },
-      {
-        text: '☀️ PV',
-        icon: <SolarPowerOutlinedIcon />,
-        children: [
-          { text: 'Alle PV-Projekte', path: '/pipelines/pv' },
-          { text: 'Kanban Board', path: '/pipelines/pv/kanban' },
-          { text: 'Neu - Erstkontakt', path: '/pipelines/pv/new_contact' },
-          { text: 'Angebotserstellung', path: '/pipelines/pv/offer_creation' },
-          { text: 'In Umsetzung', path: '/pipelines/pv/in_implementation' },
-        ],
-      },
-      {
-        text: '🆕 Leads',
-        icon: <TrendingUpIcon />,
-        children: [
-          { text: 'Alle Leads', path: '/pipelines/leads' },
-          { text: 'Kanban Board', path: '/pipelines/leads/kanban' },
-          { text: 'Vorqualifizierung', path: '/pipelines/leads/pre_qualification' },
-          { text: 'Termin vereinbart', path: '/pipelines/leads/appointment_scheduled' },
-        ],
-      },
-      {
-        text: '♨️ Wärmepumpen',
-        icon: <BuildOutlinedIcon />,
-        children: [
-          { text: 'Alle Projekte', path: '/pipelines/heat_pump' },
-          { text: 'Kanban Board', path: '/pipelines/heat_pump/kanban' },
-          { text: 'Neu - Erstkontakt', path: '/pipelines/heat_pump/new_contact' },
-          { text: 'In Umsetzung', path: '/pipelines/heat_pump/in_implementation' },
-        ],
-      },
-      {
-        text: '🔁 Service',
-        icon: <BuildOutlinedIcon />,
-        children: [
-          { text: 'Alle Service-Fälle', path: '/pipelines/service' },
-          { text: 'Kanban Board', path: '/pipelines/service/kanban' },
-          { text: 'Neue Tickets', path: '/pipelines/service/new_ticket' },
-          { text: 'In Bearbeitung', path: '/pipelines/service/in_progress' },
-        ],
-      },
+      { text: '☀️ PV', icon: <SolarPowerOutlinedIcon />, path: '/kanban-boards/gewerk/pv' },
+      { text: '🏢 Gewerbe', icon: <BusinessOutlinedIcon />, path: '/kanban-boards/gewerk/gewerbe' },
+      { text: '🔁 Service', icon: <BuildOutlinedIcon />, path: '/kanban-boards/gewerk/service' },
     ],
   },
   {

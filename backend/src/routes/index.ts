@@ -27,6 +27,7 @@ import entityFileRoutes from './entityFile.routes';
 import objectAddressRoutes from './objectAddress.routes';
 import pdfSettingsRoutes from './pdfSettings.routes';
 import setupRoutes from './setup.routes';
+import kanbanRoutes from './kanban.routes';
 
 const router = Router();
 
@@ -58,6 +59,7 @@ router.use('/entity-files', entityFileRoutes);
 router.use('/object-addresses', objectAddressRoutes);
 router.use('/pdf-settings', pdfSettingsRoutes);
 router.use('/setup', setupRoutes);
+router.use('/kanban', kanbanRoutes);
 
 export default router;
 

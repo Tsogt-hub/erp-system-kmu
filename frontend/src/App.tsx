@@ -35,6 +35,8 @@ import AuditLogs from './pages/AuditLogs';
 import ContactDetail from './pages/ContactDetail';
 import Accounting from './pages/Accounting';
 import OfferTemplates from './pages/OfferTemplates';
+import KanbanBoards from './pages/KanbanBoards';
+import CustomKanbanBoard from './pages/CustomKanbanBoard';
 import Layout from './components/common/Layout';
 
 function PrivateRoute({ children }: { children: React.ReactNode }) {
@@ -98,6 +100,10 @@ function App() {
         <Route path="inventory/incoming" element={<InventoryIncoming />} />
         <Route path="inventory/outgoing" element={<InventoryOutgoing />} />
         <Route path="inventory/log" element={<InventoryLog />} />
+        {/* Kanban Boards */}
+        <Route path="kanban-boards" element={<KanbanBoards />} />
+        <Route path="kanban-boards/gewerk/:gewerk" element={<CustomKanbanBoard />} />
+        <Route path="kanban-boards/:boardId" element={<CustomKanbanBoard />} />
       </Route>
     </Routes>
   );

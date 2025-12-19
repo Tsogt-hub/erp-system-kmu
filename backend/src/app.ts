@@ -253,6 +253,15 @@ async function startServer() {
     console.log('APP: Items-Tabelle übersprungen:', error.message);
   }
 
+  // Kanban-Tabellen initialisieren
+  try {
+    const { migrateKanbanTables } = await import('./utils/migrate-kanban');
+    await migrateKanbanTables();
+    logger.info('✅ Kanban tables initialized');
+  } catch (error: any) {
+    logger.warn('⚠️  Kanban-Tabellen Initialisierung übersprungen:', error.message);
+  }
+
   console.log('APP: Preparing to start server...');
   console.log('APP: PORT =', PORT);
   
