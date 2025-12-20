@@ -48,7 +48,8 @@ export const pool = new Pool({
   password: config.db.password,
   max: 20,
   idleTimeoutMillis: 30000,
-  connectionTimeoutMillis: 2000,
+  connectionTimeoutMillis: 5000,
+  ssl: config.db.ssl || false,
 });
 
 pool.on('connect', () => {

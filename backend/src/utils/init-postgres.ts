@@ -1,0 +1,403 @@
+import { Pool } from 'pg';
+import { config } from '../config/env';
+import { logger } from './logger';
+
+export async function initPostgresDatabase() {
+  logger.info('🗄️  Initialisiere PostgreSQL-Datenbank...');
+
+  const pool = new Pool({
+    host: config.db.host,
+    port: config.db.port,
+    database: config.db.name,
+    user: config.db.user,
+    password: config.db.password,
+    ssl: config.db.ssl || false,
+  });
+
+  try {
+    // Prüfe ob users-Tabelle existiert
+    const tablesCheck = await pool.query(`
+      SELECT table_name 
+      FROM information_schema.tables 
+      WHERE table_schema = 'public' AND table_name = 'users'
+    `);
+
+    if (tablesCheck.rows.length === 0) {
+      logger.info('📋 Erstelle Datenbank-Schema...');
+      
+      // Erstelle alle notwendigen Tabellen
+      await pool.query(`
+        -- Users Table
+        CREATE TABLE IF NOT EXISTS users (
+          id SERIAL PRIMARY KEY,
+          email VARCHAR(255) UNIQUE NOT NULL,
+          password_hash VARCHAR(255) NOT NULL,
+          first_name VARCHAR(100),
+          last_name VARCHAR(100),
+          role VARCHAR(50) DEFAULT 'user',
+          is_active BOOLEAN DEFAULT true,
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+
+        -- Companies Table
+        CREATE TABLE IF NOT EXISTS companies (
+          id SERIAL PRIMARY KEY,
+          name VARCHAR(255) NOT NULL,
+          street VARCHAR(255),
+          city VARCHAR(100),
+          postal_code VARCHAR(20),
+          country VARCHAR(100) DEFAULT 'Deutschland',
+          phone VARCHAR(50),
+          email VARCHAR(255),
+          website VARCHAR(255),
+          tax_id VARCHAR(50),
+          notes TEXT,
+          is_archived BOOLEAN DEFAULT false,
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+
+        -- Contacts Table
+        CREATE TABLE IF NOT EXISTS contacts (
+          id SERIAL PRIMARY KEY,
+          company_id INTEGER REFERENCES companies(id) ON DELETE SET NULL,
+          type VARCHAR(50) DEFAULT 'person',
+          salutation VARCHAR(20),
+          first_name VARCHAR(100),
+          last_name VARCHAR(100),
+          email VARCHAR(255),
+          phone VARCHAR(50),
+          mobile VARCHAR(50),
+          position VARCHAR(100),
+          notes TEXT,
+          is_primary BOOLEAN DEFAULT false,
+          is_archived BOOLEAN DEFAULT false,
+          street VARCHAR(255),
+          city VARCHAR(100),
+          postal_code VARCHAR(20),
+          country VARCHAR(100) DEFAULT 'Deutschland',
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+
+        -- Projects Table
+        CREATE TABLE IF NOT EXISTS projects (
+          id SERIAL PRIMARY KEY,
+          name VARCHAR(255) NOT NULL,
+          description TEXT,
+          customer_id INTEGER,
+          status VARCHAR(50) DEFAULT 'planned',
+          priority VARCHAR(20) DEFAULT 'medium',
+          start_date DATE,
+          end_date DATE,
+          budget DECIMAL(12,2),
+          pipeline_id VARCHAR(50),
+          pipeline_step VARCHAR(50),
+          assigned_to INTEGER REFERENCES users(id),
+          gewerk VARCHAR(50),
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+
+        -- Time Entries Table
+        CREATE TABLE IF NOT EXISTS time_entries (
+          id SERIAL PRIMARY KEY,
+          user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+          project_id INTEGER REFERENCES projects(id) ON DELETE SET NULL,
+          description TEXT,
+          hours DECIMAL(5,2) NOT NULL,
+          date DATE NOT NULL,
+          billable BOOLEAN DEFAULT true,
+          status VARCHAR(50) DEFAULT 'pending',
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+
+        -- Articles Table
+        CREATE TABLE IF NOT EXISTS articles (
+          id SERIAL PRIMARY KEY,
+          article_number VARCHAR(50) UNIQUE,
+          name VARCHAR(255) NOT NULL,
+          description TEXT,
+          category VARCHAR(100),
+          unit VARCHAR(20) DEFAULT 'Stück',
+          purchase_price DECIMAL(12,2),
+          selling_price DECIMAL(12,2),
+          tax_rate DECIMAL(5,2) DEFAULT 19.00,
+          stock_quantity INTEGER DEFAULT 0,
+          min_stock_level INTEGER DEFAULT 0,
+          supplier VARCHAR(255),
+          is_active BOOLEAN DEFAULT true,
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+
+        -- Offers Table
+        CREATE TABLE IF NOT EXISTS offers (
+          id SERIAL PRIMARY KEY,
+          offer_number VARCHAR(50) UNIQUE,
+          project_id INTEGER REFERENCES projects(id) ON DELETE SET NULL,
+          customer_id INTEGER,
+          title VARCHAR(255),
+          description TEXT,
+          status VARCHAR(50) DEFAULT 'draft',
+          subtotal DECIMAL(12,2),
+          tax_amount DECIMAL(12,2),
+          total DECIMAL(12,2),
+          valid_until DATE,
+          notes TEXT,
+          created_by INTEGER REFERENCES users(id),
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+
+        -- Offer Items Table
+        CREATE TABLE IF NOT EXISTS offer_items (
+          id SERIAL PRIMARY KEY,
+          offer_id INTEGER REFERENCES offers(id) ON DELETE CASCADE,
+          article_id INTEGER REFERENCES articles(id),
+          position INTEGER,
+          name VARCHAR(255),
+          description TEXT,
+          quantity DECIMAL(10,2) DEFAULT 1,
+          unit VARCHAR(20) DEFAULT 'Stück',
+          unit_price DECIMAL(12,2),
+          discount DECIMAL(5,2) DEFAULT 0,
+          tax_rate DECIMAL(5,2) DEFAULT 19.00,
+          total DECIMAL(12,2),
+          category VARCHAR(100),
+          is_optional BOOLEAN DEFAULT false,
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+
+        -- Invoices Table
+        CREATE TABLE IF NOT EXISTS invoices (
+          id SERIAL PRIMARY KEY,
+          invoice_number VARCHAR(50) UNIQUE,
+          offer_id INTEGER REFERENCES offers(id),
+          project_id INTEGER REFERENCES projects(id) ON DELETE SET NULL,
+          customer_id INTEGER,
+          title VARCHAR(255),
+          status VARCHAR(50) DEFAULT 'draft',
+          subtotal DECIMAL(12,2),
+          tax_amount DECIMAL(12,2),
+          total DECIMAL(12,2),
+          due_date DATE,
+          paid_date DATE,
+          notes TEXT,
+          created_by INTEGER REFERENCES users(id),
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+
+        -- Tickets Table
+        CREATE TABLE IF NOT EXISTS tickets (
+          id SERIAL PRIMARY KEY,
+          ticket_number VARCHAR(50) UNIQUE,
+          title VARCHAR(255) NOT NULL,
+          description TEXT,
+          priority VARCHAR(20) DEFAULT 'medium',
+          status VARCHAR(50) DEFAULT 'open',
+          category VARCHAR(100),
+          project_id INTEGER REFERENCES projects(id) ON DELETE SET NULL,
+          assigned_to INTEGER REFERENCES users(id),
+          created_by INTEGER REFERENCES users(id),
+          due_date DATE,
+          resolved_at TIMESTAMP,
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+
+        -- Inventory Table
+        CREATE TABLE IF NOT EXISTS inventory (
+          id SERIAL PRIMARY KEY,
+          article_id INTEGER REFERENCES articles(id) ON DELETE CASCADE,
+          warehouse_location VARCHAR(100),
+          quantity INTEGER DEFAULT 0,
+          reserved_quantity INTEGER DEFAULT 0,
+          last_counted DATE,
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+
+        -- Tasks Table
+        CREATE TABLE IF NOT EXISTS tasks (
+          id SERIAL PRIMARY KEY,
+          title VARCHAR(255) NOT NULL,
+          description TEXT,
+          status VARCHAR(50) DEFAULT 'pending',
+          priority VARCHAR(20) DEFAULT 'medium',
+          due_date DATE,
+          project_id INTEGER REFERENCES projects(id) ON DELETE SET NULL,
+          assigned_to INTEGER REFERENCES users(id),
+          created_by INTEGER REFERENCES users(id),
+          completed_at TIMESTAMP,
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+
+        -- Kanban Boards Table
+        CREATE TABLE IF NOT EXISTS kanban_boards (
+          id SERIAL PRIMARY KEY,
+          name VARCHAR(255) NOT NULL,
+          description TEXT,
+          board_type VARCHAR(50) DEFAULT 'custom',
+          created_by INTEGER REFERENCES users(id),
+          is_active BOOLEAN DEFAULT true,
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+
+        -- Kanban Columns Table
+        CREATE TABLE IF NOT EXISTS kanban_columns (
+          id SERIAL PRIMARY KEY,
+          board_id INTEGER REFERENCES kanban_boards(id) ON DELETE CASCADE,
+          name VARCHAR(255) NOT NULL,
+          position INTEGER DEFAULT 0,
+          color VARCHAR(50) DEFAULT '#64B5F6',
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+
+        -- Kanban Cards Table
+        CREATE TABLE IF NOT EXISTS kanban_cards (
+          id SERIAL PRIMARY KEY,
+          column_id INTEGER REFERENCES kanban_columns(id) ON DELETE CASCADE,
+          title VARCHAR(255) NOT NULL,
+          description TEXT,
+          position INTEGER DEFAULT 0,
+          priority VARCHAR(20) DEFAULT 'medium',
+          due_date DATE,
+          amount DECIMAL(12,2),
+          assigned_to INTEGER REFERENCES users(id),
+          contact_id INTEGER REFERENCES contacts(id),
+          company_id INTEGER REFERENCES companies(id),
+          labels TEXT,
+          created_by INTEGER REFERENCES users(id),
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+
+        -- Kanban Activities Table
+        CREATE TABLE IF NOT EXISTS kanban_activities (
+          id SERIAL PRIMARY KEY,
+          card_id INTEGER REFERENCES kanban_cards(id) ON DELETE CASCADE,
+          user_id INTEGER REFERENCES users(id),
+          activity_type VARCHAR(50) NOT NULL,
+          content TEXT,
+          old_value TEXT,
+          new_value TEXT,
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+
+        -- Reminders Table
+        CREATE TABLE IF NOT EXISTS reminders (
+          id SERIAL PRIMARY KEY,
+          title VARCHAR(255) NOT NULL,
+          description TEXT,
+          remind_at TIMESTAMP NOT NULL,
+          entity_type VARCHAR(50),
+          entity_id INTEGER,
+          user_id INTEGER REFERENCES users(id),
+          is_read BOOLEAN DEFAULT false,
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+
+        -- Documents Table
+        CREATE TABLE IF NOT EXISTS documents (
+          id SERIAL PRIMARY KEY,
+          name VARCHAR(255) NOT NULL,
+          file_path VARCHAR(500),
+          file_type VARCHAR(50),
+          file_size INTEGER,
+          entity_type VARCHAR(50),
+          entity_id INTEGER,
+          uploaded_by INTEGER REFERENCES users(id),
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+
+        -- Calendar Events Table
+        CREATE TABLE IF NOT EXISTS calendar_events (
+          id SERIAL PRIMARY KEY,
+          title VARCHAR(255) NOT NULL,
+          description TEXT,
+          start_time TIMESTAMP NOT NULL,
+          end_time TIMESTAMP NOT NULL,
+          all_day BOOLEAN DEFAULT false,
+          location VARCHAR(255),
+          project_id INTEGER REFERENCES projects(id),
+          user_id INTEGER REFERENCES users(id),
+          attendees TEXT,
+          color VARCHAR(50),
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+
+        -- Offer Templates Table
+        CREATE TABLE IF NOT EXISTS offer_templates (
+          id SERIAL PRIMARY KEY,
+          name VARCHAR(255) NOT NULL,
+          description TEXT,
+          category VARCHAR(100),
+          is_active BOOLEAN DEFAULT true,
+          created_by INTEGER REFERENCES users(id),
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+
+        -- Offer Template Items Table
+        CREATE TABLE IF NOT EXISTS offer_template_items (
+          id SERIAL PRIMARY KEY,
+          template_id INTEGER REFERENCES offer_templates(id) ON DELETE CASCADE,
+          article_id INTEGER REFERENCES articles(id),
+          position INTEGER,
+          name VARCHAR(255),
+          description TEXT,
+          quantity DECIMAL(10,2) DEFAULT 1,
+          unit VARCHAR(20) DEFAULT 'Stück',
+          unit_price DECIMAL(12,2),
+          discount DECIMAL(5,2) DEFAULT 0,
+          tax_rate DECIMAL(5,2) DEFAULT 19.00,
+          category VARCHAR(100),
+          is_optional BOOLEAN DEFAULT false,
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+
+        -- Log Entries Table
+        CREATE TABLE IF NOT EXISTS log_entries (
+          id SERIAL PRIMARY KEY,
+          entity_type VARCHAR(50) NOT NULL,
+          entity_id INTEGER NOT NULL,
+          action VARCHAR(50) NOT NULL,
+          description TEXT,
+          user_id INTEGER REFERENCES users(id),
+          user_name VARCHAR(255),
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+
+        -- Create indexes for better performance
+        CREATE INDEX IF NOT EXISTS idx_contacts_company ON contacts(company_id);
+        CREATE INDEX IF NOT EXISTS idx_projects_customer ON projects(customer_id);
+        CREATE INDEX IF NOT EXISTS idx_time_entries_user ON time_entries(user_id);
+        CREATE INDEX IF NOT EXISTS idx_time_entries_project ON time_entries(project_id);
+        CREATE INDEX IF NOT EXISTS idx_offers_project ON offers(project_id);
+        CREATE INDEX IF NOT EXISTS idx_tickets_project ON tickets(project_id);
+        CREATE INDEX IF NOT EXISTS idx_kanban_cards_column ON kanban_cards(column_id);
+        CREATE INDEX IF NOT EXISTS idx_kanban_columns_board ON kanban_columns(board_id);
+        CREATE INDEX IF NOT EXISTS idx_kanban_activities_card ON kanban_activities(card_id);
+      `);
+
+      logger.info('✅ PostgreSQL-Schema erstellt');
+    } else {
+      logger.info('✅ PostgreSQL-Tabellen existieren bereits');
+    }
+
+    await pool.end();
+    return true;
+  } catch (error: any) {
+    logger.error('❌ PostgreSQL-Initialisierung fehlgeschlagen:', error.message);
+    await pool.end();
+    throw error;
+  }
+}
+

@@ -97,6 +97,10 @@ async function startServer() {
     // Versuche PostgreSQL
     await pool.query('SELECT NOW()');
     logger.info('✅ PostgreSQL Database connected');
+    
+    // Initialisiere PostgreSQL-Tabellen
+    const { initPostgresDatabase } = await import('./utils/init-postgres');
+    await initPostgresDatabase();
   } catch (error: any) {
     // PostgreSQL nicht verfügbar, verwende SQLite
     logger.info('⚠️  PostgreSQL nicht verfügbar, verwende SQLite...');
