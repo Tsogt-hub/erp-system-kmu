@@ -1,6 +1,6 @@
 import { query } from '../config/database';
 import { getRows } from './fix-models';
-import logger from './logger';
+import { logger } from './logger';
 
 /**
  * Migration for extended Kanban features (HubSpot-style)
