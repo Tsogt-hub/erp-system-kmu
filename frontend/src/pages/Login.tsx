@@ -181,27 +181,32 @@ export default function Login() {
               sx={{
                 '& .MuiOutlinedInput-root': {
                   borderRadius: '12px',
-                  background: 'rgba(255, 255, 255, 0.6)',
+                  background: 'rgba(255, 255, 255, 0.85)',
                   backdropFilter: 'blur(20px)',
                   fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif',
                   '& fieldset': {
-                    borderColor: 'rgba(0, 0, 0, 0.08)',
-                    borderWidth: '0.5px',
+                    borderColor: 'rgba(0, 0, 0, 0.15)',
+                    borderWidth: '1px',
                   },
                   '&:hover fieldset': {
-                    borderColor: 'rgba(0, 113, 227, 0.3)',
+                    borderColor: 'rgba(0, 113, 227, 0.5)',
                   },
                   '&.Mui-focused fieldset': {
                     borderColor: '#0071E3',
-                    borderWidth: '1.5px',
+                    borderWidth: '2px',
                   },
                 },
                 '& .MuiInputLabel-root': {
                   fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif',
-                  color: 'rgba(60, 60, 67, 0.6)',
+                  color: '#1D1D1F',
+                  fontWeight: 500,
                   '&.Mui-focused': {
                     color: '#0071E3',
+                    fontWeight: 600,
                   },
+                },
+                '& .MuiInputLabel-asterisk': {
+                  color: '#FF3B30',
                 },
               }}
             />
@@ -217,27 +222,32 @@ export default function Login() {
               sx={{
                 '& .MuiOutlinedInput-root': {
                   borderRadius: '12px',
-                  background: 'rgba(255, 255, 255, 0.6)',
+                  background: 'rgba(255, 255, 255, 0.85)',
                   backdropFilter: 'blur(20px)',
                   fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif',
                   '& fieldset': {
-                    borderColor: 'rgba(0, 0, 0, 0.08)',
-                    borderWidth: '0.5px',
+                    borderColor: 'rgba(0, 0, 0, 0.15)',
+                    borderWidth: '1px',
                   },
                   '&:hover fieldset': {
-                    borderColor: 'rgba(0, 113, 227, 0.3)',
+                    borderColor: 'rgba(0, 113, 227, 0.5)',
                   },
                   '&.Mui-focused fieldset': {
                     borderColor: '#0071E3',
-                    borderWidth: '1.5px',
+                    borderWidth: '2px',
                   },
                 },
                 '& .MuiInputLabel-root': {
                   fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif',
-                  color: 'rgba(60, 60, 67, 0.6)',
+                  color: '#1D1D1F',
+                  fontWeight: 500,
                   '&.Mui-focused': {
                     color: '#0071E3',
+                    fontWeight: 600,
                   },
+                },
+                '& .MuiInputLabel-asterisk': {
+                  color: '#FF3B30',
                 },
               }}
             />

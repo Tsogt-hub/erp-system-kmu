@@ -901,9 +901,26 @@ export default function CRM() {
             margin="normal"
           />
         </DialogContent>
-        <DialogActions>
+        <DialogActions sx={{ p: 2, borderTop: '1px solid rgba(0,0,0,0.1)' }}>
           <Button onClick={() => { setCompanyDialogOpen(false); setEditingCompany(null); }}>Abbrechen</Button>
-          <Button onClick={handleCompanyCreate} variant="contained" disabled={!companyForm.name}>
+          <Button 
+            onClick={handleCompanyCreate} 
+            variant="contained" 
+            disabled={!companyForm.name}
+            sx={{
+              minWidth: 120,
+              fontWeight: 600,
+              bgcolor: 'primary.main',
+              color: 'white',
+              '&:hover': {
+                bgcolor: 'primary.dark',
+              },
+              '&.Mui-disabled': {
+                bgcolor: 'primary.light',
+                color: 'rgba(255, 255, 255, 0.8)',
+              },
+            }}
+          >
             {editingCompany ? 'Speichern' : 'Erstellen'}
           </Button>
         </DialogActions>
@@ -1159,7 +1176,24 @@ export default function CRM() {
               additional_salutation: '',
             });
           }}>Abbrechen</Button>
-          <Button onClick={handleContactCreate} variant="contained" disabled={!contactForm.first_name || !contactForm.last_name}>
+          <Button 
+            onClick={handleContactCreate} 
+            variant="contained" 
+            disabled={!contactForm.first_name || !contactForm.last_name}
+            sx={{
+              minWidth: 120,
+              fontWeight: 600,
+              bgcolor: 'primary.main',
+              color: 'white',
+              '&:hover': {
+                bgcolor: 'primary.dark',
+              },
+              '&.Mui-disabled': {
+                bgcolor: 'primary.light',
+                color: 'rgba(255, 255, 255, 0.8)',
+              },
+            }}
+          >
             {contactForm.id ? 'Aktualisieren' : 'Erstellen'}
           </Button>
         </DialogActions>

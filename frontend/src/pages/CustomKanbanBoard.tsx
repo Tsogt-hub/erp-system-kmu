@@ -1994,11 +1994,21 @@ function CardDetailDrawer({ card, open, onClose, onUpdate, companies, contacts }
                   onClick={handleAddNote} 
                   disabled={!newNote.trim()}
                   sx={{
-                    minWidth: 120,
-                    fontWeight: 600,
+                    minWidth: 130,
+                    fontWeight: 700,
+                    fontSize: '0.9rem',
+                    py: 1,
+                    bgcolor: theme.palette.primary.main,
+                    color: '#fff',
+                    boxShadow: '0 2px 8px rgba(0,113,227,0.3)',
+                    '&:hover': {
+                      bgcolor: theme.palette.primary.dark,
+                      boxShadow: '0 4px 12px rgba(0,113,227,0.4)',
+                    },
                     '&.Mui-disabled': {
-                      bgcolor: alpha(theme.palette.primary.main, 0.3),
-                      color: theme.palette.common.white,
+                      bgcolor: alpha(theme.palette.primary.main, 0.5),
+                      color: 'rgba(255, 255, 255, 0.9)',
+                      boxShadow: 'none',
                     },
                   }}
                 >
