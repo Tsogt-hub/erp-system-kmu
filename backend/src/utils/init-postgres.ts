@@ -15,11 +15,58 @@ export async function initPostgresDatabase() {
   });
 
   try {
-    // Prüfe ob users-Tabelle existiert
+    // Prüfe ob users-Tabelle mit korrektem Schema existiert (role_id statt role)
+    const usersCheck = await pool.query(`
+      SELECT column_name 
+      FROM information_schema.columns 
+      WHERE table_schema = 'public' AND table_name = 'users' AND column_name = 'role_id'
+    `);
+
+    // Prüfe ob roles-Tabelle existiert
+    const rolesCheck = await pool.query(`
+      SELECT table_name 
+      FROM information_schema.tables 
+      WHERE table_schema = 'public' AND table_name = 'roles'
+    `);
+
+    // Wenn roles-Tabelle fehlt oder users-Tabelle role_id nicht hat, Schema neu erstellen
+    if (rolesCheck.rows.length === 0 || usersCheck.rows.length === 0) {
+      logger.info('📋 Erstelle/Aktualisiere Datenbank-Schema...');
+      
+      // Lösche alle Tabellen, um neu zu starten (wegen Foreign Key Constraints)
+      await pool.query(`
+        DROP TABLE IF EXISTS kanban_activities CASCADE;
+        DROP TABLE IF EXISTS kanban_cards CASCADE;
+        DROP TABLE IF EXISTS kanban_columns CASCADE;
+        DROP TABLE IF EXISTS kanban_boards CASCADE;
+        DROP TABLE IF EXISTS log_entries CASCADE;
+        DROP TABLE IF EXISTS offer_template_items CASCADE;
+        DROP TABLE IF EXISTS offer_templates CASCADE;
+        DROP TABLE IF EXISTS calendar_events CASCADE;
+        DROP TABLE IF EXISTS documents CASCADE;
+        DROP TABLE IF EXISTS reminders CASCADE;
+        DROP TABLE IF EXISTS inventory CASCADE;
+        DROP TABLE IF EXISTS tickets CASCADE;
+        DROP TABLE IF EXISTS offer_items CASCADE;
+        DROP TABLE IF EXISTS offers CASCADE;
+        DROP TABLE IF EXISTS invoices CASCADE;
+        DROP TABLE IF EXISTS articles CASCADE;
+        DROP TABLE IF EXISTS time_entries CASCADE;
+        DROP TABLE IF EXISTS tasks CASCADE;
+        DROP TABLE IF EXISTS projects CASCADE;
+        DROP TABLE IF EXISTS contacts CASCADE;
+        DROP TABLE IF EXISTS companies CASCADE;
+        DROP TABLE IF EXISTS users CASCADE;
+        DROP TABLE IF EXISTS roles CASCADE;
+      `);
+      logger.info('🗑️  Alte Tabellen gelöscht');
+    }
+
+    // Prüfe ob Tabellen existieren (nach dem optionalen Löschen)
     const tablesCheck = await pool.query(`
       SELECT table_name 
       FROM information_schema.tables 
-      WHERE table_schema = 'public' AND table_name = 'users'
+      WHERE table_schema = 'public' AND table_name = 'roles'
     `);
 
     if (tablesCheck.rows.length === 0) {
@@ -27,14 +74,23 @@ export async function initPostgresDatabase() {
       
       // Erstelle alle notwendigen Tabellen
       await pool.query(`
+        -- Roles Table (muss vor users erstellt werden)
+        CREATE TABLE IF NOT EXISTS roles (
+          id SERIAL PRIMARY KEY,
+          name VARCHAR(100) UNIQUE NOT NULL,
+          permissions TEXT DEFAULT '{}',
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+
         -- Users Table
         CREATE TABLE IF NOT EXISTS users (
           id SERIAL PRIMARY KEY,
           email VARCHAR(255) UNIQUE NOT NULL,
           password_hash VARCHAR(255) NOT NULL,
-          first_name VARCHAR(100),
-          last_name VARCHAR(100),
-          role VARCHAR(50) DEFAULT 'user',
+          first_name VARCHAR(100) NOT NULL,
+          last_name VARCHAR(100) NOT NULL,
+          role_id INTEGER DEFAULT 3 REFERENCES roles(id),
           is_active BOOLEAN DEFAULT true,
           created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
           updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -385,6 +441,15 @@ export async function initPostgresDatabase() {
         CREATE INDEX IF NOT EXISTS idx_kanban_cards_column ON kanban_cards(column_id);
         CREATE INDEX IF NOT EXISTS idx_kanban_columns_board ON kanban_columns(board_id);
         CREATE INDEX IF NOT EXISTS idx_kanban_activities_card ON kanban_activities(card_id);
+      `);
+
+      // Erstelle Standardrollen
+      await pool.query(`
+        INSERT INTO roles (id, name, permissions) VALUES 
+          (1, 'admin', '["*"]'),
+          (2, 'manager', '["read:*", "write:*"]'),
+          (3, 'employee', '["read:own", "write:own"]')
+        ON CONFLICT (name) DO NOTHING;
       `);
 
       logger.info('✅ PostgreSQL-Schema erstellt');
