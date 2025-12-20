@@ -323,6 +323,7 @@ export async function initPostgresDatabase() {
         CREATE TABLE IF NOT EXISTS kanban_cards (
           id SERIAL PRIMARY KEY,
           column_id INTEGER REFERENCES kanban_columns(id) ON DELETE CASCADE,
+          board_id INTEGER REFERENCES kanban_boards(id) ON DELETE CASCADE,
           title VARCHAR(255) NOT NULL,
           description TEXT,
           position INTEGER DEFAULT 0,
@@ -500,9 +501,19 @@ async function runMigrations(pool: Pool) {
   try {
     await pool.query(`
       ALTER TABLE kanban_cards ADD COLUMN IF NOT EXISTS labels TEXT;
+      ALTER TABLE kanban_cards ADD COLUMN IF NOT EXISTS board_id INTEGER REFERENCES kanban_boards(id) ON DELETE CASCADE;
+    `);
+    
+    // Update board_id for existing cards based on their column's board
+    await pool.query(`
+      UPDATE kanban_cards c
+      SET board_id = col.board_id
+      FROM kanban_columns col
+      WHERE c.column_id = col.id AND c.board_id IS NULL;
     `);
   } catch (e) {
-    // Column might already exist
+    // Column might already exist or query failed
+    logger.warn('kanban_cards migration warning:', e);
   }
 
   logger.info('✅ Migrationen abgeschlossen');
