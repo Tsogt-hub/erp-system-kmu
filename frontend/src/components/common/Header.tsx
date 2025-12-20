@@ -143,7 +143,7 @@ export default function Header() {
               fontWeight: 650,
               fontSize: '1.0625rem',
               letterSpacing: '-0.02em',
-              color: 'rgba(29, 29, 31, 0.92)',
+              color: isDark ? 'rgba(248, 250, 252, 0.95)' : 'rgba(29, 29, 31, 0.92)',
               fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif',
             }}
           >
@@ -158,15 +158,25 @@ export default function Header() {
               sx={{
                 width: 34,
                 height: 34,
-                background: 'linear-gradient(180deg, rgba(255, 255, 255, 0.9) 0%, rgba(255, 255, 255, 0.7) 100%)',
+                background: isDark
+                  ? 'linear-gradient(180deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.04) 100%)'
+                  : 'linear-gradient(180deg, rgba(255, 255, 255, 0.9) 0%, rgba(255, 255, 255, 0.7) 100%)',
                 backdropFilter: 'blur(20px)',
                 WebkitBackdropFilter: 'blur(20px)',
-                border: '0.5px solid rgba(0, 0, 0, 0.06)',
-                boxShadow: '0 1px 3px rgba(0, 0, 0, 0.06), inset 0 0.5px 0 rgba(255, 255, 255, 0.8)',
+                border: isDark 
+                  ? '0.5px solid rgba(255, 255, 255, 0.1)' 
+                  : '0.5px solid rgba(0, 0, 0, 0.06)',
+                boxShadow: isDark
+                  ? '0 1px 3px rgba(0, 0, 0, 0.2)'
+                  : '0 1px 3px rgba(0, 0, 0, 0.06), inset 0 0.5px 0 rgba(255, 255, 255, 0.8)',
                 '&:hover': {
-                  background: 'linear-gradient(180deg, rgba(255, 255, 255, 1) 0%, rgba(255, 255, 255, 0.85) 100%)',
+                  background: isDark
+                    ? 'linear-gradient(180deg, rgba(255, 255, 255, 0.12) 0%, rgba(255, 255, 255, 0.08) 100%)'
+                    : 'linear-gradient(180deg, rgba(255, 255, 255, 1) 0%, rgba(255, 255, 255, 0.85) 100%)',
                   transform: 'scale(1.05)',
-                  boxShadow: '0 2px 6px rgba(0, 0, 0, 0.08), inset 0 0.5px 0 rgba(255, 255, 255, 0.9)',
+                  boxShadow: isDark
+                    ? '0 2px 6px rgba(0, 0, 0, 0.3)'
+                    : '0 2px 6px rgba(0, 0, 0, 0.08), inset 0 0.5px 0 rgba(255, 255, 255, 0.9)',
                 },
                 '&:active': {
                   transform: 'scale(0.95)',
@@ -174,7 +184,7 @@ export default function Header() {
                 transition: 'all 0.2s cubic-bezier(0.32, 0.72, 0, 1)',
               }}
             >
-              <SearchRoundedIcon sx={{ color: 'rgba(60, 60, 67, 0.7)', fontSize: '1.05rem' }} />
+              <SearchRoundedIcon sx={{ color: isDark ? 'rgba(248, 250, 252, 0.7)' : 'rgba(60, 60, 67, 0.7)', fontSize: '1.05rem' }} />
             </IconButton>
 
             {/* Theme Toggle Button */}
@@ -270,21 +280,29 @@ export default function Header() {
                 height: 34,
                 pl: 0.25,
                 pr: 1,
-                background: 'linear-gradient(180deg, rgba(255, 255, 255, 0.9) 0%, rgba(255, 255, 255, 0.7) 100%)',
+                background: isDark
+                  ? 'linear-gradient(180deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.04) 100%)'
+                  : 'linear-gradient(180deg, rgba(255, 255, 255, 0.9) 0%, rgba(255, 255, 255, 0.7) 100%)',
                 backdropFilter: 'blur(20px)',
                 WebkitBackdropFilter: 'blur(20px)',
-                border: '0.5px solid rgba(0, 0, 0, 0.06)',
+                border: isDark 
+                  ? '0.5px solid rgba(255, 255, 255, 0.1)' 
+                  : '0.5px solid rgba(0, 0, 0, 0.06)',
                 fontWeight: 500,
                 fontSize: '0.8rem',
                 letterSpacing: '-0.01em',
                 fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif',
-                color: 'rgba(29, 29, 31, 0.85)',
-                boxShadow: '0 1px 3px rgba(0, 0, 0, 0.06), inset 0 0.5px 0 rgba(255, 255, 255, 0.8)',
+                color: isDark ? 'rgba(248, 250, 252, 0.85)' : 'rgba(29, 29, 31, 0.85)',
+                boxShadow: isDark
+                  ? '0 1px 3px rgba(0, 0, 0, 0.2)'
+                  : '0 1px 3px rgba(0, 0, 0, 0.06), inset 0 0.5px 0 rgba(255, 255, 255, 0.8)',
                 '& .MuiChip-label': {
                   px: 0.75,
                 },
                 '&:hover': {
-                  background: 'linear-gradient(180deg, rgba(255, 255, 255, 1) 0%, rgba(255, 255, 255, 0.85) 100%)',
+                  background: isDark
+                    ? 'linear-gradient(180deg, rgba(255, 255, 255, 0.12) 0%, rgba(255, 255, 255, 0.08) 100%)'
+                    : 'linear-gradient(180deg, rgba(255, 255, 255, 1) 0%, rgba(255, 255, 255, 0.85) 100%)',
                 },
                 transition: 'all 0.2s ease',
               }}
