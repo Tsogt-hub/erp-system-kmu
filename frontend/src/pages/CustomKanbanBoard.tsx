@@ -1292,11 +1292,45 @@ function CardDetailDrawer({ card, open, onClose, onUpdate, companies, contacts }
   const [newNote, setNewNote] = useState('');
   const [activities, setActivities] = useState<any[]>([]);
   
+  // Editing states
+  const [isEditing, setIsEditing] = useState(false);
+  const [editTitle, setEditTitle] = useState('');
+  const [editDescription, setEditDescription] = useState('');
+  const [editPriority, setEditPriority] = useState<'low' | 'medium' | 'high' | 'urgent'>('medium');
+  const [editAmount, setEditAmount] = useState('');
+  const [editDueDate, setEditDueDate] = useState('');
+  const [saving, setSaving] = useState(false);
+  
   useEffect(() => {
-    if (card?.activities) {
-      setActivities(card.activities);
+    if (card) {
+      setEditTitle(card.title || '');
+      setEditDescription(card.description || '');
+      setEditPriority((card.priority as 'low' | 'medium' | 'high' | 'urgent') || 'medium');
+      setEditAmount(card.amount ? String(card.amount) : '');
+      setEditDueDate(card.due_date ? card.due_date.split('T')[0] : '');
+      setActivities(card.activities || []);
     }
   }, [card]);
+
+  const handleSave = async () => {
+    if (!card) return;
+    setSaving(true);
+    try {
+      await kanbanService.updateCard(card.id, {
+        title: editTitle,
+        description: editDescription,
+        priority: editPriority,
+        amount: editAmount ? parseFloat(editAmount) : undefined,
+        due_date: editDueDate || undefined,
+      });
+      setIsEditing(false);
+      onUpdate();
+    } catch (err) {
+      console.error('Error updating card:', err);
+    } finally {
+      setSaving(false);
+    }
+  };
 
   const handleAddNote = async () => {
     if (!card || !newNote.trim()) return;
@@ -1359,22 +1393,64 @@ function CardDetailDrawer({ card, open, onClose, onUpdate, companies, contacts }
         justifyContent: 'space-between',
         alignItems: 'center',
       }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flex: 1 }}>
           <IconButton onClick={onClose}>
             <ArrowBackIcon />
           </IconButton>
-          <Box>
-            <Typography variant="h6" fontWeight={600}>
-              {card.title}
-            </Typography>
+          <Box sx={{ flex: 1 }}>
+            {isEditing ? (
+              <TextField
+                fullWidth
+                value={editTitle}
+                onChange={(e) => setEditTitle(e.target.value)}
+                variant="outlined"
+                size="small"
+                sx={{ mb: 0.5 }}
+              />
+            ) : (
+              <Typography variant="h6" fontWeight={600}>
+                {card.title}
+              </Typography>
+            )}
             <Typography variant="caption" color="text.secondary">
               {card.column_name} • {card.board_name}
             </Typography>
           </Box>
         </Box>
-        <IconButton onClick={onClose}>
-          <CloseIcon />
-        </IconButton>
+        <Box sx={{ display: 'flex', gap: 1 }}>
+          {isEditing ? (
+            <>
+              <Button 
+                variant="outlined" 
+                size="small" 
+                onClick={() => setIsEditing(false)}
+                disabled={saving}
+              >
+                Abbrechen
+              </Button>
+              <Button 
+                variant="contained" 
+                size="small" 
+                onClick={handleSave}
+                disabled={saving}
+              >
+                {saving ? 'Speichern...' : 'Speichern'}
+              </Button>
+            </>
+          ) : (
+            <Button 
+              variant="outlined" 
+              size="small" 
+              startIcon={<EditIcon />}
+              onClick={() => setIsEditing(true)}
+            >
+              Bearbeiten
+            </Button>
+          )}
+          <IconButton onClick={onClose}>
+            <CloseIcon />
+          </IconButton>
+        </Box>
       </DialogTitle>
 
       <DialogContent sx={{ p: 0, display: 'flex' }}>
@@ -1569,49 +1645,91 @@ function CardDetailDrawer({ card, open, onClose, onUpdate, companies, contacts }
           {/* Priority */}
           <Box sx={{ mb: 2 }}>
             <Typography variant="caption" color="text.secondary">Priorität</Typography>
-            <Chip 
-              size="small" 
-              label={PRIORITY_LABELS[card.priority || 'medium']}
-              sx={{ 
-                mt: 0.5,
-                bgcolor: alpha(PRIORITY_COLORS[card.priority || 'medium'], 0.1),
-                color: PRIORITY_COLORS[card.priority || 'medium'],
-              }}
-            />
+            {isEditing ? (
+              <FormControl fullWidth size="small" sx={{ mt: 0.5 }}>
+                <Select
+                  value={editPriority}
+                  onChange={(e) => setEditPriority(e.target.value as any)}
+                >
+                  <MenuItem value="low">Niedrig</MenuItem>
+                  <MenuItem value="medium">Mittel</MenuItem>
+                  <MenuItem value="high">Hoch</MenuItem>
+                  <MenuItem value="urgent">Dringend</MenuItem>
+                </Select>
+              </FormControl>
+            ) : (
+              <Chip 
+                size="small" 
+                label={PRIORITY_LABELS[card.priority || 'medium']}
+                sx={{ 
+                  mt: 0.5,
+                  bgcolor: alpha(PRIORITY_COLORS[card.priority || 'medium'], 0.1),
+                  color: PRIORITY_COLORS[card.priority || 'medium'],
+                  cursor: 'pointer',
+                }}
+                onClick={() => setIsEditing(true)}
+              />
+            )}
           </Box>
           
           {/* Assigned To */}
-          {card.assigned_to_name && (
-            <Box sx={{ mb: 2 }}>
-              <Typography variant="caption" color="text.secondary">Zuständig</Typography>
+          <Box sx={{ mb: 2 }}>
+            <Typography variant="caption" color="text.secondary">Zuständig</Typography>
+            {card.assigned_to_name ? (
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 0.5 }}>
                 <Avatar sx={{ width: 24, height: 24, fontSize: '0.75rem' }}>
                   {card.assigned_to_name.charAt(0)}
                 </Avatar>
                 <Typography variant="body2">{card.assigned_to_name}</Typography>
               </Box>
-            </Box>
-          )}
+            ) : (
+              <Typography variant="body2" color="text.disabled" sx={{ mt: 0.5 }}>
+                Nicht zugewiesen
+              </Typography>
+            )}
+          </Box>
           
           {/* Due Date */}
-          {card.due_date && (
-            <Box sx={{ mb: 2 }}>
-              <Typography variant="caption" color="text.secondary">Fälligkeitsdatum</Typography>
-              <Typography variant="body2">
-                {new Date(card.due_date).toLocaleDateString('de-DE')}
+          <Box sx={{ mb: 2 }}>
+            <Typography variant="caption" color="text.secondary">Fälligkeitsdatum</Typography>
+            {isEditing ? (
+              <TextField
+                type="date"
+                fullWidth
+                size="small"
+                value={editDueDate}
+                onChange={(e) => setEditDueDate(e.target.value)}
+                sx={{ mt: 0.5 }}
+                InputLabelProps={{ shrink: true }}
+              />
+            ) : (
+              <Typography variant="body2" sx={{ mt: 0.5, cursor: 'pointer' }} onClick={() => setIsEditing(true)}>
+                {card.due_date ? new Date(card.due_date).toLocaleDateString('de-DE') : 'Nicht gesetzt'}
               </Typography>
-            </Box>
-          )}
+            )}
+          </Box>
           
           {/* Amount */}
-          {card.amount && (
-            <Box sx={{ mb: 2 }}>
-              <Typography variant="caption" color="text.secondary">Betrag</Typography>
-              <Typography variant="body2" fontWeight={600}>
-                {card.amount.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}
+          <Box sx={{ mb: 2 }}>
+            <Typography variant="caption" color="text.secondary">Betrag</Typography>
+            {isEditing ? (
+              <TextField
+                type="number"
+                fullWidth
+                size="small"
+                value={editAmount}
+                onChange={(e) => setEditAmount(e.target.value)}
+                sx={{ mt: 0.5 }}
+                InputProps={{
+                  endAdornment: <Typography variant="caption">€</Typography>,
+                }}
+              />
+            ) : (
+              <Typography variant="body2" fontWeight={600} sx={{ mt: 0.5, cursor: 'pointer' }} onClick={() => setIsEditing(true)}>
+                {card.amount ? card.amount.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' }) : 'Nicht gesetzt'}
               </Typography>
-            </Box>
-          )}
+            )}
+          </Box>
           
           <Divider sx={{ my: 2 }} />
           
@@ -1662,16 +1780,29 @@ function CardDetailDrawer({ card, open, onClose, onUpdate, companies, contacts }
           )}
           
           {/* Description */}
-          {card.description && (
-            <>
-              <Divider sx={{ my: 2 }} />
-              <Typography variant="subtitle2" fontWeight={600} sx={{ mb: 2 }}>
-                Beschreibung
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                {card.description}
-              </Typography>
-            </>
+          <Divider sx={{ my: 2 }} />
+          <Typography variant="subtitle2" fontWeight={600} sx={{ mb: 2 }}>
+            Beschreibung
+          </Typography>
+          {isEditing ? (
+            <TextField
+              fullWidth
+              multiline
+              rows={4}
+              value={editDescription}
+              onChange={(e) => setEditDescription(e.target.value)}
+              placeholder="Beschreibung hinzufügen..."
+              size="small"
+            />
+          ) : (
+            <Typography 
+              variant="body2" 
+              color={card.description ? 'text.secondary' : 'text.disabled'}
+              sx={{ cursor: 'pointer' }}
+              onClick={() => setIsEditing(true)}
+            >
+              {card.description || 'Keine Beschreibung. Klicken zum Bearbeiten.'}
+            </Typography>
           )}
         </Box>
       </DialogContent>
