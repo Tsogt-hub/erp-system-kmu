@@ -23,6 +23,7 @@ import {
   FormControl,
   InputLabel,
   Chip,
+  useTheme,
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import AddIcon from '@mui/icons-material/Add';
@@ -51,6 +52,8 @@ function TabPanel(props: TabPanelProps) {
 }
 
 export default function CRM() {
+  const theme = useTheme();
+  const isDarkMode = theme.palette.mode === 'dark';
   const navigate = useNavigate();
   const [tabValue, setTabValue] = useState(0);
   const [companies, setCompanies] = useState<Company[]>([]);
@@ -386,7 +389,6 @@ export default function CRM() {
                       value={contactTableFilters.type}
                       onChange={(e) => setContactTableFilters({ ...contactTableFilters, type: e.target.value })}
                       sx={{ 
-                        backgroundColor: '#FFFFFF',
                         fontSize: '0.875rem',
                         '& .MuiSelect-select': { py: 0.75 }
                       }}
@@ -407,7 +409,6 @@ export default function CRM() {
                     onChange={(e) => setContactTableFilters({ ...contactTableFilters, customerNumber: e.target.value })}
                     sx={{ 
                       '& .MuiOutlinedInput-root': { 
-                        backgroundColor: '#FFFFFF',
                         fontSize: '0.875rem',
                       },
                       '& .MuiOutlinedInput-input': { py: 0.75 }
@@ -424,7 +425,6 @@ export default function CRM() {
                     onChange={(e) => setContactTableFilters({ ...contactTableFilters, companyName: e.target.value })}
                     sx={{ 
                       '& .MuiOutlinedInput-root': { 
-                        backgroundColor: '#FFFFFF',
                         fontSize: '0.875rem',
                       },
                       '& .MuiOutlinedInput-input': { py: 0.75 }
@@ -441,7 +441,6 @@ export default function CRM() {
                     onChange={(e) => setContactTableFilters({ ...contactTableFilters, firstName: e.target.value })}
                     sx={{ 
                       '& .MuiOutlinedInput-root': { 
-                        backgroundColor: '#FFFFFF',
                         fontSize: '0.875rem',
                       },
                       '& .MuiOutlinedInput-input': { py: 0.75 }
@@ -458,7 +457,6 @@ export default function CRM() {
                     onChange={(e) => setContactTableFilters({ ...contactTableFilters, lastName: e.target.value })}
                     sx={{ 
                       '& .MuiOutlinedInput-root': { 
-                        backgroundColor: '#FFFFFF',
                         fontSize: '0.875rem',
                       },
                       '& .MuiOutlinedInput-input': { py: 0.75 }
@@ -475,7 +473,6 @@ export default function CRM() {
                     onChange={(e) => setContactTableFilters({ ...contactTableFilters, email: e.target.value })}
                     sx={{ 
                       '& .MuiOutlinedInput-root': { 
-                        backgroundColor: '#FFFFFF',
                         fontSize: '0.875rem',
                       },
                       '& .MuiOutlinedInput-input': { py: 0.75 }
@@ -489,7 +486,6 @@ export default function CRM() {
                       value={contactTableFilters.category}
                       onChange={(e) => setContactTableFilters({ ...contactTableFilters, category: e.target.value })}
                       sx={{ 
-                        backgroundColor: '#FFFFFF',
                         fontSize: '0.875rem',
                         '& .MuiSelect-select': { py: 0.75 }
                       }}
@@ -531,7 +527,6 @@ export default function CRM() {
                     onChange={(e) => setContactTableFilters({ ...contactTableFilters, location: e.target.value })}
                     sx={{ 
                       '& .MuiOutlinedInput-root': { 
-                        backgroundColor: '#FFFFFF',
                         fontSize: '0.875rem',
                       },
                       '& .MuiOutlinedInput-input': { py: 0.75 }
@@ -694,7 +689,6 @@ export default function CRM() {
                       value="company"
                       disabled
                       sx={{ 
-                        backgroundColor: '#FFFFFF',
                         fontSize: '0.875rem',
                         '& .MuiSelect-select': { py: 0.75 }
                       }}
@@ -713,7 +707,6 @@ export default function CRM() {
                     onChange={(e) => setCompanyTableFilters({ ...companyTableFilters, customerNumber: e.target.value })}
                     sx={{ 
                       '& .MuiOutlinedInput-root': { 
-                        backgroundColor: '#FFFFFF',
                         fontSize: '0.875rem',
                       },
                       '& .MuiOutlinedInput-input': { py: 0.75 }
@@ -730,7 +723,6 @@ export default function CRM() {
                     onChange={(e) => setCompanyTableFilters({ ...companyTableFilters, companyName: e.target.value })}
                     sx={{ 
                       '& .MuiOutlinedInput-root': { 
-                        backgroundColor: '#FFFFFF',
                         fontSize: '0.875rem',
                       },
                       '& .MuiOutlinedInput-input': { py: 0.75 }
@@ -753,7 +745,6 @@ export default function CRM() {
                     onChange={(e) => setCompanyTableFilters({ ...companyTableFilters, email: e.target.value })}
                     sx={{ 
                       '& .MuiOutlinedInput-root': { 
-                        backgroundColor: '#FFFFFF',
                         fontSize: '0.875rem',
                       },
                       '& .MuiOutlinedInput-input': { py: 0.75 }
@@ -767,7 +758,6 @@ export default function CRM() {
                       value={companyTableFilters.category}
                       onChange={(e) => setCompanyTableFilters({ ...companyTableFilters, category: e.target.value })}
                       sx={{ 
-                        backgroundColor: '#FFFFFF',
                         fontSize: '0.875rem',
                         '& .MuiSelect-select': { py: 0.75 }
                       }}
@@ -789,7 +779,6 @@ export default function CRM() {
                     onChange={(e) => setCompanyTableFilters({ ...companyTableFilters, location: e.target.value })}
                     sx={{ 
                       '& .MuiOutlinedInput-root': { 
-                        backgroundColor: '#FFFFFF',
                         fontSize: '0.875rem',
                       },
                       '& .MuiOutlinedInput-input': { py: 0.75 }

@@ -35,6 +35,7 @@ import {
   Tooltip,
   Card,
   CardContent,
+  useTheme,
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -91,6 +92,8 @@ function MarginChip({ purchasePrice, salePrice }: { purchasePrice?: number; sale
 }
 
 export default function Inventory() {
+  const theme = useTheme();
+  const isDarkMode = theme.palette.mode === 'dark';
   const [searchParams, setSearchParams] = useSearchParams();
   const initialTab = parseInt(searchParams.get('tab') || '0', 10);
   const [tabValue, setTabValue] = useState(initialTab);
@@ -352,7 +355,7 @@ export default function Inventory() {
 
       <TabPanel value={tabValue} index={0}>
         {/* Toolbar */}
-        <Paper sx={{ p: 2, mb: 2, backgroundColor: '#FAFAFA' }}>
+        <Paper sx={{ p: 2, mb: 2, backgroundColor: isDarkMode ? 'rgba(255, 255, 255, 0.03)' : '#FAFAFA' }}>
           <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', flexWrap: 'wrap' }}>
             <TextField
               size="small"
@@ -551,7 +554,7 @@ export default function Inventory() {
 
       {/* Leistungen Tab */}
       <TabPanel value={tabValue} index={1}>
-        <Paper sx={{ p: 2, mb: 2, backgroundColor: '#FAFAFA' }}>
+        <Paper sx={{ p: 2, mb: 2, backgroundColor: isDarkMode ? 'rgba(255, 255, 255, 0.03)' : '#FAFAFA' }}>
           <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', flexWrap: 'wrap' }}>
             <Typography variant="h6">Leistungen</Typography>
             <Box sx={{ ml: 'auto' }}>
@@ -637,7 +640,7 @@ export default function Inventory() {
 
       {/* Verkaufspreise Tab */}
       <TabPanel value={tabValue} index={2}>
-        <Paper sx={{ p: 2, mb: 2, backgroundColor: '#FAFAFA' }}>
+        <Paper sx={{ p: 2, mb: 2, backgroundColor: isDarkMode ? 'rgba(255, 255, 255, 0.03)' : '#FAFAFA' }}>
           <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', flexWrap: 'wrap' }}>
             <Typography variant="h6">Verkaufspreise</Typography>
             <Box sx={{ ml: 'auto' }}>

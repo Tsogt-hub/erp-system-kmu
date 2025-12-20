@@ -30,6 +30,7 @@ import {
   Avatar,
   Tabs,
   Tab,
+  useTheme,
 } from '@mui/material';
 import {
   Add as AddIcon,
@@ -65,6 +66,8 @@ function TabPanel(props: TabPanelProps) {
 }
 
 export default function Assets() {
+  const theme = useTheme();
+  const isDarkMode = theme.palette.mode === 'dark';
   const [assets, setAssets] = useState<Asset[]>([]);
   const [stats, setStats] = useState<AssetStats | null>(null);
   const [users, setUsers] = useState<User[]>([]);

@@ -27,6 +27,7 @@ import {
   Alert,
   CircularProgress,
   Tooltip,
+  useTheme,
 } from '@mui/material';
 import {
   Add as AddIcon,
@@ -44,6 +45,8 @@ import { purchaseOrdersApi, PurchaseOrder, CreatePurchaseOrderData, PurchaseOrde
 import { getContacts, Contact } from '../services/api/contacts';
 
 export default function PurchaseOrders() {
+  const theme = useTheme();
+  const isDarkMode = theme.palette.mode === 'dark';
   const [orders, setOrders] = useState<PurchaseOrder[]>([]);
   const [stats, setStats] = useState<PurchaseOrderStats | null>(null);
   const [suppliers, setSuppliers] = useState<Contact[]>([]);

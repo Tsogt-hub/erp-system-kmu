@@ -16,6 +16,7 @@ import {
   InputLabel,
   Select,
   MenuItem,
+  useTheme,
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
@@ -28,6 +29,8 @@ import { format } from 'date-fns';
 import { useNavigate } from 'react-router-dom';
 
 export default function Offers() {
+  const theme = useTheme();
+  const isDarkMode = theme.palette.mode === 'dark';
   const navigate = useNavigate();
   const [offers, setOffers] = useState<Offer[]>([]);
   const [filteredOffers, setFilteredOffers] = useState<Offer[]>([]);
@@ -133,7 +136,7 @@ export default function Offers() {
       </Box>
 
       {/* Toolbar wie OpusFlow */}
-      <Paper sx={{ p: 2, mb: 2, backgroundColor: '#FAFAFA' }}>
+      <Paper sx={{ p: 2, mb: 2, backgroundColor: isDarkMode ? 'rgba(255, 255, 255, 0.03)' : '#FAFAFA' }}>
         <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', flexWrap: 'wrap' }}>
           <FormControl size="small" sx={{ minWidth: 200 }}>
             <InputLabel>Status</InputLabel>
@@ -166,7 +169,7 @@ export default function Offers() {
               <TableCell>Aktionen</TableCell>
             </TableRow>
             {/* Filter-Zeile wie bei Hero ERP */}
-            <TableRow sx={{ backgroundColor: '#FAFAFA' }}>
+            <TableRow sx={{ backgroundColor: isDarkMode ? 'rgba(255, 255, 255, 0.03)' : '#FAFAFA' }}>
               <TableCell>
                 <TextField
                   size="small"
@@ -175,7 +178,6 @@ export default function Offers() {
                   variant="outlined"
                   value={tableFilters.offerNumber}
                   onChange={(e) => setTableFilters({ ...tableFilters, offerNumber: e.target.value })}
-                  sx={{ '& .MuiOutlinedInput-root': { backgroundColor: '#FFFFFF' } }}
                 />
               </TableCell>
               <TableCell>
@@ -186,7 +188,6 @@ export default function Offers() {
                   variant="outlined"
                   value={tableFilters.customer}
                   onChange={(e) => setTableFilters({ ...tableFilters, customer: e.target.value })}
-                  sx={{ '& .MuiOutlinedInput-root': { backgroundColor: '#FFFFFF' } }}
                 />
               </TableCell>
               <TableCell>
@@ -197,7 +198,6 @@ export default function Offers() {
                   variant="outlined"
                   value={tableFilters.project}
                   onChange={(e) => setTableFilters({ ...tableFilters, project: e.target.value })}
-                  sx={{ '& .MuiOutlinedInput-root': { backgroundColor: '#FFFFFF' } }}
                 />
               </TableCell>
               <TableCell />
@@ -208,7 +208,6 @@ export default function Offers() {
                     displayEmpty
                     value={tableFilters.status}
                     onChange={(e) => setTableFilters({ ...tableFilters, status: e.target.value })}
-                    sx={{ backgroundColor: '#FFFFFF' }}
                   >
                     <MenuItem value="">Alle</MenuItem>
                     <MenuItem value="draft">Entwurf</MenuItem>

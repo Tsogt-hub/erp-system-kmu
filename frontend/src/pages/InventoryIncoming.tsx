@@ -27,6 +27,7 @@ import {
   Alert,
   CircularProgress,
   Autocomplete,
+  useTheme,
 } from '@mui/material';
 import {
   Add as AddIcon,
@@ -42,6 +43,8 @@ import { inventoryApi, Item } from '../services/api/inventory';
 import { getContacts, Contact } from '../services/api/contacts';
 
 export default function InventoryIncoming() {
+  const theme = useTheme();
+  const isDarkMode = theme.palette.mode === 'dark';
   const [movements, setMovements] = useState<InventoryMovement[]>([]);
   const [stats, setStats] = useState<MovementStats | null>(null);
   const [items, setItems] = useState<Item[]>([]);

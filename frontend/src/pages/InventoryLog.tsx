@@ -22,6 +22,7 @@ import {
   Alert,
   CircularProgress,
   Pagination,
+  useTheme,
 } from '@mui/material';
 import {
   Search as SearchIcon,
@@ -37,6 +38,8 @@ import { de } from 'date-fns/locale';
 import { inventoryMovementsApi, InventoryMovement, MovementStats } from '../services/api/inventoryMovements';
 
 export default function InventoryLog() {
+  const theme = useTheme();
+  const isDarkMode = theme.palette.mode === 'dark';
   const [movements, setMovements] = useState<InventoryMovement[]>([]);
   const [stats, setStats] = useState<MovementStats | null>(null);
   const [loading, setLoading] = useState(true);

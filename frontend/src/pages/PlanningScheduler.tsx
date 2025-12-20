@@ -11,6 +11,8 @@ import {
   MenuItem,
   Drawer,
   IconButton,
+  useTheme,
+  alpha,
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import AddIcon from '@mui/icons-material/Add';
@@ -96,6 +98,8 @@ const WORK_DAY_END = 22; // 22:00 Uhr
 type ViewType = 'day' | '3days' | '7days' | 'week' | '14days' | '4weeks' | 'month';
 
 export default function PlanningScheduler() {
+  const theme = useTheme();
+  const isDarkMode = theme.palette.mode === 'dark';
   const [currentDate, setCurrentDate] = useState(new Date());
   const [viewType, setViewType] = useState<ViewType>('week');
   const [events, setEvents] = useState<CalendarEvent[]>([]);
@@ -887,7 +891,9 @@ export default function PlanningScheduler() {
                       alignItems: 'center',
                       gap: 0.5,
                       borderRight: '1px solid rgba(0, 0, 0, 0.08)',
-                      bgcolor: isSameDay(day, new Date()) ? '#FFF9C4' : (isWeekend ? 'rgba(0, 0, 0, 0.04)' : 'transparent'),
+                      bgcolor: isSameDay(day, new Date()) 
+                        ? (isDarkMode ? alpha(theme.palette.warning.main, 0.15) : '#FFF9C4') 
+                        : (isWeekend ? (isDarkMode ? 'rgba(255, 255, 255, 0.03)' : 'rgba(0, 0, 0, 0.04)') : 'transparent'),
                       '&:last-child': { borderRight: 'none' },
                       width: `${columnWidth}px`,
                       minWidth: `${columnWidth}px`,
@@ -928,7 +934,9 @@ export default function PlanningScheduler() {
                         display: 'grid',
                         gridTemplateColumns: `repeat(${hourMarkers.length}, 1fr)`,
                         borderRight: '1px solid rgba(0, 0, 0, 0.08)',
-                        bgcolor: isSameDay(day, new Date()) ? '#FFF9C4' : (isWeekend ? 'rgba(0, 0, 0, 0.04)' : 'transparent'),
+                        bgcolor: isSameDay(day, new Date()) 
+                        ? (isDarkMode ? alpha(theme.palette.warning.main, 0.15) : '#FFF9C4') 
+                        : (isWeekend ? (isDarkMode ? 'rgba(255, 255, 255, 0.03)' : 'rgba(0, 0, 0, 0.04)') : 'transparent'),
                         '&:last-child': { borderRight: 'none' },
                       }}>
                         {hourMarkers.map((hour, idx) => (
@@ -1085,10 +1093,14 @@ export default function PlanningScheduler() {
                             sx={{
                               borderRight: '1px solid rgba(0, 0, 0, 0.08)',
                               position: 'relative',
-                              bgcolor: isSameDay(day, new Date()) ? '#FFFDE7' : (isWeekend ? 'rgba(0, 0, 0, 0.04)' : 'white'),
+                              bgcolor: isSameDay(day, new Date()) 
+                                ? (isDarkMode ? alpha(theme.palette.warning.main, 0.1) : '#FFFDE7') 
+                                : (isWeekend ? (isDarkMode ? 'rgba(255, 255, 255, 0.03)' : 'rgba(0, 0, 0, 0.04)') : (isDarkMode ? 'transparent' : 'white')),
                               '&:last-child': { borderRight: 'none' },
                               '&:hover': {
-                                bgcolor: isSameDay(day, new Date()) ? '#FFF9C4' : (isWeekend ? 'rgba(0, 0, 0, 0.08)' : 'rgba(0, 122, 255, 0.02)'),
+                                bgcolor: isSameDay(day, new Date()) 
+                                  ? (isDarkMode ? alpha(theme.palette.warning.main, 0.2) : '#FFF9C4') 
+                                  : (isWeekend ? (isDarkMode ? 'rgba(255, 255, 255, 0.06)' : 'rgba(0, 0, 0, 0.08)') : (isDarkMode ? 'rgba(99, 102, 241, 0.05)' : 'rgba(0, 122, 255, 0.02)')),
                                 cursor: 'pointer',
                               },
                               width: `${columnWidth}px`,

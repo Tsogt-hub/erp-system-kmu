@@ -27,6 +27,7 @@ import {
   Alert,
   CircularProgress,
   Tooltip,
+  useTheme,
 } from '@mui/material';
 import {
   Add as AddIcon,
@@ -45,6 +46,8 @@ import { getContacts, Contact } from '../services/api/contacts';
 import { getCompanies, Company } from '../services/api/companies';
 
 export default function SalesOrders() {
+  const theme = useTheme();
+  const isDarkMode = theme.palette.mode === 'dark';
   const [orders, setOrders] = useState<SalesOrder[]>([]);
   const [stats, setStats] = useState<SalesOrderStats | null>(null);
   const [contacts, setContacts] = useState<Contact[]>([]);

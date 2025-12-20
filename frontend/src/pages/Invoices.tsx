@@ -24,6 +24,7 @@ import {
   Grid,
   Card,
   CardContent,
+  useTheme,
 } from '@mui/material';
 import {
   Add as AddIcon,
@@ -39,6 +40,8 @@ import { getContacts, Contact } from '../services/api/contacts';
 import { getCompanies, Company } from '../services/api/companies';
 
 export default function Invoices() {
+  const theme = useTheme();
+  const isDarkMode = theme.palette.mode === 'dark';
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [stats, setStats] = useState<InvoiceStats | null>(null);
   const [contacts, setContacts] = useState<Contact[]>([]);

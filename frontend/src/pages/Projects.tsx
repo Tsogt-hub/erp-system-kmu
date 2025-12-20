@@ -17,6 +17,7 @@ import {
   DialogContent,
   DialogActions,
   TextField,
+  useTheme,
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
@@ -27,6 +28,8 @@ import { FormControl, Select, MenuItem } from '@mui/material';
 import { projectsApi, Project, CreateProjectData } from '../services/api/projects';
 
 export default function Projects() {
+  const theme = useTheme();
+  const isDarkMode = theme.palette.mode === 'dark';
   const navigate = useNavigate();
   const [projects, setProjects] = useState<Project[]>([]);
   const [filteredProjects, setFilteredProjects] = useState<Project[]>([]);
@@ -135,7 +138,7 @@ export default function Projects() {
               <TableCell>Aktionen</TableCell>
             </TableRow>
             {/* Filter-Zeile wie bei Hero ERP */}
-            <TableRow sx={{ backgroundColor: '#FAFAFA' }}>
+            <TableRow sx={{ backgroundColor: isDarkMode ? 'rgba(255, 255, 255, 0.03)' : '#FAFAFA' }}>
               <TableCell>
                 <TextField
                   size="small"
@@ -144,7 +147,6 @@ export default function Projects() {
                   variant="outlined"
                   value={filters.name}
                   onChange={(e) => setFilters({ ...filters, name: e.target.value })}
-                  sx={{ '& .MuiOutlinedInput-root': { backgroundColor: '#FFFFFF' } }}
                 />
               </TableCell>
               <TableCell>
@@ -155,7 +157,6 @@ export default function Projects() {
                   variant="outlined"
                   value={filters.reference}
                   onChange={(e) => setFilters({ ...filters, reference: e.target.value })}
-                  sx={{ '& .MuiOutlinedInput-root': { backgroundColor: '#FFFFFF' } }}
                 />
               </TableCell>
               <TableCell>
@@ -166,7 +167,6 @@ export default function Projects() {
                   variant="outlined"
                   value={filters.customer}
                   onChange={(e) => setFilters({ ...filters, customer: e.target.value })}
-                  sx={{ '& .MuiOutlinedInput-root': { backgroundColor: '#FFFFFF' } }}
                 />
               </TableCell>
               <TableCell>
@@ -175,7 +175,6 @@ export default function Projects() {
                     displayEmpty
                     value={filters.status}
                     onChange={(e) => setFilters({ ...filters, status: e.target.value })}
-                    sx={{ backgroundColor: '#FFFFFF' }}
                   >
                     <MenuItem value="">Alle</MenuItem>
                     <MenuItem value="draft">Entwurf</MenuItem>
