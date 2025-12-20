@@ -300,6 +300,8 @@ export async function initPostgresDatabase() {
           board_type VARCHAR(50) DEFAULT 'custom',
           created_by INTEGER REFERENCES users(id),
           is_active BOOLEAN DEFAULT true,
+          is_default BOOLEAN DEFAULT false,
+          settings TEXT,
           created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
           updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         );
@@ -311,6 +313,8 @@ export async function initPostgresDatabase() {
           name VARCHAR(255) NOT NULL,
           position INTEGER DEFAULT 0,
           color VARCHAR(50) DEFAULT '#64B5F6',
+          is_default BOOLEAN DEFAULT false,
+          wip_limit INTEGER,
           created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
           updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         );
@@ -457,6 +461,9 @@ export async function initPostgresDatabase() {
       logger.info('✅ PostgreSQL-Tabellen existieren bereits');
     }
 
+    // Run migrations to add missing columns
+    await runMigrations(pool);
+
     await pool.end();
     return true;
   } catch (error: any) {
@@ -464,5 +471,40 @@ export async function initPostgresDatabase() {
     await pool.end();
     throw error;
   }
+}
+
+async function runMigrations(pool: Pool) {
+  logger.info('🔄 Führe Migrationen aus...');
+
+  // Add missing columns to kanban_boards if they don't exist
+  try {
+    await pool.query(`
+      ALTER TABLE kanban_boards ADD COLUMN IF NOT EXISTS is_default BOOLEAN DEFAULT false;
+      ALTER TABLE kanban_boards ADD COLUMN IF NOT EXISTS settings TEXT;
+    `);
+  } catch (e) {
+    // Column might already exist
+  }
+
+  // Add missing columns to kanban_columns if they don't exist
+  try {
+    await pool.query(`
+      ALTER TABLE kanban_columns ADD COLUMN IF NOT EXISTS is_default BOOLEAN DEFAULT false;
+      ALTER TABLE kanban_columns ADD COLUMN IF NOT EXISTS wip_limit INTEGER;
+    `);
+  } catch (e) {
+    // Column might already exist
+  }
+
+  // Add missing columns to kanban_cards if they don't exist
+  try {
+    await pool.query(`
+      ALTER TABLE kanban_cards ADD COLUMN IF NOT EXISTS labels TEXT;
+    `);
+  } catch (e) {
+    // Column might already exist
+  }
+
+  logger.info('✅ Migrationen abgeschlossen');
 }
 
