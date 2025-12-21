@@ -79,7 +79,6 @@ const menuCategories: MenuCategory[] = [
       { text: 'Startseite', icon: <HomeOutlinedIcon />, path: '/' },
       { text: 'Aufgaben', icon: <CheckCircleOutlineIcon />, path: '/tasks' },
       { text: 'Kalender', icon: <CalendarMonthOutlinedIcon />, path: '/calendar' },
-      { text: 'Meine Arbeitszeiten', icon: <AccessTimeOutlinedIcon />, path: '/time-tracking' },
       { text: 'Zeiterfassung', icon: <AccessTimeOutlinedIcon />, path: '/timesheets' },
       { text: 'Verkauf', icon: <TrendingUpOutlinedIcon />, path: '/sales' },
     ],

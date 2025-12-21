@@ -6,7 +6,6 @@ import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 import Projects from './pages/Projects';
 import CRM from './pages/CRM';
-import TimeTracking from './pages/TimeTracking';
 import Tickets from './pages/Tickets';
 import Inventory from './pages/Inventory';
 import InventoryIncoming from './pages/InventoryIncoming';
@@ -65,7 +64,6 @@ function App() {
         <Route path="pipelines/:type/kanban" element={<PipelineKanban />} />
         <Route path="crm" element={<CRM />} />
         <Route path="crm/contacts/:id" element={<ContactDetail />} />
-        <Route path="time-tracking" element={<TimeTracking />} />
         <Route path="tickets" element={<Tickets />} />
         <Route path="inventory" element={<Inventory />} />
         <Route path="offers" element={<Offers />} />
