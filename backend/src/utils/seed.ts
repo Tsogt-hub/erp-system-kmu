@@ -58,6 +58,32 @@ export async function seedDatabase() {
       );
     }
 
+    // Erstelle Dummy-Artikel für Angebote
+    const itemsCheck = await query('SELECT COUNT(*) as count FROM items');
+    if (parseInt(itemsCheck.rows[0].count) === 0) {
+      await query(
+        `INSERT INTO items (sku, name, description, category, unit, price, vat_rate, is_active, is_service) VALUES
+         ('PV-MOD-400', 'PV-Modul 400W', 'Hochleistungs-Solarmodul 400 Watt', 'Modul', 'Stück', 180.00, 19.00, true, false),
+         ('WR-HYB-10K', 'Wechselrichter 10kW', 'Hybrid-Wechselrichter 10 kW', 'Wechselrichter', 'Stück', 2500.00, 19.00, true, false),
+         ('MONT-FLACH', 'Montagesystem Flachdach', 'Komplett-Set für Flachdachmontage', 'Montagesystem', 'Set', 450.00, 19.00, true, false),
+         ('KAB-SOL-6', 'Kabel Solar 6mm²', 'Solarkabel 6mm², schwarz, 100m Rolle', 'Kabel', 'Rolle', 120.00, 19.00, true, false),
+         ('INST-PAUSCH', 'Installation Pauschal', 'Installationsarbeiten Pauschal', 'Dienstleistung', 'Pauschal', 1500.00, 19.00, true, true)
+         ON CONFLICT (sku) DO NOTHING`
+      );
+      console.log('✅ Dummy-Artikel erstellt');
+    }
+
+    // Erstelle Test-Kontakt für Angebote
+    const contactCheck = await query('SELECT COUNT(*) as count FROM contacts');
+    if (parseInt(contactCheck.rows[0].count) === 0) {
+      await query(
+        `INSERT INTO contacts (first_name, last_name, email, phone, company_id)
+         VALUES ('Theodor', 'Siegrdrief', 'theodor@example.com', '0123456789', 1)
+         ON CONFLICT DO NOTHING`
+      );
+      console.log('✅ Test-Kontakt erstellt');
+    }
+
     console.log('✅ Datenbank-Seeding abgeschlossen!');
     console.log('📋 Login-Daten:');
     console.log('   E-Mail: admin@test.com');

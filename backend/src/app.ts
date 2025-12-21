@@ -103,6 +103,10 @@ async function startServer() {
     // Initialisiere PostgreSQL-Tabellen
     const { initPostgresDatabase } = await import('./utils/init-postgres');
     await initPostgresDatabase();
+    
+    // Seed-Daten erstellen falls noch nicht vorhanden
+    const { seedDatabase } = await import('./utils/seed');
+    await seedDatabase();
   } catch (error: any) {
     // PostgreSQL nicht verfügbar, verwende SQLite
     logger.info('⚠️  PostgreSQL nicht verfügbar, verwende SQLite...');
