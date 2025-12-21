@@ -99,7 +99,6 @@ export default function OfferCreate() {
   const [editingTitle, setEditingTitle] = useState<(OfferTitle & { tempId?: string }) | null>(null);
 
   const [formData, setFormData] = useState<CreateOfferData>({
-    customer_id: contactId ? parseInt(contactId) : undefined,
     amount: 0,
     tax_rate: 19.00,
     status: 'draft',
@@ -145,7 +144,12 @@ export default function OfferCreate() {
       if (contactId) {
         const contactData = await crmApi.getContactById(parseInt(contactId));
         setContact(contactData);
-        setFormData(prev => ({ ...prev, customer_id: contactData.id }));
+        // Speichere contact_id und company_id (falls vorhanden)
+        setFormData(prev => ({ 
+          ...prev, 
+          contact_id: contactData.id,
+          customer_id: contactData.company_id || undefined 
+        }));
       }
 
       // Lade verfügbare Artikel
@@ -432,7 +436,14 @@ export default function OfferCreate() {
                 onChange={(_, value) => {
                   setContact(value);
                   if (value) {
-                    setFormData(prev => ({ ...prev, customer_id: value.id }));
+                    // Speichere contact_id und company_id (falls vorhanden)
+                    setFormData(prev => ({ 
+                      ...prev, 
+                      contact_id: value.id,
+                      customer_id: value.company_id || undefined 
+                    }));
+                  } else {
+                    setFormData(prev => ({ ...prev, contact_id: undefined, customer_id: undefined }));
                   }
                 }}
                 renderInput={(params) => (

@@ -243,3 +243,4 @@ export function initLogEntriesTable(): void {
 
 
 
+

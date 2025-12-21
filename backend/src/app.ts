@@ -149,6 +149,14 @@ async function startServer() {
     logger.warn('⚠️  Contacts Hero-Migration übersprungen:', error.message);
   }
 
+  // Offer Contact-Feld-Migration ausführen
+  try {
+    const { migrateOfferContact } = await import('./utils/migrate-offer-contact');
+    await migrateOfferContact();
+  } catch (error: any) {
+    logger.warn('⚠️  Offer Contact-Migration übersprungen:', error.message);
+  }
+
   // Tasks-Tabelle initialisieren
   try {
     const { initTasksTable } = await import('./models/Task');

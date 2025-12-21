@@ -5,6 +5,7 @@ export interface Offer {
   offer_number: string;
   project_id?: number;
   customer_id?: number;
+  contact_id?: number;
   amount: number;
   tax_rate: number;
   status: string;
@@ -19,6 +20,7 @@ export interface Offer {
   created_at: string;
   updated_at: string;
   customer_name?: string;
+  contact_name?: string;
   project_name?: string;
   project_address?: string;
   created_user_name?: string;
@@ -90,6 +92,7 @@ export interface CreateOfferItemData {
 export interface CreateOfferData {
   project_id?: number;
   customer_id?: number;
+  contact_id?: number;
   amount: number;
   tax_rate?: number;
   status?: string;
