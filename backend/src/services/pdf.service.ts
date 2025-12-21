@@ -185,6 +185,7 @@ class PDFService {
         doc.on('error', reject);
 
         const pageWidth = 595.28; // A4 width in points
+        const pageHeight = doc.page.height || 842;
         const leftMargin = settings.margin_left;
         const rightMargin = pageWidth - settings.margin_right;
         const contentWidth = pageWidth - settings.margin_left - settings.margin_right;
@@ -301,45 +302,46 @@ class PDFService {
         doc.fontSize(8)
            .fillColor('#666666')
            .font('Helvetica')
-           .text('Angebot Nr.:', infoTextX, infoTextY, { width: labelWidth });
+           .text('Angebot Nr.:', infoTextX, infoTextY, { width: labelWidth, lineBreak: false });
         doc.font('Helvetica-Bold')
            .fillColor('#000000')
-           .text(offer.offer_number, infoValueX, infoTextY, { width: valueWidth });
+           .text(offer.offer_number, infoValueX, infoTextY, { width: valueWidth, lineBreak: false, ellipsis: true });
 
         infoTextY += 15;
         doc.font('Helvetica')
            .fillColor('#666666')
-           .text('Datum:', infoTextX, infoTextY, { width: labelWidth });
+           .text('Datum:', infoTextX, infoTextY, { width: labelWidth, lineBreak: false });
         doc.font('Helvetica-Bold')
            .fillColor('#000000')
-           .text(offer.date, infoValueX, infoTextY, { width: valueWidth });
+           .text(offer.date, infoValueX, infoTextY, { width: valueWidth, lineBreak: false, ellipsis: true });
 
         infoTextY += 15;
         doc.font('Helvetica')
            .fillColor('#666666')
-           .text('Gültig bis:', infoTextX, infoTextY, { width: labelWidth });
+           .text('Gültig bis:', infoTextX, infoTextY, { width: labelWidth, lineBreak: false });
         doc.font('Helvetica-Bold')
            .fillColor('#000000')
-           .text(offer.valid_until, infoValueX, infoTextY, { width: valueWidth });
+           .text(offer.valid_until, infoValueX, infoTextY, { width: valueWidth, lineBreak: false, ellipsis: true });
 
         if (offer.project) {
           infoTextY += 15;
           doc.font('Helvetica')
              .fillColor('#666666')
-             .text('Projekt:', infoTextX, infoTextY, { width: labelWidth });
+             .text('Projekt:', infoTextX, infoTextY, { width: labelWidth, lineBreak: false });
           doc.font('Helvetica-Bold')
              .fillColor('#000000')
-             .text(offer.project.name, infoValueX, infoTextY, { width: valueWidth });
+             .text(offer.project.name, infoValueX, infoTextY, { width: valueWidth, lineBreak: false, ellipsis: true });
         }
 
         // ==================== WASSERZEICHEN (Entwurf) ====================
         if (offer.is_draft) {
           doc.save();
-          doc.rotate(-45, { origin: [pageWidth / 2, 400] });
-          doc.fontSize(80)
+          const watermarkOrigin: [number, number] = [pageWidth / 2, pageHeight / 2];
+          doc.rotate(-42, { origin: watermarkOrigin });
+          doc.fontSize(70)
              .fillColor('#c8c8c8')
-             .opacity(0.3)
-             .text('ENTWURF', 100, 350, { align: 'center', width: 400 });
+             .opacity(0.18)
+             .text('ENTWURF', pageWidth / 2 - 200, pageHeight / 2 - 40, { align: 'center', width: 400 });
           doc.restore();
           doc.opacity(1);
         }

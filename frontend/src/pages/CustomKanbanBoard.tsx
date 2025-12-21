@@ -1266,20 +1266,23 @@ function PipelineSettingsDialog({ open, onClose, board, onUpdate }: PipelineSett
               )}
 
               {/* Color Selector */}
-              <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
+              <Box sx={{ display: 'flex', gap: 0.75, flexWrap: 'wrap', alignItems: 'center', minHeight: 26 }}>
                 {COLUMN_COLORS.slice(0, 5).map((color) => (
                   <Box
                     key={color}
                     onClick={() => handleUpdateColumn(column.id, column.name, color)}
                     sx={{
-                      width: 18,
-                      height: 18,
+                      width: 20,
+                      height: 20,
                       bgcolor: color,
-                      borderRadius: 0.5,
+                      borderRadius: 0.75,
                       cursor: 'pointer',
-                      border: column.color === color ? `2px solid ${theme.palette.background.paper}` : 'none',
-                      boxShadow: column.color === color ? `0 0 0 1px ${color}` : 'none',
-                      '&:hover': { transform: 'scale(1.2)' },
+                      border: `1px solid ${theme.palette.background.paper}`,
+                      boxShadow: column.color === color
+                        ? `0 0 0 2px ${alpha(color, 0.35)}`
+                        : `0 0 0 1px ${alpha(theme.palette.divider, 0.7)}`,
+                      transition: 'transform 120ms ease',
+                      '&:hover': { transform: 'scale(1.08)' },
                     }}
                   />
                 ))}
@@ -1313,7 +1316,7 @@ function PipelineSettingsDialog({ open, onClose, board, onUpdate }: PipelineSett
           <Typography variant="subtitle2" fontWeight={600} sx={{ mb: 2 }}>
             Neue Phase hinzufügen
           </Typography>
-          <Box sx={{ display: 'flex', gap: 2, alignItems: 'flex-end' }}>
+          <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', flexWrap: 'wrap' }}>
             <TextField
               size="small"
               label="Name der Phase"
@@ -1322,7 +1325,7 @@ function PipelineSettingsDialog({ open, onClose, board, onUpdate }: PipelineSett
               onKeyPress={(e) => e.key === 'Enter' && handleAddColumn()}
               sx={{ flex: 1 }}
             />
-            <Box sx={{ display: 'flex', gap: 0.5 }}>
+            <Box sx={{ display: 'flex', gap: 0.75, alignItems: 'center', flexWrap: 'wrap' }}>
               {COLUMN_COLORS.slice(0, 6).map((color) => (
                 <Box
                   key={color}
@@ -1331,11 +1334,14 @@ function PipelineSettingsDialog({ open, onClose, board, onUpdate }: PipelineSett
                     width: 24,
                     height: 24,
                     bgcolor: color,
-                    borderRadius: 0.5,
+                    borderRadius: 0.75,
                     cursor: 'pointer',
-                    border: newColumnColor === color ? `2px solid ${theme.palette.background.paper}` : 'none',
-                    boxShadow: newColumnColor === color ? `0 0 0 2px ${color}` : 'none',
-                    '&:hover': { transform: 'scale(1.1)' },
+                    border: `1px solid ${theme.palette.background.paper}`,
+                    boxShadow: newColumnColor === color
+                      ? `0 0 0 2px ${alpha(color, 0.35)}`
+                      : `0 0 0 1px ${alpha(theme.palette.divider, 0.7)}`,
+                    transition: 'transform 120ms ease',
+                    '&:hover': { transform: 'scale(1.08)' },
                   }}
                 />
               ))}

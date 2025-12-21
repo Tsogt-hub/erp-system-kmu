@@ -17,6 +17,7 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
+  useTheme,
 } from '@mui/material';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import StopIcon from '@mui/icons-material/Stop';
@@ -30,6 +31,7 @@ export default function TimeTracking() {
   const [activeEntry, setActiveEntry] = useState<TimeEntry | null>(null);
   const [loading, setLoading] = useState(true);
   const [selectedDate, setSelectedDate] = useState(format(new Date(), 'yyyy-MM-dd'));
+  const theme = useTheme();
 
   useEffect(() => {
     loadEntries();
@@ -108,7 +110,7 @@ export default function TimeTracking() {
   };
 
   return (
-    <Box>
+    <Box sx={{ maxWidth: 1200, mx: 'auto', display: 'flex', flexDirection: 'column', gap: 3 }}>
       <Typography variant="h4" gutterBottom>
         Zeiterfassung
       </Typography>
@@ -139,7 +141,21 @@ export default function TimeTracking() {
       )}
 
       {/* Controls */}
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 3 }}>
+      <Box
+        sx={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          gap: 2,
+          flexWrap: 'wrap',
+          mb: 3,
+          p: 2,
+          borderRadius: 2,
+          border: `1px solid ${theme.palette.divider}`,
+          backgroundColor: theme.palette.background.paper,
+          boxShadow: '0 6px 18px rgba(0,0,0,0.04)',
+        }}
+      >
         <TextField
           type="date"
           label="Datum"
@@ -159,7 +175,7 @@ export default function TimeTracking() {
       </Box>
 
       {/* Time Entries Table */}
-      <TableContainer component={Paper}>
+      <TableContainer component={Paper} sx={{ boxShadow: '0 10px 20px rgba(0,0,0,0.06)', borderRadius: 2 }}>
         <Table>
           <TableHead>
             <TableRow>

@@ -21,13 +21,13 @@ import {
 
 export default function Timesheets() {
   return (
-    <Box sx={{ p: 3 }}>
+    <Box sx={{ p: 3, maxWidth: 1280, mx: 'auto', display: 'flex', flexDirection: 'column', gap: 3 }}>
       <Typography variant="h4" gutterBottom sx={{ fontWeight: 700, letterSpacing: '-0.03em', color: '#000000', mb: 3 }}>
         Zeiterfassung
       </Typography>
 
       {/* Stats Cards */}
-      <Grid container spacing={2} sx={{ mb: 3 }}>
+      <Grid container spacing={2} sx={{ mb: 2.5, alignItems: 'stretch' }}>
         <Grid item xs={12} sm={6} md={3}>
           <Card
             sx={{
@@ -36,10 +36,11 @@ export default function Timesheets() {
               borderRadius: '16px',
               border: '1px solid rgba(255, 255, 255, 0.18)',
               boxShadow: '0 10px 15px rgba(0, 0, 0, 0.1), 0 4px 6px rgba(0, 0, 0, 0.05)',
+              height: '100%',
             }}
           >
-            <CardContent>
-              <Typography variant="body2" color="text.secondary" gutterBottom>
+            <CardContent sx={{ display: 'flex', flexDirection: 'column', gap: 0.75 }}>
+              <Typography variant="body2" color="text.secondary" gutterBottom sx={{ mb: 0 }}>
                 Diese Woche
               </Typography>
               <Typography variant="h5" sx={{ fontWeight: 700, color: '#007AFF' }}>
@@ -56,10 +57,11 @@ export default function Timesheets() {
               borderRadius: '16px',
               border: '1px solid rgba(255, 255, 255, 0.18)',
               boxShadow: '0 10px 15px rgba(0, 0, 0, 0.1), 0 4px 6px rgba(0, 0, 0, 0.05)',
+              height: '100%',
             }}
           >
-            <CardContent>
-              <Typography variant="body2" color="text.secondary" gutterBottom>
+            <CardContent sx={{ display: 'flex', flexDirection: 'column', gap: 0.75 }}>
+              <Typography variant="body2" color="text.secondary" gutterBottom sx={{ mb: 0 }}>
                 Diesen Monat
               </Typography>
               <Typography variant="h5" sx={{ fontWeight: 700, color: '#34C759' }}>
@@ -76,10 +78,11 @@ export default function Timesheets() {
               borderRadius: '16px',
               border: '1px solid rgba(255, 255, 255, 0.18)',
               boxShadow: '0 10px 15px rgba(0, 0, 0, 0.1), 0 4px 6px rgba(0, 0, 0, 0.05)',
+              height: '100%',
             }}
           >
-            <CardContent>
-              <Typography variant="body2" color="text.secondary" gutterBottom>
+            <CardContent sx={{ display: 'flex', flexDirection: 'column', gap: 0.75 }}>
+              <Typography variant="body2" color="text.secondary" gutterBottom sx={{ mb: 0 }}>
                 Abrechenbar
               </Typography>
               <Typography variant="h5" sx={{ fontWeight: 700, color: '#FF9500' }}>
@@ -96,10 +99,11 @@ export default function Timesheets() {
               borderRadius: '16px',
               border: '1px solid rgba(255, 255, 255, 0.18)',
               boxShadow: '0 10px 15px rgba(0, 0, 0, 0.1), 0 4px 6px rgba(0, 0, 0, 0.05)',
+              height: '100%',
             }}
           >
-            <CardContent>
-              <Typography variant="body2" color="text.secondary" gutterBottom>
+            <CardContent sx={{ display: 'flex', flexDirection: 'column', gap: 0.75 }}>
+              <Typography variant="body2" color="text.secondary" gutterBottom sx={{ mb: 0 }}>
                 Umsatz
               </Typography>
               <Typography variant="h5" sx={{ fontWeight: 700, color: '#AF52DE' }}>
@@ -110,7 +114,7 @@ export default function Timesheets() {
         </Grid>
       </Grid>
 
-      <Box sx={{ mb: 3 }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 2.5 }}>
         <Button
           variant="contained"
           startIcon={<AddIcon />}
@@ -134,6 +138,7 @@ export default function Timesheets() {
           borderRadius: '16px',
           border: '1px solid rgba(255, 255, 255, 0.18)',
           boxShadow: '0 10px 15px rgba(0, 0, 0, 0.1), 0 4px 6px rgba(0, 0, 0, 0.05)',
+          mt: 0.5,
         }}
       >
         <Table>
