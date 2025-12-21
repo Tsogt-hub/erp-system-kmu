@@ -60,17 +60,26 @@ pool.on('error', (err) => {
   console.error('❌ PostgreSQL error:', err);
 });
 
+// Konvertiere SQLite-Platzhalter (?) zu PostgreSQL ($1, $2, ...)
+function convertToPostgresParams(text: string): string {
+  let paramIndex = 0;
+  return text.replace(/\?/g, () => `$${++paramIndex}`);
+}
+
 export const query = async (text: string, params?: any[]): Promise<any> => {
   if (useSQLite) {
     const { query: sqliteQuery } = await import('./database.sqlite');
     return sqliteQuery(text, params || []);
   }
   
+  // Konvertiere ? zu $1, $2, ... für PostgreSQL
+  const pgText = convertToPostgresParams(text);
+  
   const start = Date.now();
   try {
-    const res = await pool.query(text, params);
+    const res = await pool.query(pgText, params);
     const duration = Date.now() - start;
-    console.log('Executed query', { text, duration, rows: res.rowCount });
+    console.log('Executed query', { text: pgText, duration, rows: res.rowCount });
     return res;
   } catch (error) {
     const code = (error as any)?.code;
