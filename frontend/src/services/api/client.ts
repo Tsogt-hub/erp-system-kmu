@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 // Ensure the API URL ends with /api
-const baseUrl = import.meta.env.VITE_API_URL ?? 'http://localhost:3000';
+const baseUrl = import.meta.env.VITE_API_URL ?? 'http://localhost:3001';
 const API_URL = baseUrl.endsWith('/api') ? baseUrl : `${baseUrl}/api`;
 
 export const apiClient = axios.create({
