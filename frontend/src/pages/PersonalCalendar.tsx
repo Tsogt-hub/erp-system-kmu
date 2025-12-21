@@ -342,18 +342,19 @@ export default function PersonalCalendar() {
     );
   };
 
-  if (loading) {
-    return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '400px' }}>
-        <CircularProgress />
-      </Box>
-    );
-  }
-
   return (
     <Box>
       {error && (
-        <Alert severity="error" onClose={() => setError(null)} sx={{ mb: 2 }}>
+        <Alert
+          severity="error"
+          onClose={() => setError(null)}
+          action={
+            <Button color="inherit" size="small" onClick={loadEvents}>
+              Erneut laden
+            </Button>
+          }
+          sx={{ mb: 2 }}
+        >
           {error}
         </Alert>
       )}
@@ -396,9 +397,30 @@ export default function PersonalCalendar() {
             ? `${format(weekDays[0], 'd. MMM', { locale: de })} - ${format(weekDays[6], 'd. MMM yyyy', { locale: de })}`
             : format(currentDate, 'EEEE, d. MMMM yyyy', { locale: de })}
         </Typography>
-        {view === 'month' && renderMonthView()}
-        {view === 'week' && renderWeekView()}
-        {view === 'day' && (
+        {loading ? (
+          <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 240 }}>
+            <CircularProgress />
+          </Box>
+        ) : (
+          <>
+            {!events.length && !error && (
+              <Box sx={{ textAlign: 'center', py: 3 }}>
+                <Typography variant="subtitle1" fontWeight={600}>Keine Termine vorhanden</Typography>
+                <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                  Legen Sie Ihren ersten Termin an, um den Kalender zu füllen.
+                </Typography>
+                <Button variant="contained" startIcon={<AddIcon />} onClick={() => {
+                  setEditingEvent(null);
+                  setNewEvent({ title: '', description: '', start_time: '', end_time: '', type: 'personal' });
+                  setEventDialogOpen(true);
+                }}>
+                  Neuer Termin
+                </Button>
+              </Box>
+            )}
+            {view === 'month' && renderMonthView()}
+            {view === 'week' && renderWeekView()}
+            {view === 'day' && (
           <Box>
             <Typography variant="h6" sx={{ mb: 2 }}>
               {format(currentDate, 'EEEE, d. MMMM yyyy', { locale: de })}
@@ -419,6 +441,8 @@ export default function PersonalCalendar() {
               </Card>
             ))}
           </Box>
+            )}
+          </>
         )}
       </Paper>
 

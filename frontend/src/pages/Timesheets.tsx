@@ -157,9 +157,18 @@ export default function Timesheets() {
           <TableBody>
             <TableRow>
               <TableCell colSpan={8} align="center" sx={{ py: 4 }}>
-                <Typography color="text.secondary">
-                  Keine Zeiteinträge vorhanden.
-                </Typography>
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5, alignItems: 'center' }}>
+                  <Typography color="text.secondary">
+                    Keine Zeiteinträge vorhanden.
+                  </Typography>
+                  <Button
+                    variant="outlined"
+                    startIcon={<AddIcon />}
+                    href="/time-tracking"
+                  >
+                    Timer starten oder Zeit erfassen
+                  </Button>
+                </Box>
               </TableCell>
             </TableRow>
           </TableBody>

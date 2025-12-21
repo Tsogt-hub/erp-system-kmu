@@ -351,6 +351,9 @@ export default function CRM() {
             <Button variant="contained" startIcon={<AddIcon />} onClick={() => setContactDialogOpen(true)}>
               Neuer Kontakt
             </Button>
+            <Button variant="text" onClick={resetContactFilters}>
+              Filter zurücksetzen
+            </Button>
           </Box>
         </Box>
 
@@ -650,9 +653,14 @@ export default function CRM() {
       <TabPanel value={tabValue} index={1}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2, alignItems: 'center' }}>
           <Typography variant="h6">Unternehmen</Typography>
-          <Button variant="contained" startIcon={<AddIcon />} onClick={() => setCompanyDialogOpen(true)}>
-            Neues Unternehmen
-          </Button>
+          <Box sx={{ display: 'flex', gap: 1.5, alignItems: 'center' }}>
+            <Button variant="outlined" onClick={resetCompanyFilters}>
+              Filter zurücksetzen
+            </Button>
+            <Button variant="contained" startIcon={<AddIcon />} onClick={() => setCompanyDialogOpen(true)}>
+              Neues Unternehmen
+            </Button>
+          </Box>
         </Box>
 
         {/* Hero-Struktur: Spalten wie in Hero CRM */}
@@ -683,19 +691,8 @@ export default function CRM() {
                 }
               }}>
                 <TableCell>
-                  <FormControl size="small" fullWidth>
-                    <Select
-                      displayEmpty
-                      value="company"
-                      disabled
-                      sx={{ 
-                        fontSize: '0.875rem',
-                        '& .MuiSelect-select': { py: 0.75 }
-                      }}
-                    >
-                      <MenuItem value="company">Firma</MenuItem>
-                    </Select>
-                  </FormControl>
+                  <Typography variant="body2" color="text.secondary">Typ</Typography>
+                  <Typography variant="body2" fontWeight={600}>Firma</Typography>
                 </TableCell>
                 <TableCell>
                   <TextField

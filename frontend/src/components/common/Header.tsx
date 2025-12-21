@@ -32,7 +32,7 @@ import SettingsOutlinedIcon from '@mui/icons-material/SettingsOutlined';
 import AccountTreeOutlinedIcon from '@mui/icons-material/AccountTreeOutlined';
 import NotificationBell from './NotificationBell';
 
-// Page titles mapping
+// Page titles mapping (exact paths)
 const pageTitles: Record<string, string> = {
   '/': 'Dashboard',
   '/tasks': 'Aufgaben',
@@ -83,8 +83,20 @@ export default function Header() {
     window.location.href = '/login';
   };
 
-  // Get page title
-  const pageTitle = pageTitles[location.pathname] || 'Dashboard';
+  // Get page title (with prefix support)
+  const pathname = location.pathname;
+  let pageTitle = pageTitles[pathname];
+  if (!pageTitle) {
+    if (pathname.startsWith('/kanban-boards')) {
+      pageTitle = 'Kanban';
+    } else if (pathname.startsWith('/crm')) {
+      pageTitle = 'CRM';
+    } else if (pathname.startsWith('/projects')) {
+      pageTitle = 'Projekte';
+    } else {
+      pageTitle = 'Dashboard';
+    }
+  }
 
   // Filter spotlight items
   const filteredItems = spotlightItems.filter(item =>

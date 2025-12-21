@@ -173,6 +173,9 @@ export default function TimeTracking() {
           </Button>
         )}
       </Box>
+      <Typography variant="body2" color="text.secondary" sx={{ mt: -2, mb: 2 }}>
+        Tipp: „Start“ startet einen Live-Timer für den ausgewählten Tag. Manuelle Einträge können Sie danach ergänzen oder löschen.
+      </Typography>
 
       {/* Time Entries Table */}
       <TableContainer component={Paper} sx={{ boxShadow: '0 10px 20px rgba(0,0,0,0.06)', borderRadius: 2 }}>
@@ -196,7 +199,16 @@ export default function TimeTracking() {
               </TableRow>
             ) : entries.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={8} align="center">Keine Zeiteinträge für diesen Tag</TableCell>
+                <TableCell colSpan={8} align="center">
+                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5, alignItems: 'center', py: 2 }}>
+                    <Typography color="text.secondary">Keine Zeiteinträge für diesen Tag.</Typography>
+                    {!activeEntry && (
+                      <Button variant="outlined" startIcon={<PlayArrowIcon />} onClick={handleStart}>
+                        Timer jetzt starten
+                      </Button>
+                    )}
+                  </Box>
+                </TableCell>
               </TableRow>
             ) : (
               entries.map((entry) => (

@@ -140,21 +140,29 @@ export default function Tasks() {
     }
   };
 
-  if (loading) {
-    return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '400px' }}>
-        <CircularProgress />
-      </Box>
-    );
-  }
-
   return (
     <Box>
       {error && (
-        <Alert severity="error" onClose={() => setError(null)} sx={{ mb: 2 }}>
-          {error}
+        <Alert
+          severity="error"
+          onClose={() => setError(null)}
+          action={
+            <Button color="inherit" size="small" onClick={loadTasks}>
+              Erneut laden
+            </Button>
+          }
+          sx={{ mb: 2 }}
+        >
+          {error || 'Aufgaben konnten nicht geladen werden.'}
         </Alert>
       )}
+
+      {loading ? (
+        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '320px' }}>
+          <CircularProgress />
+        </Box>
+      ) : (
+        <>
 
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
         <Typography variant="h4">Aufgaben</Typography>
@@ -183,7 +191,16 @@ export default function Tasks() {
             {tasks.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={6} align="center">
-                  Keine Aufgaben vorhanden
+                  <Box sx={{ py: 4, display: 'flex', flexDirection: 'column', gap: 1.5, alignItems: 'center' }}>
+                    <Typography color="text.secondary">Keine Aufgaben vorhanden.</Typography>
+                    <Button variant="outlined" startIcon={<AddIcon />} onClick={() => {
+                      setEditingTask(null);
+                      setFormData({ title: '', description: '', status: 'todo', priority: 'medium', due_date: '' });
+                      setOpen(true);
+                    }}>
+                      Jetzt Aufgabe anlegen
+                    </Button>
+                  </Box>
                 </TableCell>
               </TableRow>
             ) : (
@@ -294,6 +311,8 @@ export default function Tasks() {
           </Button>
         </DialogActions>
       </Dialog>
+        </>
+      )}
     </Box>
   );
 }
