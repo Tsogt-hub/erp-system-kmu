@@ -567,6 +567,61 @@ async function runMigrations(pool: Pool) {
     logger.warn('tasks migration warning:', e);
   }
 
+  // Füge fehlende Spalten zu calendar_events hinzu
+  try {
+    await pool.query(`
+      ALTER TABLE calendar_events ADD COLUMN IF NOT EXISTS resource_id INTEGER;
+      ALTER TABLE calendar_events ADD COLUMN IF NOT EXISTS resource_type VARCHAR(50);
+      ALTER TABLE calendar_events ADD COLUMN IF NOT EXISTS resource_name VARCHAR(255);
+      ALTER TABLE calendar_events ADD COLUMN IF NOT EXISTS status VARCHAR(50) DEFAULT 'planned';
+      ALTER TABLE calendar_events ADD COLUMN IF NOT EXISTS priority VARCHAR(20) DEFAULT 'medium';
+      ALTER TABLE calendar_events ADD COLUMN IF NOT EXISTS travel_time INTEGER DEFAULT 0;
+      ALTER TABLE calendar_events ADD COLUMN IF NOT EXISTS notes TEXT;
+      ALTER TABLE calendar_events ADD COLUMN IF NOT EXISTS recurrence_rule TEXT;
+      ALTER TABLE calendar_events ADD COLUMN IF NOT EXISTS created_by INTEGER REFERENCES users(id);
+    `);
+    logger.info('✅ calendar_events Spalten aktualisiert');
+  } catch (e) {
+    logger.warn('calendar_events migration warning:', e);
+  }
+
+  // Erstelle calendar_event_employees Tabelle
+  try {
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS calendar_event_employees (
+        id SERIAL PRIMARY KEY,
+        event_id INTEGER REFERENCES calendar_events(id) ON DELETE CASCADE,
+        user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE(event_id, user_id)
+      );
+      CREATE INDEX IF NOT EXISTS idx_calendar_event_employees_event ON calendar_event_employees(event_id);
+      CREATE INDEX IF NOT EXISTS idx_calendar_event_employees_user ON calendar_event_employees(user_id);
+    `);
+    logger.info('✅ calendar_event_employees Tabelle erstellt/geprüft');
+  } catch (e) {
+    logger.warn('calendar_event_employees migration warning:', e);
+  }
+
+  // Füge fehlende Spalten zu contacts hinzu
+  try {
+    await pool.query(`
+      ALTER TABLE contacts ADD COLUMN IF NOT EXISTS category VARCHAR(100) DEFAULT 'contact';
+      ALTER TABLE contacts ADD COLUMN IF NOT EXISTS customer_number VARCHAR(50);
+      ALTER TABLE contacts ADD COLUMN IF NOT EXISTS address VARCHAR(255);
+      ALTER TABLE contacts ADD COLUMN IF NOT EXISTS availability VARCHAR(100);
+      ALTER TABLE contacts ADD COLUMN IF NOT EXISTS lead_source VARCHAR(100);
+      ALTER TABLE contacts ADD COLUMN IF NOT EXISTS website VARCHAR(255);
+      ALTER TABLE contacts ADD COLUMN IF NOT EXISTS fax VARCHAR(50);
+      ALTER TABLE contacts ADD COLUMN IF NOT EXISTS birthday DATE;
+      ALTER TABLE contacts ADD COLUMN IF NOT EXISTS is_invoice_recipient BOOLEAN DEFAULT false;
+      ALTER TABLE contacts ADD COLUMN IF NOT EXISTS additional_salutation VARCHAR(100);
+    `);
+    logger.info('✅ contacts Spalten aktualisiert');
+  } catch (e) {
+    logger.warn('contacts migration warning:', e);
+  }
+
   // Add missing columns to kanban_boards if they don't exist
   try {
     await pool.query(`
