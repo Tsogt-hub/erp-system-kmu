@@ -11,8 +11,6 @@ import {
   MenuItem,
   Drawer,
   IconButton,
-  useTheme,
-  alpha,
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import AddIcon from '@mui/icons-material/Add';
@@ -98,8 +96,6 @@ const WORK_DAY_END = 22; // 22:00 Uhr
 type ViewType = 'day' | '3days' | '7days' | 'week' | '14days' | '4weeks' | 'month';
 
 export default function PlanningScheduler() {
-  const theme = useTheme();
-  const isDarkMode = theme.palette.mode === 'dark';
   const [currentDate, setCurrentDate] = useState(new Date());
   const [viewType, setViewType] = useState<ViewType>('week');
   const [events, setEvents] = useState<CalendarEvent[]>([]);
@@ -595,9 +591,9 @@ export default function PlanningScheduler() {
   }, []);
 
   return (
-    <Box sx={{ height: '100vh', display: 'flex', flexDirection: 'column', bgcolor: isDarkMode ? '#0e0e15' : '#f5f5f5' }}>
+    <Box sx={{ height: '100vh', display: 'flex', flexDirection: 'column', bgcolor: '#f5f5f5' }}>
       {/* HEADER */}
-      <Box sx={{ p: 2, bgcolor: isDarkMode ? 'rgba(20, 20, 31, 0.95)' : 'white', borderBottom: isDarkMode ? '1px solid rgba(255, 255, 255, 0.08)' : '1px solid #e0e0e0' }}>
+      <Box sx={{ p: 2, bgcolor: 'white', borderBottom: '1px solid #e0e0e0' }}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
           {/* Navigation */}
           <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
@@ -692,9 +688,9 @@ export default function PlanningScheduler() {
                 width: 220,
                 minWidth: 220,
                 maxWidth: 220,
-                borderRight: isDarkMode ? '1px solid rgba(255, 255, 255, 0.08)' : '1px solid #e0e0e0',
+                borderRight: '1px solid #e0e0e0',
                 overflow: 'auto',
-                bgcolor: isDarkMode ? 'rgba(20, 20, 31, 0.95)' : 'white',
+                bgcolor: 'white',
               }}
             >
               {/* Sidebar Header - Höhe 50px (gleich wie Timeline-Header erste Zeile) */}
@@ -707,10 +703,9 @@ export default function PlanningScheduler() {
                   alignItems: 'center',
                   px: 2,
                   fontWeight: 600,
-                  borderBottom: isDarkMode ? '1px solid rgba(255, 255, 255, 0.08)' : '1px solid rgba(0, 0, 0, 0.08)',
-                  bgcolor: isDarkMode ? 'rgba(30, 30, 45, 0.95)' : 'rgba(245, 245, 247, 0.95)',
+                  borderBottom: '1px solid rgba(0, 0, 0, 0.08)',
+                  bgcolor: 'rgba(245, 245, 247, 0.95)',
                   boxSizing: 'border-box',
-                  color: isDarkMode ? 'rgba(248, 250, 252, 0.9)' : 'inherit',
                 }}
               >
                 Ressourcen
@@ -722,8 +717,8 @@ export default function PlanningScheduler() {
                   height: 34, 
                   minHeight: 34,
                   maxHeight: 34,
-                  borderBottom: isDarkMode ? '2px solid rgba(255, 255, 255, 0.08)' : '2px solid rgba(0, 0, 0, 0.08)', 
-                  bgcolor: isDarkMode ? 'rgba(30, 30, 45, 0.95)' : 'rgba(245, 245, 247, 0.95)',
+                  borderBottom: '2px solid rgba(0, 0, 0, 0.08)', 
+                  bgcolor: 'rgba(245, 245, 247, 0.95)',
                   boxSizing: 'border-box',
                 }} />
               )}
@@ -745,13 +740,13 @@ export default function PlanningScheduler() {
                       paddingTop: 0,
                       paddingBottom: 0,
                       cursor: 'pointer',
-                      bgcolor: isDarkMode ? 'rgba(35, 35, 50, 0.8)' : 'rgba(250, 250, 250, 0.8)',
-                      borderBottom: isDarkMode ? '1px solid rgba(255, 255, 255, 0.08)' : '1px solid rgba(0, 0, 0, 0.08)',
+                      bgcolor: 'rgba(250, 250, 250, 0.8)',
+                      borderBottom: '1px solid rgba(0, 0, 0, 0.08)',
                       margin: 0,
-                      '&:hover': { bgcolor: isDarkMode ? 'rgba(45, 45, 65, 0.95)' : 'rgba(245, 245, 245, 0.95)' },
+                      '&:hover': { bgcolor: 'rgba(245, 245, 245, 0.95)' },
                     }}
                   >
-                    <Typography sx={{ flex: 1, fontWeight: 600, fontSize: '0.875rem', color: isDarkMode ? 'rgba(248, 250, 252, 0.9)' : 'rgba(0, 0, 0, 0.87)' }}>
+                    <Typography sx={{ flex: 1, fontWeight: 600, fontSize: '0.875rem', color: 'rgba(0, 0, 0, 0.87)' }}>
                       {category.name}
                     </Typography>
                     <IconButton size="small" onClick={(e) => { e.stopPropagation(); }}>
@@ -776,18 +771,18 @@ export default function PlanningScheduler() {
                         paddingRight: 3,
                         paddingTop: 0,
                         paddingBottom: 0,
-                        borderBottom: isDarkMode ? '1px solid rgba(255, 255, 255, 0.08)' : '1px solid rgba(0, 0, 0, 0.08)',
-                        bgcolor: isDarkMode ? 'rgba(20, 20, 31, 0.95)' : 'white',
+                        borderBottom: '1px solid rgba(0, 0, 0, 0.08)',
+                        bgcolor: 'white',
                         margin: 0,
                         boxSizing: 'border-box',
-                        '&:hover': { bgcolor: isDarkMode ? 'rgba(99, 102, 241, 0.08)' : 'rgba(0, 122, 255, 0.02)' },
+                        '&:hover': { bgcolor: 'rgba(0, 122, 255, 0.02)' },
                       }}
                     >
                       <Typography
                         variant="body2"
                         sx={{
                           fontSize: '0.8125rem',
-                          color: isDarkMode ? 'rgba(248, 250, 252, 0.87)' : 'rgba(0, 0, 0, 0.87)',
+                          color: 'rgba(0, 0, 0, 0.87)',
                           lineHeight: 1.2,
                           margin: 0,
                           padding: 0,
@@ -804,25 +799,25 @@ export default function PlanningScheduler() {
           )}
 
           {/* TIMELINE */}
-          <Box sx={{ flex: 1, overflowX: 'auto', overflowY: 'auto', bgcolor: isDarkMode ? 'rgba(20, 20, 31, 0.95)' : 'white' }}>
+          <Box sx={{ flex: 1, overflowX: 'auto', overflowY: 'auto', bgcolor: 'white' }}>
             {/* Bei Monats-/4-Wochen-Ansicht: Kalenderwochen-Header */}
             {!showResourceSidebar && weekGroups.length > 0 && (
               <Box sx={{
                 display: 'flex',
                 height: 32,
-                borderBottom: isDarkMode ? '1px solid rgba(255, 255, 255, 0.08)' : '1px solid rgba(0, 0, 0, 0.08)',
+                borderBottom: '1px solid rgba(0, 0, 0, 0.08)',
                 position: 'sticky',
                 top: 40,
                 left: 0,
                 zIndex: 9,
-                bgcolor: isDarkMode ? 'rgba(30, 30, 45, 0.95)' : 'rgba(245, 245, 247, 0.95)',
+                bgcolor: 'rgba(245, 245, 247, 0.95)',
               }}>
                 <Box sx={{
                   width: 150,
-                  borderRight: isDarkMode ? '1px solid rgba(255, 255, 255, 0.08)' : '1px solid rgba(0, 0, 0, 0.08)',
+                  borderRight: '1px solid rgba(0, 0, 0, 0.08)',
                   position: 'sticky',
                   left: 0,
-                  bgcolor: isDarkMode ? 'rgba(30, 30, 45, 0.95)' : 'rgba(245, 245, 247, 0.95)',
+                  bgcolor: 'rgba(245, 245, 247, 0.95)',
                   zIndex: 10,
                 }} />
                 {weekGroups.map((week, idx) => (
@@ -838,7 +833,7 @@ export default function PlanningScheduler() {
                     <Typography sx={{
                       fontSize: '0.75rem',
                       fontWeight: 600,
-                      color: isDarkMode ? 'rgba(248, 250, 252, 0.7)' : 'rgba(0, 0, 0, 0.7)',
+                      color: 'rgba(0, 0, 0, 0.7)',
                     }}>
                       KW {week.weekNumber}
                     </Typography>
@@ -851,11 +846,11 @@ export default function PlanningScheduler() {
             <Box sx={{
               display: 'flex',
               flexDirection: 'column',
-              borderBottom: isDarkMode ? '2px solid rgba(255, 255, 255, 0.08)' : '2px solid rgba(0, 0, 0, 0.08)',
+              borderBottom: '2px solid rgba(0, 0, 0, 0.08)',
               position: 'sticky',
               top: !showResourceSidebar ? 72 : 0,
               zIndex: 8,
-              bgcolor: isDarkMode ? 'rgba(30, 30, 45, 0.95)' : 'rgba(245, 245, 247, 0.95)',
+              bgcolor: 'rgba(245, 245, 247, 0.95)',
             }}>
               {/* Erste Zeile: Tag und Datum - Höhe 50px wie Sidebar-Header */}
               <Box sx={{
@@ -871,15 +866,14 @@ export default function PlanningScheduler() {
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    borderRight: isDarkMode ? '1px solid rgba(255, 255, 255, 0.08)' : '1px solid rgba(0, 0, 0, 0.08)',
+                    borderRight: '1px solid rgba(0, 0, 0, 0.08)',
                     position: 'sticky',
                     left: 0,
-                    bgcolor: isDarkMode ? 'rgba(30, 30, 45, 0.95)' : 'rgba(245, 245, 247, 0.95)',
+                    bgcolor: 'rgba(245, 245, 247, 0.95)',
                     zIndex: 10,
                     fontWeight: 600,
                     fontSize: '0.75rem',
                     height: '100%',
-                    color: isDarkMode ? 'rgba(248, 250, 252, 0.9)' : 'inherit',
                   }}>
                     Ressourcen
                   </Box>
@@ -893,9 +887,7 @@ export default function PlanningScheduler() {
                       alignItems: 'center',
                       gap: 0.5,
                       borderRight: '1px solid rgba(0, 0, 0, 0.08)',
-                      bgcolor: isSameDay(day, new Date()) 
-                        ? (isDarkMode ? alpha(theme.palette.warning.main, 0.15) : '#FFF9C4') 
-                        : (isWeekend ? (isDarkMode ? 'rgba(255, 255, 255, 0.03)' : 'rgba(0, 0, 0, 0.04)') : 'transparent'),
+                      bgcolor: isSameDay(day, new Date()) ? '#FFF9C4' : (isWeekend ? 'rgba(0, 0, 0, 0.04)' : 'transparent'),
                       '&:last-child': { borderRight: 'none' },
                       width: `${columnWidth}px`,
                       minWidth: `${columnWidth}px`,
@@ -936,9 +928,7 @@ export default function PlanningScheduler() {
                         display: 'grid',
                         gridTemplateColumns: `repeat(${hourMarkers.length}, 1fr)`,
                         borderRight: '1px solid rgba(0, 0, 0, 0.08)',
-                        bgcolor: isSameDay(day, new Date()) 
-                        ? (isDarkMode ? alpha(theme.palette.warning.main, 0.15) : '#FFF9C4') 
-                        : (isWeekend ? (isDarkMode ? 'rgba(255, 255, 255, 0.03)' : 'rgba(0, 0, 0, 0.04)') : 'transparent'),
+                        bgcolor: isSameDay(day, new Date()) ? '#FFF9C4' : (isWeekend ? 'rgba(0, 0, 0, 0.04)' : 'transparent'),
                         '&:last-child': { borderRight: 'none' },
                       }}>
                         {hourMarkers.map((hour, idx) => (
@@ -975,8 +965,8 @@ export default function PlanningScheduler() {
                     height: ROW_HEIGHT,
                     minHeight: ROW_HEIGHT,
                     maxHeight: ROW_HEIGHT,
-                    borderBottom: isDarkMode ? '1px solid rgba(255, 255, 255, 0.08)' : '1px solid rgba(0, 0, 0, 0.08)',
-                    bgcolor: isDarkMode ? 'rgba(35, 35, 50, 0.8)' : 'rgba(250, 250, 250, 0.8)',
+                    borderBottom: '1px solid rgba(0, 0, 0, 0.08)',
+                    bgcolor: 'rgba(250, 250, 250, 0.8)',
                     margin: 0,
                     padding: 0,
                     boxSizing: 'border-box',
@@ -985,7 +975,7 @@ export default function PlanningScheduler() {
                       <Box
                         key={day.toISOString()}
                         sx={{
-                          borderRight: isDarkMode ? '1px solid rgba(255, 255, 255, 0.08)' : '1px solid rgba(0, 0, 0, 0.08)',
+                          borderRight: '1px solid rgba(0, 0, 0, 0.08)',
                           '&:last-child': { borderRight: 'none' },
                           width: `${columnWidth}px`,
                           minWidth: `${columnWidth}px`,
@@ -1002,8 +992,8 @@ export default function PlanningScheduler() {
                     height: ROW_HEIGHT,
                     minHeight: ROW_HEIGHT,
                     maxHeight: ROW_HEIGHT,
-                    borderBottom: isDarkMode ? '1px solid rgba(255, 255, 255, 0.08)' : '1px solid rgba(0, 0, 0, 0.08)',
-                    bgcolor: isDarkMode ? 'rgba(35, 35, 50, 0.8)' : 'rgba(250, 250, 250, 0.8)',
+                    borderBottom: '1px solid rgba(0, 0, 0, 0.08)',
+                    bgcolor: 'rgba(250, 250, 250, 0.8)',
                     margin: 0,
                     padding: 0,
                     boxSizing: 'border-box',
@@ -1012,13 +1002,13 @@ export default function PlanningScheduler() {
                       display: 'flex',
                       alignItems: 'center',
                       px: 2,
-                      borderRight: isDarkMode ? '1px solid rgba(255, 255, 255, 0.08)' : '1px solid rgba(0, 0, 0, 0.08)',
+                      borderRight: '1px solid rgba(0, 0, 0, 0.08)',
                       position: 'sticky',
                       left: 0,
-                      bgcolor: isDarkMode ? 'rgba(35, 35, 50, 0.8)' : 'rgba(250, 250, 250, 0.8)',
+                      bgcolor: 'rgba(250, 250, 250, 0.8)',
                       zIndex: 5,
                     }}>
-                      <Typography sx={{ fontWeight: 600, fontSize: '0.8rem', color: isDarkMode ? 'rgba(248, 250, 252, 0.87)' : 'rgba(0, 0, 0, 0.87)' }}>
+                      <Typography sx={{ fontWeight: 600, fontSize: '0.8rem', color: 'rgba(0, 0, 0, 0.87)' }}>
                         {category.name}
                       </Typography>
                     </Box>
@@ -1026,7 +1016,7 @@ export default function PlanningScheduler() {
                       <Box
                         key={day.toISOString()}
                         sx={{
-                          borderRight: isDarkMode ? '1px solid rgba(255, 255, 255, 0.08)' : '1px solid rgba(0, 0, 0, 0.08)',
+                          borderRight: '1px solid rgba(0, 0, 0, 0.08)',
                           '&:last-child': { borderRight: 'none' },
                           width: `${columnWidth}px`,
                           minWidth: `${columnWidth}px`,
@@ -1050,7 +1040,7 @@ export default function PlanningScheduler() {
                       height: ROW_HEIGHT,
                       minHeight: ROW_HEIGHT,
                       maxHeight: ROW_HEIGHT,
-                      borderBottom: isDarkMode ? '1px solid rgba(255, 255, 255, 0.08)' : '1px solid rgba(0, 0, 0, 0.08)',
+                      borderBottom: '1px solid rgba(0, 0, 0, 0.08)',
                       margin: 0,
                       padding: 0,
                       boxSizing: 'border-box',
@@ -1061,14 +1051,14 @@ export default function PlanningScheduler() {
                           display: 'flex',
                           alignItems: 'center',
                           px: 2,
-                          borderRight: isDarkMode ? '1px solid rgba(255, 255, 255, 0.08)' : '1px solid rgba(0, 0, 0, 0.08)',
+                          borderRight: '1px solid rgba(0, 0, 0, 0.08)',
                           position: 'sticky',
                           left: 0,
-                          bgcolor: isDarkMode ? 'rgba(20, 20, 31, 0.95)' : 'white',
+                          bgcolor: 'white',
                           zIndex: 5,
-                          '&:hover': { bgcolor: isDarkMode ? 'rgba(99, 102, 241, 0.08)' : 'rgba(0, 122, 255, 0.02)' },
+                          '&:hover': { bgcolor: 'rgba(0, 122, 255, 0.02)' },
                         }}>
-                          <Typography sx={{ fontSize: '0.75rem', color: isDarkMode ? 'rgba(248, 250, 252, 0.87)' : 'rgba(0, 0, 0, 0.87)' }}>
+                          <Typography sx={{ fontSize: '0.75rem', color: 'rgba(0, 0, 0, 0.87)' }}>
                             {resource.name}
                           </Typography>
                         </Box>
@@ -1095,14 +1085,10 @@ export default function PlanningScheduler() {
                             sx={{
                               borderRight: '1px solid rgba(0, 0, 0, 0.08)',
                               position: 'relative',
-                              bgcolor: isSameDay(day, new Date()) 
-                                ? (isDarkMode ? alpha(theme.palette.warning.main, 0.1) : '#FFFDE7') 
-                                : (isWeekend ? (isDarkMode ? 'rgba(255, 255, 255, 0.03)' : 'rgba(0, 0, 0, 0.04)') : (isDarkMode ? 'transparent' : 'white')),
+                              bgcolor: isSameDay(day, new Date()) ? '#FFFDE7' : (isWeekend ? 'rgba(0, 0, 0, 0.04)' : 'white'),
                               '&:last-child': { borderRight: 'none' },
                               '&:hover': {
-                                bgcolor: isSameDay(day, new Date()) 
-                                  ? (isDarkMode ? alpha(theme.palette.warning.main, 0.2) : '#FFF9C4') 
-                                  : (isWeekend ? (isDarkMode ? 'rgba(255, 255, 255, 0.06)' : 'rgba(0, 0, 0, 0.08)') : (isDarkMode ? 'rgba(99, 102, 241, 0.05)' : 'rgba(0, 122, 255, 0.02)')),
+                                bgcolor: isSameDay(day, new Date()) ? '#FFF9C4' : (isWeekend ? 'rgba(0, 0, 0, 0.08)' : 'rgba(0, 122, 255, 0.02)'),
                                 cursor: 'pointer',
                               },
                               width: `${columnWidth}px`,

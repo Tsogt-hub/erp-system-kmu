@@ -11,7 +11,6 @@ import {
   Alert,
   Link,
   Avatar,
-  useTheme,
 } from '@mui/material';
 import { AppDispatch, RootState } from '../store/store';
 import { login } from '../store/slices/authSlice';
@@ -21,8 +20,6 @@ export default function Login() {
   const [password, setPassword] = useState('');
   const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
-  const theme = useTheme();
-  const isDarkMode = theme.palette.mode === 'dark';
   const { isLoading, error, token } = useSelector((state: RootState) => state.auth);
 
   useEffect(() => {
@@ -46,22 +43,16 @@ export default function Login() {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        // Dark/Light Mode Background
-        background: isDarkMode
-          ? `linear-gradient(135deg, 
-              #0A0A0F 0%, 
-              #0E0E14 25%, 
-              #12121A 50%, 
-              #0A0A0F 75%, 
-              #0C0C12 100%
-            )`
-          : `linear-gradient(135deg, 
-              #F5F5F7 0%, 
-              #E8E8ED 25%, 
-              #F0F0F5 50%, 
-              #E5E5EA 75%, 
-              #F2F2F7 100%
-            )`,
+        // macOS Tahoe Background
+        background: `
+          linear-gradient(135deg, 
+            #F5F5F7 0%, 
+            #E8E8ED 25%, 
+            #F0F0F5 50%, 
+            #E5E5EA 75%, 
+            #F2F2F7 100%
+          )
+        `,
         position: 'relative',
         overflow: 'hidden',
       }}
@@ -74,9 +65,7 @@ export default function Login() {
           left: '-20%',
           width: '60%',
           height: '80%',
-          background: isDarkMode
-            ? 'radial-gradient(ellipse, rgba(99, 102, 241, 0.15) 0%, rgba(99, 102, 241, 0.05) 40%, transparent 70%)'
-            : 'radial-gradient(ellipse, rgba(0, 113, 227, 0.15) 0%, rgba(0, 113, 227, 0.05) 40%, transparent 70%)',
+          background: 'radial-gradient(ellipse, rgba(0, 113, 227, 0.15) 0%, rgba(0, 113, 227, 0.05) 40%, transparent 70%)',
           filter: 'blur(100px)',
           pointerEvents: 'none',
           zIndex: 0,
@@ -89,9 +78,7 @@ export default function Login() {
           right: '-20%',
           width: '60%',
           height: '80%',
-          background: isDarkMode
-            ? 'radial-gradient(ellipse, rgba(139, 92, 246, 0.12) 0%, rgba(139, 92, 246, 0.04) 40%, transparent 70%)'
-            : 'radial-gradient(ellipse, rgba(191, 90, 242, 0.12) 0%, rgba(191, 90, 242, 0.04) 40%, transparent 70%)',
+          background: 'radial-gradient(ellipse, rgba(191, 90, 242, 0.12) 0%, rgba(191, 90, 242, 0.04) 40%, transparent 70%)',
           filter: 'blur(100px)',
           pointerEvents: 'none',
           zIndex: 0,
@@ -104,24 +91,20 @@ export default function Login() {
           sx={{ 
             p: 4, 
             width: '100%',
-            // Dark/Light Mode Glass Card
-            background: isDarkMode
-              ? 'rgba(20, 20, 31, 0.85)'
-              : 'rgba(255, 255, 255, 0.72)',
+            // macOS Tahoe Glass Card
+            background: 'rgba(255, 255, 255, 0.72)',
             backdropFilter: 'blur(60px) saturate(180%)',
             WebkitBackdropFilter: 'blur(60px) saturate(180%)',
             borderRadius: '20px',
-            border: isDarkMode
-              ? '1px solid rgba(255, 255, 255, 0.08)'
-              : '0.5px solid rgba(255, 255, 255, 0.5)',
-            boxShadow: isDarkMode
-              ? `0 8px 32px rgba(0, 0, 0, 0.4), inset 0 0.5px 0 rgba(255, 255, 255, 0.05)`
-              : `0 2px 2px rgba(0, 0, 0, 0.01),
-                 0 4px 4px rgba(0, 0, 0, 0.02),
-                 0 8px 8px rgba(0, 0, 0, 0.02),
-                 0 16px 16px rgba(0, 0, 0, 0.02),
-                 0 32px 32px rgba(0, 0, 0, 0.03),
-                 inset 0 0.5px 0 rgba(255, 255, 255, 0.8)`,
+            border: '0.5px solid rgba(255, 255, 255, 0.5)',
+            boxShadow: `
+              0 2px 2px rgba(0, 0, 0, 0.01),
+              0 4px 4px rgba(0, 0, 0, 0.02),
+              0 8px 8px rgba(0, 0, 0, 0.02),
+              0 16px 16px rgba(0, 0, 0, 0.02),
+              0 32px 32px rgba(0, 0, 0, 0.03),
+              inset 0 0.5px 0 rgba(255, 255, 255, 0.8)
+            `,
           }}
         >
           {/* Logo */}
@@ -159,7 +142,7 @@ export default function Login() {
               variant="body2" 
               sx={{ 
                 mt: 1,
-                color: isDarkMode ? 'rgba(248, 250, 252, 0.6)' : 'rgba(60, 60, 67, 0.6)',
+                color: 'rgba(60, 60, 67, 0.6)',
                 fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif',
               }}
             >
@@ -198,31 +181,27 @@ export default function Login() {
               sx={{
                 '& .MuiOutlinedInput-root': {
                   borderRadius: '12px',
-                  background: isDarkMode ? 'rgba(30, 30, 45, 0.6)' : 'rgba(255, 255, 255, 0.85)',
+                  background: 'rgba(255, 255, 255, 0.85)',
                   backdropFilter: 'blur(20px)',
                   fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif',
-                  color: isDarkMode ? '#F8FAFC' : undefined,
                   '& fieldset': {
-                    borderColor: isDarkMode ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 0, 0, 0.15)',
+                    borderColor: 'rgba(0, 0, 0, 0.15)',
                     borderWidth: '1px',
                   },
                   '&:hover fieldset': {
-                    borderColor: isDarkMode ? 'rgba(99, 102, 241, 0.5)' : 'rgba(0, 113, 227, 0.5)',
+                    borderColor: 'rgba(0, 113, 227, 0.5)',
                   },
                   '&.Mui-focused fieldset': {
-                    borderColor: theme.palette.primary.main,
+                    borderColor: '#0071E3',
                     borderWidth: '2px',
                   },
                 },
-                '& .MuiOutlinedInput-input': {
-                  color: isDarkMode ? '#F8FAFC' : undefined,
-                },
                 '& .MuiInputLabel-root': {
                   fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif',
-                  color: isDarkMode ? '#F8FAFC' : '#1D1D1F',
+                  color: '#1D1D1F',
                   fontWeight: 500,
                   '&.Mui-focused': {
-                    color: theme.palette.primary.main,
+                    color: '#0071E3',
                     fontWeight: 600,
                   },
                 },
@@ -243,31 +222,27 @@ export default function Login() {
               sx={{
                 '& .MuiOutlinedInput-root': {
                   borderRadius: '12px',
-                  background: isDarkMode ? 'rgba(30, 30, 45, 0.6)' : 'rgba(255, 255, 255, 0.85)',
+                  background: 'rgba(255, 255, 255, 0.85)',
                   backdropFilter: 'blur(20px)',
                   fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif',
-                  color: isDarkMode ? '#F8FAFC' : undefined,
                   '& fieldset': {
-                    borderColor: isDarkMode ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 0, 0, 0.15)',
+                    borderColor: 'rgba(0, 0, 0, 0.15)',
                     borderWidth: '1px',
                   },
                   '&:hover fieldset': {
-                    borderColor: isDarkMode ? 'rgba(99, 102, 241, 0.5)' : 'rgba(0, 113, 227, 0.5)',
+                    borderColor: 'rgba(0, 113, 227, 0.5)',
                   },
                   '&.Mui-focused fieldset': {
-                    borderColor: theme.palette.primary.main,
+                    borderColor: '#0071E3',
                     borderWidth: '2px',
                   },
                 },
-                '& .MuiOutlinedInput-input': {
-                  color: isDarkMode ? '#F8FAFC' : undefined,
-                },
                 '& .MuiInputLabel-root': {
                   fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif',
-                  color: isDarkMode ? '#F8FAFC' : '#1D1D1F',
+                  color: '#1D1D1F',
                   fontWeight: 500,
                   '&.Mui-focused': {
-                    color: theme.palette.primary.main,
+                    color: '#0071E3',
                     fontWeight: 600,
                   },
                 },
@@ -286,33 +261,23 @@ export default function Login() {
                 mb: 2,
                 height: 48,
                 borderRadius: '12px',
-                background: isDarkMode
-                  ? `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 100%)`
-                  : 'linear-gradient(135deg, #0071E3 0%, #0077ED 100%)',
-                boxShadow: isDarkMode
-                  ? `0 4px 14px rgba(99, 102, 241, 0.35)`
-                  : '0 4px 14px rgba(0, 113, 227, 0.35)',
+                background: 'linear-gradient(135deg, #0071E3 0%, #0077ED 100%)',
+                boxShadow: '0 4px 14px rgba(0, 113, 227, 0.35)',
                 fontWeight: 600,
                 fontSize: '1rem',
                 letterSpacing: '-0.01em',
                 textTransform: 'none',
                 fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif',
                 '&:hover': {
-                  background: isDarkMode
-                    ? `linear-gradient(135deg, ${theme.palette.primary.light} 0%, ${theme.palette.primary.main} 100%)`
-                    : 'linear-gradient(135deg, #0077ED 0%, #0071E3 100%)',
-                  boxShadow: isDarkMode
-                    ? `0 6px 20px rgba(99, 102, 241, 0.45)`
-                    : '0 6px 20px rgba(0, 113, 227, 0.45)',
+                  background: 'linear-gradient(135deg, #0077ED 0%, #0071E3 100%)',
+                  boxShadow: '0 6px 20px rgba(0, 113, 227, 0.45)',
                   transform: 'translateY(-1px)',
                 },
                 '&:active': {
                   transform: 'translateY(0)',
                 },
                 '&:disabled': {
-                  background: isDarkMode
-                    ? 'rgba(99, 102, 241, 0.4)'
-                    : 'rgba(0, 113, 227, 0.4)',
+                  background: 'rgba(0, 113, 227, 0.4)',
                   color: 'rgba(255, 255, 255, 0.8)',
                 },
                 transition: 'all 0.2s cubic-bezier(0.32, 0.72, 0, 1)',
@@ -327,7 +292,7 @@ export default function Login() {
             align="center" 
             sx={{ 
               mt: 2,
-              color: isDarkMode ? 'rgba(248, 250, 252, 0.6)' : 'rgba(60, 60, 67, 0.6)',
+              color: 'rgba(60, 60, 67, 0.6)',
               fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif',
             }}
           >
@@ -335,7 +300,7 @@ export default function Login() {
             <Link 
               href="/register"
               sx={{
-                color: theme.palette.primary.main,
+                color: '#0071E3',
                 textDecoration: 'none',
                 fontWeight: 500,
                 '&:hover': {

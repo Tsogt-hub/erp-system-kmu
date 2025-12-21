@@ -13,8 +13,6 @@ import {
   IconButton,
   Tooltip,
   Avatar,
-  useTheme,
-  alpha,
 } from '@mui/material';
 import { useNavigate, useLocation } from 'react-router-dom';
 
@@ -165,8 +163,6 @@ const menuCategories: MenuCategory[] = [
 export default function Sidebar({ drawerWidth, isOpen, onToggle }: SidebarProps) {
   const navigate = useNavigate();
   const location = useLocation();
-  const theme = useTheme();
-  const isDarkMode = theme.palette.mode === 'dark';
   const [openMenus, setOpenMenus] = useState<Record<string, boolean>>({});
   const [openCategories, setOpenCategories] = useState<Record<string, boolean>>({
     'MEINE UMGEBUNG': true,
@@ -248,43 +244,35 @@ export default function Sidebar({ drawerWidth, isOpen, onToggle }: SidebarProps)
             transition: 'background 0.2s ease',
           },
           '&.Mui-selected': {
-            background: isDarkMode
-              ? `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.25)} 0%, ${alpha(theme.palette.primary.main, 0.15)} 100%)`
-              : 'linear-gradient(135deg, rgba(0, 122, 255, 0.15) 0%, rgba(0, 122, 255, 0.08) 100%)',
+            background: 'linear-gradient(135deg, rgba(0, 122, 255, 0.15) 0%, rgba(0, 122, 255, 0.08) 100%)',
             backdropFilter: 'blur(20px)',
             WebkitBackdropFilter: 'blur(20px)',
-            border: isDarkMode
-              ? `0.5px solid ${alpha(theme.palette.primary.main, 0.4)}`
-              : '0.5px solid rgba(0, 122, 255, 0.25)',
-            color: theme.palette.primary.main,
+            border: '0.5px solid rgba(0, 122, 255, 0.25)',
+            color: '#0071E3',
             fontWeight: 600,
-            boxShadow: isDarkMode
-              ? `0 2px 8px ${alpha(theme.palette.primary.main, 0.25)}, inset 0 0.5px 0 rgba(255, 255, 255, 0.1)`
-              : `0 2px 8px rgba(0, 122, 255, 0.15), inset 0 0.5px 0 rgba(255, 255, 255, 0.6), inset 0 -0.5px 0 rgba(0, 0, 0, 0.05)`,
+            boxShadow: `
+              0 2px 8px rgba(0, 122, 255, 0.15),
+              inset 0 0.5px 0 rgba(255, 255, 255, 0.6),
+              inset 0 -0.5px 0 rgba(0, 0, 0, 0.05)
+            `,
             '&:hover': {
-              background: isDarkMode
-                ? `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.3)} 0%, ${alpha(theme.palette.primary.main, 0.2)} 100%)`
-                : 'linear-gradient(135deg, rgba(0, 122, 255, 0.18) 0%, rgba(0, 122, 255, 0.10) 100%)',
+              background: 'linear-gradient(135deg, rgba(0, 122, 255, 0.18) 0%, rgba(0, 122, 255, 0.10) 100%)',
               transform: 'translateX(2px)',
             },
             '&::before': {
-              background: isDarkMode
-                ? `linear-gradient(90deg, ${alpha(theme.palette.primary.main, 0.15)} 0%, transparent 100%)`
-                : 'linear-gradient(90deg, rgba(0, 122, 255, 0.1) 0%, transparent 100%)',
+              background: 'linear-gradient(90deg, rgba(0, 122, 255, 0.1) 0%, transparent 100%)',
             },
           },
           '&:hover': {
-            background: isDarkMode ? 'rgba(255, 255, 255, 0.06)' : 'rgba(0, 0, 0, 0.04)',
+            background: 'rgba(0, 0, 0, 0.04)',
             transform: 'translateX(2px)',
             '&::before': {
-              background: isDarkMode
-                ? 'linear-gradient(90deg, rgba(255, 255, 255, 0.03) 0%, transparent 100%)'
-                : 'linear-gradient(90deg, rgba(0, 0, 0, 0.02) 0%, transparent 100%)',
+              background: 'linear-gradient(90deg, rgba(0, 0, 0, 0.02) 0%, transparent 100%)',
             },
           },
           '&:active': {
             transform: 'scale(0.98)',
-            background: isDarkMode ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.06)',
+            background: 'rgba(0, 0, 0, 0.06)',
           },
           justifyContent: isOpen ? 'flex-start' : 'center',
         }}
@@ -292,9 +280,7 @@ export default function Sidebar({ drawerWidth, isOpen, onToggle }: SidebarProps)
         {item.icon && (
           <ListItemIcon 
             sx={{ 
-              color: isSelected 
-                ? theme.palette.primary.main 
-                : (isDarkMode ? 'rgba(248, 250, 252, 0.7)' : 'rgba(60, 60, 67, 0.7)'),
+              color: isSelected ? '#0071E3' : 'rgba(60, 60, 67, 0.7)',
               minWidth: isOpen ? 30 : 'auto',
               justifyContent: 'center',
               '& .MuiSvgIcon-root': {
@@ -317,17 +303,15 @@ export default function Sidebar({ drawerWidth, isOpen, onToggle }: SidebarProps)
                   fontSize: '0.8125rem',
                   fontWeight: isSelected ? 600 : 500,
                   letterSpacing: '-0.01em',
-                  color: isSelected 
-                    ? theme.palette.primary.main 
-                    : (isDarkMode ? 'rgba(248, 250, 252, 0.85)' : 'rgba(29, 29, 31, 0.85)'),
+                  color: isSelected ? '#0071E3' : 'rgba(29, 29, 31, 0.85)',
                   fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif',
                 },
               }}
             />
             {hasChildren && (
               menuItemOpen 
-                ? <ExpandLessIcon sx={{ fontSize: '0.95rem', color: isDarkMode ? 'rgba(248, 250, 252, 0.5)' : 'rgba(60, 60, 67, 0.5)' }} /> 
-                : <ExpandMoreIcon sx={{ fontSize: '0.95rem', color: isDarkMode ? 'rgba(248, 250, 252, 0.5)' : 'rgba(60, 60, 67, 0.5)' }} />
+                ? <ExpandLessIcon sx={{ fontSize: '0.95rem', color: 'rgba(60, 60, 67, 0.5)' }} /> 
+                : <ExpandMoreIcon sx={{ fontSize: '0.95rem', color: 'rgba(60, 60, 67, 0.5)' }} />
             )}
           </>
         )}
@@ -363,19 +347,17 @@ export default function Sidebar({ drawerWidth, isOpen, onToggle }: SidebarProps)
         '& .MuiDrawer-paper': {
           width: drawerWidth,
           boxSizing: 'border-box',
-          // Frosted Glass - Dark/Light Mode aware
-          background: isDarkMode 
-            ? 'linear-gradient(180deg, rgba(14, 14, 21, 0.98) 0%, rgba(10, 10, 15, 0.99) 100%)'
-            : 'linear-gradient(180deg, rgba(255, 255, 255, 0.85) 0%, rgba(251, 251, 253, 0.78) 100%)',
+          // macOS Tahoe Sidebar - Frosted Glass
+          background: 'linear-gradient(180deg, rgba(255, 255, 255, 0.85) 0%, rgba(251, 251, 253, 0.78) 100%)',
           backdropFilter: 'blur(80px) saturate(200%)',
           WebkitBackdropFilter: 'blur(80px) saturate(200%)',
           border: 'none',
-          borderRight: isDarkMode 
-            ? '1px solid rgba(255, 255, 255, 0.06)'
-            : '0.5px solid rgba(0, 0, 0, 0.08)',
-          boxShadow: isDarkMode 
-            ? '4px 0 24px rgba(0, 0, 0, 0.3)'
-            : `inset -1px 0 0 rgba(255, 255, 255, 0.5), 6px 0 32px rgba(0, 0, 0, 0.04), 2px 0 8px rgba(0, 0, 0, 0.02)`,
+          borderRight: '0.5px solid rgba(0, 0, 0, 0.08)',
+          boxShadow: `
+            inset -1px 0 0 rgba(255, 255, 255, 0.5),
+            6px 0 32px rgba(0, 0, 0, 0.04),
+            2px 0 8px rgba(0, 0, 0, 0.02)
+          `,
           transition: 'width 0.4s cubic-bezier(0.32, 0.72, 0, 1)',
           overflowX: 'hidden',
           overflowY: 'auto',
@@ -387,10 +369,10 @@ export default function Sidebar({ drawerWidth, isOpen, onToggle }: SidebarProps)
             margin: '4px 0',
           },
           '&::-webkit-scrollbar-thumb': {
-            background: isDarkMode ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 0, 0, 0.15)',
+            background: 'rgba(0, 0, 0, 0.15)',
             borderRadius: '3px',
             '&:hover': {
-              background: isDarkMode ? 'rgba(255, 255, 255, 0.25)' : 'rgba(0, 0, 0, 0.25)',
+              background: 'rgba(0, 0, 0, 0.25)',
             },
           },
         },
@@ -404,17 +386,11 @@ export default function Sidebar({ drawerWidth, isOpen, onToggle }: SidebarProps)
           alignItems: 'center',
           justifyContent: isOpen ? 'space-between' : 'center',
           minHeight: 64,
-          background: isDarkMode
-            ? 'linear-gradient(180deg, rgba(20, 20, 31, 0.95) 0%, rgba(14, 14, 21, 0.8) 100%)'
-            : 'linear-gradient(180deg, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0.8) 100%)',
+          background: 'linear-gradient(180deg, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0.8) 100%)',
           backdropFilter: 'blur(40px)',
           WebkitBackdropFilter: 'blur(40px)',
-          borderBottom: isDarkMode
-            ? '1px solid rgba(255, 255, 255, 0.06)'
-            : '0.5px solid rgba(0, 0, 0, 0.06)',
-          boxShadow: isDarkMode
-            ? 'inset 0 -0.5px 0 rgba(255, 255, 255, 0.04)'
-            : 'inset 0 -0.5px 0 rgba(0, 0, 0, 0.04)',
+          borderBottom: '0.5px solid rgba(0, 0, 0, 0.06)',
+          boxShadow: 'inset 0 -0.5px 0 rgba(0, 0, 0, 0.04)',
           position: 'relative',
         }}
       >
@@ -455,12 +431,12 @@ export default function Sidebar({ drawerWidth, isOpen, onToggle }: SidebarProps)
               sx={{
                 width: 30,
                 height: 30,
-                background: isDarkMode ? 'rgba(255, 255, 255, 0.06)' : 'rgba(0, 0, 0, 0.04)',
+                background: 'rgba(0, 0, 0, 0.04)',
                 backdropFilter: 'blur(20px)',
                 WebkitBackdropFilter: 'blur(20px)',
-                border: isDarkMode ? '0.5px solid rgba(255, 255, 255, 0.1)' : '0.5px solid rgba(0, 0, 0, 0.06)',
+                border: '0.5px solid rgba(0, 0, 0, 0.06)',
                 '&:hover': {
-                  background: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.08)',
+                  background: 'rgba(0, 0, 0, 0.08)',
                   transform: 'scale(1.05)',
                 },
                 '&:active': {
@@ -469,7 +445,7 @@ export default function Sidebar({ drawerWidth, isOpen, onToggle }: SidebarProps)
                 transition: 'all 0.2s cubic-bezier(0.32, 0.72, 0, 1)',
               }}
             >
-              <MenuIcon sx={{ fontSize: '1rem', color: isDarkMode ? 'rgba(248, 250, 252, 0.7)' : 'rgba(60, 60, 67, 0.7)' }} />
+              <MenuIcon sx={{ fontSize: '1rem', color: 'rgba(60, 60, 67, 0.7)' }} />
             </IconButton>
           </>
         ) : (
@@ -479,21 +455,13 @@ export default function Sidebar({ drawerWidth, isOpen, onToggle }: SidebarProps)
             sx={{
               width: 36,
               height: 36,
-              background: isDarkMode 
-                ? alpha(theme.palette.primary.main, 0.15) 
-                : 'rgba(0, 113, 227, 0.08)',
+              background: 'rgba(0, 113, 227, 0.08)',
               backdropFilter: 'blur(20px)',
               WebkitBackdropFilter: 'blur(20px)',
-              border: isDarkMode
-                ? `0.5px solid ${alpha(theme.palette.primary.main, 0.3)}`
-                : '0.5px solid rgba(0, 113, 227, 0.15)',
-              boxShadow: isDarkMode
-                ? `0 1px 3px ${alpha(theme.palette.primary.main, 0.2)}`
-                : '0 1px 3px rgba(0, 113, 227, 0.1)',
+              border: '0.5px solid rgba(0, 113, 227, 0.15)',
+              boxShadow: '0 1px 3px rgba(0, 113, 227, 0.1)',
               '&:hover': {
-                background: isDarkMode 
-                  ? alpha(theme.palette.primary.main, 0.25)
-                  : 'rgba(0, 113, 227, 0.14)',
+                background: 'rgba(0, 113, 227, 0.14)',
                 transform: 'scale(1.05)',
               },
               '&:active': {
@@ -502,7 +470,7 @@ export default function Sidebar({ drawerWidth, isOpen, onToggle }: SidebarProps)
               transition: 'all 0.2s cubic-bezier(0.32, 0.72, 0, 1)',
             }}
           >
-            <MenuIcon sx={{ fontSize: '1rem', color: theme.palette.primary.main }} />
+            <MenuIcon sx={{ fontSize: '1rem', color: '#0071E3' }} />
           </IconButton>
         )}
       </Box>
@@ -523,7 +491,7 @@ export default function Sidebar({ drawerWidth, isOpen, onToggle }: SidebarProps)
                     minHeight: 30,
                     background: 'transparent',
                     '&:hover': {
-                      background: isDarkMode ? 'rgba(255, 255, 255, 0.04)' : 'rgba(0, 0, 0, 0.03)',
+                      background: 'rgba(0, 0, 0, 0.03)',
                     },
                     '&:active': {
                       transform: 'scale(0.99)',
@@ -535,7 +503,7 @@ export default function Sidebar({ drawerWidth, isOpen, onToggle }: SidebarProps)
                   {category.icon && (
                     <ListItemIcon sx={{ 
                       minWidth: isOpen ? 28 : 'auto', 
-                      color: isDarkMode ? alpha(theme.palette.primary.light, 0.9) : 'rgba(0, 122, 255, 0.8)', 
+                      color: 'rgba(0, 122, 255, 0.8)', 
                       '& .MuiSvgIcon-root': {
                         fontSize: '0.95rem',
                       }
@@ -553,16 +521,16 @@ export default function Sidebar({ drawerWidth, isOpen, onToggle }: SidebarProps)
                             fontSize: '0.6875rem',
                             fontWeight: 700,
                             letterSpacing: '0.06em',
-                            color: isDarkMode ? 'rgba(248, 250, 252, 0.55)' : 'rgba(60, 60, 67, 0.55)',
+                            color: 'rgba(60, 60, 67, 0.55)',
                             textTransform: 'uppercase',
                             fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif',
                           },
                         }}
                       />
                       {openCategories[category.title] ? (
-                        <ExpandLessIcon sx={{ fontSize: '0.85rem', color: isDarkMode ? 'rgba(248, 250, 252, 0.35)' : 'rgba(60, 60, 67, 0.35)' }} />
+                        <ExpandLessIcon sx={{ fontSize: '0.85rem', color: 'rgba(60, 60, 67, 0.35)' }} />
                       ) : (
-                        <ExpandMoreIcon sx={{ fontSize: '0.85rem', color: isDarkMode ? 'rgba(248, 250, 252, 0.35)' : 'rgba(60, 60, 67, 0.35)' }} />
+                        <ExpandMoreIcon sx={{ fontSize: '0.85rem', color: 'rgba(60, 60, 67, 0.35)' }} />
                       )}
                     </>
                   )}
@@ -582,7 +550,7 @@ export default function Sidebar({ drawerWidth, isOpen, onToggle }: SidebarProps)
               >
                 {category.icon && (
                   <Box sx={{ 
-                    color: isDarkMode ? alpha(theme.palette.primary.light, 0.9) : 'rgba(0, 122, 255, 0.8)', 
+                    color: 'rgba(0, 122, 255, 0.8)', 
                     mr: isOpen ? 0.75 : 0, 
                     display: 'flex', 
                     '& .MuiSvgIcon-root': {
@@ -599,7 +567,7 @@ export default function Sidebar({ drawerWidth, isOpen, onToggle }: SidebarProps)
                       fontSize: '0.6875rem',
                       fontWeight: 700,
                       letterSpacing: '0.06em',
-                      color: isDarkMode ? 'rgba(248, 250, 252, 0.55)' : 'rgba(60, 60, 67, 0.55)',
+                      color: 'rgba(60, 60, 67, 0.55)',
                       textTransform: 'uppercase',
                       fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif',
                     }}
@@ -620,7 +588,7 @@ export default function Sidebar({ drawerWidth, isOpen, onToggle }: SidebarProps)
               sx={{ 
                 my: 1.25, 
                 mx: 2, 
-                borderColor: isDarkMode ? 'rgba(255, 255, 255, 0.06)' : 'rgba(0, 0, 0, 0.05)',
+                borderColor: 'rgba(0, 0, 0, 0.05)',
               }} 
             />
           </Box>
