@@ -169,7 +169,7 @@ export async function initPostgresDatabase() {
           created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         );
 
-        -- Articles Table
+        -- Articles Table (Legacy)
         CREATE TABLE IF NOT EXISTS articles (
           id SERIAL PRIMARY KEY,
           article_number VARCHAR(50) UNIQUE,
@@ -186,6 +186,69 @@ export async function initPostgresDatabase() {
           is_active BOOLEAN DEFAULT true,
           created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
           updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+
+        -- Items Table (Inventory/Angebote)
+        CREATE TABLE IF NOT EXISTS items (
+          id SERIAL PRIMARY KEY,
+          name VARCHAR(255) NOT NULL,
+          sku VARCHAR(100) UNIQUE,
+          ean VARCHAR(50),
+          description TEXT,
+          unit VARCHAR(50) DEFAULT 'Stück',
+          price DECIMAL(12,2) DEFAULT 0,
+          purchase_price DECIMAL(12,2),
+          sales_price DECIMAL(12,2),
+          margin_percent DECIMAL(5,2),
+          vat_rate DECIMAL(5,2) DEFAULT 19.00,
+          category VARCHAR(100),
+          manufacturer VARCHAR(255),
+          supplier_id INTEGER,
+          supplier_article_number VARCHAR(100),
+          cost_center VARCHAR(50),
+          price_calculation_id INTEGER,
+          image_url TEXT,
+          stock_quantity INTEGER DEFAULT 0,
+          min_stock INTEGER DEFAULT 0,
+          is_service BOOLEAN DEFAULT false,
+          time_minutes INTEGER,
+          internal_name VARCHAR(255),
+          is_active BOOLEAN DEFAULT true,
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+
+        -- Warehouses Table
+        CREATE TABLE IF NOT EXISTS warehouses (
+          id SERIAL PRIMARY KEY,
+          name VARCHAR(255) NOT NULL,
+          address TEXT,
+          is_active BOOLEAN DEFAULT true,
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+
+        -- Inventory Stock Table
+        CREATE TABLE IF NOT EXISTS inventory_stock (
+          id SERIAL PRIMARY KEY,
+          item_id INTEGER REFERENCES items(id) ON DELETE CASCADE,
+          warehouse_id INTEGER REFERENCES warehouses(id) ON DELETE CASCADE,
+          quantity INTEGER DEFAULT 0,
+          updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          UNIQUE(item_id, warehouse_id)
+        );
+
+        -- Inventory Movements Table
+        CREATE TABLE IF NOT EXISTS inventory_movements (
+          id SERIAL PRIMARY KEY,
+          item_id INTEGER REFERENCES items(id) ON DELETE CASCADE,
+          warehouse_id INTEGER REFERENCES warehouses(id) ON DELETE CASCADE,
+          quantity INTEGER NOT NULL,
+          movement_type VARCHAR(10) NOT NULL CHECK (movement_type IN ('IN', 'OUT')),
+          reference VARCHAR(255),
+          notes TEXT,
+          created_by INTEGER REFERENCES users(id),
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         );
 
         -- Offers Table
@@ -622,6 +685,60 @@ async function runMigrations(pool: Pool) {
     logger.warn('contacts migration warning:', e);
   }
 
+  // Erstelle items Tabelle falls nicht vorhanden (für Angebote/Inventory)
+  try {
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS items (
+        id SERIAL PRIMARY KEY,
+        name VARCHAR(255) NOT NULL,
+        sku VARCHAR(100) UNIQUE,
+        ean VARCHAR(50),
+        description TEXT,
+        unit VARCHAR(50) DEFAULT 'Stück',
+        price DECIMAL(12,2) DEFAULT 0,
+        purchase_price DECIMAL(12,2),
+        sales_price DECIMAL(12,2),
+        margin_percent DECIMAL(5,2),
+        vat_rate DECIMAL(5,2) DEFAULT 19.00,
+        category VARCHAR(100),
+        manufacturer VARCHAR(255),
+        supplier_id INTEGER,
+        supplier_article_number VARCHAR(100),
+        cost_center VARCHAR(50),
+        price_calculation_id INTEGER,
+        image_url TEXT,
+        stock_quantity INTEGER DEFAULT 0,
+        min_stock INTEGER DEFAULT 0,
+        is_service BOOLEAN DEFAULT false,
+        time_minutes INTEGER,
+        internal_name VARCHAR(255),
+        is_active BOOLEAN DEFAULT true,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+    logger.info('✅ items Tabelle erstellt/geprüft');
+  } catch (e) {
+    logger.warn('items migration warning:', e);
+  }
+
+  // Erstelle warehouses Tabelle falls nicht vorhanden
+  try {
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS warehouses (
+        id SERIAL PRIMARY KEY,
+        name VARCHAR(255) NOT NULL,
+        address TEXT,
+        is_active BOOLEAN DEFAULT true,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+    logger.info('✅ warehouses Tabelle erstellt/geprüft');
+  } catch (e) {
+    logger.warn('warehouses migration warning:', e);
+  }
+
   // Add missing columns to kanban_boards if they don't exist
   try {
     await pool.query(`
@@ -661,23 +778,23 @@ async function runMigrations(pool: Pool) {
     logger.warn('kanban_cards migration warning:', e);
   }
 
-  // Seed Dummy-Artikel falls keine vorhanden
+  // Seed Dummy-Artikel in items-Tabelle falls keine vorhanden
   try {
-    const articleCount = await pool.query('SELECT COUNT(*) FROM articles');
-    if (parseInt(articleCount.rows[0].count) === 0) {
+    const itemCount = await pool.query('SELECT COUNT(*) FROM items');
+    if (parseInt(itemCount.rows[0].count) === 0) {
       await pool.query(`
-        INSERT INTO articles (article_number, name, description, category, unit, selling_price, tax_rate, is_active) VALUES
-        ('ART-001', 'PV-Modul 400W', 'Hochleistungs-Solarmodul 400 Watt', 'PV-Module', 'Stück', 180.00, 19.00, true),
-        ('ART-002', 'Wechselrichter 10kW', 'Hybrid-Wechselrichter 10 kW', 'Wechselrichter', 'Stück', 2500.00, 19.00, true),
-        ('ART-003', 'Montagesystem Flachdach', 'Komplett-Set für Flachdachmontage', 'Montage', 'Set', 450.00, 19.00, true),
-        ('ART-004', 'Kabel Solar 6mm²', 'Solarkabel 6mm², schwarz, 100m Rolle', 'Elektrik', 'Rolle', 120.00, 19.00, true),
-        ('ART-005', 'Installation Pauschal', 'Installationsarbeiten Pauschal', 'Dienstleistung', 'Pauschal', 1500.00, 19.00, true)
-        ON CONFLICT (article_number) DO NOTHING;
+        INSERT INTO items (sku, name, description, category, unit, price, vat_rate, is_active, is_service) VALUES
+        ('PV-MOD-400', 'PV-Modul 400W', 'Hochleistungs-Solarmodul 400 Watt', 'Modul', 'Stück', 180.00, 19.00, true, false),
+        ('WR-HYB-10K', 'Wechselrichter 10kW', 'Hybrid-Wechselrichter 10 kW', 'Wechselrichter', 'Stück', 2500.00, 19.00, true, false),
+        ('MONT-FLACH', 'Montagesystem Flachdach', 'Komplett-Set für Flachdachmontage', 'Montagesystem', 'Set', 450.00, 19.00, true, false),
+        ('KAB-SOL-6', 'Kabel Solar 6mm²', 'Solarkabel 6mm², schwarz, 100m Rolle', 'Kabel', 'Rolle', 120.00, 19.00, true, false),
+        ('INST-PAUSCH', 'Installation Pauschal', 'Installationsarbeiten Pauschal', 'Dienstleistung', 'Pauschal', 1500.00, 19.00, true, true)
+        ON CONFLICT (sku) DO NOTHING;
       `);
-      logger.info('✅ Dummy-Artikel erstellt');
+      logger.info('✅ Dummy-Artikel in items erstellt');
     }
   } catch (e) {
-    logger.warn('articles seed warning:', e);
+    logger.warn('items seed warning:', e);
   }
 
   logger.info('✅ Migrationen abgeschlossen');
