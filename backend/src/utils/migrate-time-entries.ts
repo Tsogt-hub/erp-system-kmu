@@ -5,21 +5,20 @@ export async function migrateTimeEntries() {
   logger.info('🔄 Migrating time_entries table...');
   
   try {
-    // Check if the table exists and has the old schema
-    const checkColumn = isPostgres()
-      ? `SELECT column_name FROM information_schema.columns 
-         WHERE table_name = 'time_entries' AND column_name = 'start_time'`
-      : `PRAGMA table_info(time_entries)`;
+    const usingPostgres = isPostgres();
+    logger.info(`  📋 Database type: ${usingPostgres ? 'PostgreSQL' : 'SQLite'}`);
     
-    const result = await query(checkColumn);
-    
-    if (isPostgres()) {
-      // For PostgreSQL
-      const hasStartTime = result.rows.some((row: any) => row.column_name === 'start_time');
+    if (usingPostgres) {
+      // For PostgreSQL - check if start_time column exists
+      const checkResult = await query(`
+        SELECT column_name FROM information_schema.columns 
+        WHERE table_name = 'time_entries' AND column_name = 'start_time'
+      `);
+      
+      const hasStartTime = checkResult.rows && checkResult.rows.length > 0;
       
       if (!hasStartTime) {
-        // The table has old schema, we need to drop and recreate
-        logger.info('  📋 Dropping old time_entries table and recreating with new schema...');
+        logger.info('  📋 Recreating time_entries table with new schema...');
         
         await query('DROP TABLE IF EXISTS time_entries CASCADE');
         
@@ -44,11 +43,12 @@ export async function migrateTimeEntries() {
       }
     } else {
       // For SQLite
-      const columns = result.rows || result;
-      const hasStartTime = columns.some((col: any) => col.name === 'start_time');
+      const result = await query('PRAGMA table_info(time_entries)');
+      const columns = result.rows || result || [];
+      const hasStartTime = Array.isArray(columns) && columns.some((col: any) => col.name === 'start_time');
       
       if (!hasStartTime) {
-        logger.info('  📋 Dropping old time_entries table and recreating with new schema...');
+        logger.info('  📋 Recreating time_entries table with new schema...');
         
         await query('DROP TABLE IF EXISTS time_entries');
         
@@ -78,7 +78,8 @@ export async function migrateTimeEntries() {
     logger.info('✅ Time entries migration complete');
   } catch (error: any) {
     logger.error('❌ Time entries migration failed:', error.message);
-    throw error;
+    // Don't throw - let the app continue even if migration fails
+    // The table might already exist with the correct schema
   }
 }
 

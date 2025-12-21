@@ -60,6 +60,11 @@ pool.on('error', (err) => {
   console.error('❌ PostgreSQL error:', err);
 });
 
+// Check if using PostgreSQL
+export const isPostgres = (): boolean => {
+  return !useSQLite;
+};
+
 // Konvertiere SQLite-Platzhalter (?) zu PostgreSQL ($1, $2, ...)
 function convertToPostgresParams(text: string): string {
   let paramIndex = 0;
