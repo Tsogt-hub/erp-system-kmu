@@ -436,6 +436,29 @@ export async function initPostgresDatabase() {
           created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         );
 
+        -- Notifications Table
+        CREATE TABLE IF NOT EXISTS notifications (
+          id SERIAL PRIMARY KEY,
+          user_id INTEGER REFERENCES users(id) ON DELETE CASCADE NOT NULL,
+          type VARCHAR(50) NOT NULL,
+          title VARCHAR(255) NOT NULL,
+          message TEXT NOT NULL,
+          related_id INTEGER,
+          related_type VARCHAR(50),
+          is_read BOOLEAN DEFAULT false,
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+
+        -- Project Members Table
+        CREATE TABLE IF NOT EXISTS project_members (
+          id SERIAL PRIMARY KEY,
+          project_id INTEGER REFERENCES projects(id) ON DELETE CASCADE,
+          user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+          role VARCHAR(50) DEFAULT 'member',
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          UNIQUE(project_id, user_id)
+        );
+
         -- Create indexes for better performance
         CREATE INDEX IF NOT EXISTS idx_contacts_company ON contacts(company_id);
         CREATE INDEX IF NOT EXISTS idx_projects_customer ON projects(customer_id);
@@ -446,6 +469,10 @@ export async function initPostgresDatabase() {
         CREATE INDEX IF NOT EXISTS idx_kanban_cards_column ON kanban_cards(column_id);
         CREATE INDEX IF NOT EXISTS idx_kanban_columns_board ON kanban_columns(board_id);
         CREATE INDEX IF NOT EXISTS idx_kanban_activities_card ON kanban_activities(card_id);
+        CREATE INDEX IF NOT EXISTS idx_notifications_user ON notifications(user_id);
+        CREATE INDEX IF NOT EXISTS idx_notifications_read ON notifications(user_id, is_read);
+        CREATE INDEX IF NOT EXISTS idx_project_members_project ON project_members(project_id);
+        CREATE INDEX IF NOT EXISTS idx_project_members_user ON project_members(user_id);
       `);
 
       // Erstelle Standardrollen

@@ -110,8 +110,10 @@ export class OfferModel {
   }
 
   static async generateDraftNumber(): Promise<string> {
-    // Entwürfe bekommen temporäre Nummern
-    return `ENTWURF-${Date.now()}`;
+    // Entwürfe bekommen kürzere temporäre Nummern (Jahr + Zufallsnummer)
+    const year = new Date().getFullYear();
+    const randomPart = Math.floor(Math.random() * 9000) + 1000; // 4-stellige Zahl
+    return `ENTW-${year}-${randomPart}`;
   }
 
   static async generateOfferNumber(): Promise<string> {

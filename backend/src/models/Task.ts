@@ -35,21 +35,21 @@ export interface UpdateTaskData {
   project_id?: number;
 }
 
-// Erstelle Tabelle falls nicht vorhanden
+// Erstelle Tabelle falls nicht vorhanden (PostgreSQL-kompatibel)
 export async function initTasksTable() {
   await query(`
     CREATE TABLE IF NOT EXISTS tasks (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      title TEXT NOT NULL,
+      id SERIAL PRIMARY KEY,
+      title VARCHAR(255) NOT NULL,
       description TEXT,
-      status TEXT DEFAULT 'todo' CHECK(status IN ('todo', 'in_progress', 'done')),
-      priority TEXT DEFAULT 'medium' CHECK(priority IN ('low', 'medium', 'high')),
-      due_date TEXT,
+      status VARCHAR(50) DEFAULT 'todo',
+      priority VARCHAR(20) DEFAULT 'medium',
+      due_date DATE,
       assigned_to INTEGER REFERENCES users(id),
-      project_id INTEGER REFERENCES projects(id),
+      project_id INTEGER REFERENCES projects(id) ON DELETE SET NULL,
       created_by INTEGER NOT NULL REFERENCES users(id),
-      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     )
   `);
 }
