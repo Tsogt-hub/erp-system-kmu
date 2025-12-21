@@ -80,7 +80,6 @@ const menuCategories: MenuCategory[] = [
       { text: 'Aufgaben', icon: <CheckCircleOutlineIcon />, path: '/tasks' },
       { text: 'Kalender', icon: <CalendarMonthOutlinedIcon />, path: '/calendar' },
       { text: 'Zeiterfassung', icon: <AccessTimeOutlinedIcon />, path: '/timesheets' },
-      { text: 'Verkauf', icon: <TrendingUpOutlinedIcon />, path: '/sales' },
     ],
   },
   {
