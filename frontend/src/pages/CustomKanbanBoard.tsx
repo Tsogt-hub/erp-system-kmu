@@ -70,6 +70,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { kanbanService, KanbanBoard, KanbanColumn, KanbanCard, CreateCardData } from '../services/kanban.service';
 import * as companiesApi from '../services/api/companies';
 import * as contactsApi from '../services/api/contacts';
+import { DragDropContext, Droppable, Draggable, DropResult } from 'react-beautiful-dnd';
 
 // Color palette for columns
 const COLUMN_COLORS = [
@@ -1054,10 +1055,13 @@ function PipelineSettingsDialog({ open, onClose, board, onUpdate }: PipelineSett
   const [newColumnColor, setNewColumnColor] = useState(COLUMN_COLORS[0]);
   const [editingColumnId, setEditingColumnId] = useState<number | null>(null);
   const [editingColumnName, setEditingColumnName] = useState('');
+  const [isReordering, setIsReordering] = useState(false);
 
   useEffect(() => {
     if (board?.columns) {
-      setColumns([...board.columns]);
+      // Sortiere Spalten nach Position
+      const sortedColumns = [...board.columns].sort((a, b) => a.position - b.position);
+      setColumns(sortedColumns);
     }
   }, [board]);
 
@@ -1103,6 +1107,39 @@ function PipelineSettingsDialog({ open, onClose, board, onUpdate }: PipelineSett
       onUpdate();
     } catch (err: any) {
       alert(err.response?.data?.error || 'Fehler beim Löschen');
+    }
+  };
+
+  const handleDragEnd = async (result: DropResult) => {
+    if (!result.destination || !board) return;
+    
+    const sourceIndex = result.source.index;
+    const destinationIndex = result.destination.index;
+    
+    if (sourceIndex === destinationIndex) return;
+    
+    // Optimistische UI-Update
+    const newColumns = Array.from(columns);
+    const [reorderedColumn] = newColumns.splice(sourceIndex, 1);
+    newColumns.splice(destinationIndex, 0, reorderedColumn);
+    setColumns(newColumns);
+    setIsReordering(true);
+    
+    try {
+      // API-Call für Reihenfolge-Update
+      const columnIds = newColumns.map(col => col.id);
+      await kanbanService.reorderColumns(board.id, columnIds);
+      onUpdate(); // Reload board data
+    } catch (err: any) {
+      console.error('Error reordering columns:', err);
+      // Rollback bei Fehler
+      if (board?.columns) {
+        const sortedColumns = [...board.columns].sort((a, b) => a.position - b.position);
+        setColumns(sortedColumns);
+      }
+      alert(err.response?.data?.error || 'Fehler beim Ändern der Reihenfolge');
+    } finally {
+      setIsReordering(false);
     }
   };
 
@@ -1160,27 +1197,49 @@ function PipelineSettingsDialog({ open, onClose, board, onUpdate }: PipelineSett
         </Box>
 
         {/* Column List */}
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, mb: 3 }}>
-          {columns.map((column, index) => (
-            <Paper
-              key={column.id}
-              sx={{
-                display: 'grid',
-                gridTemplateColumns: '32px 1fr 120px 80px 80px',
-                gap: 2,
-                alignItems: 'center',
-                p: 1.5,
-                bgcolor: alpha(theme.palette.background.paper, 0.8),
-                borderLeft: `3px solid ${column.color || '#1976D2'}`,
-                '&:hover': {
-                  bgcolor: alpha(theme.palette.action.hover, 0.1),
-                },
-              }}
-            >
-              {/* Drag Handle */}
-              <IconButton size="small" sx={{ cursor: 'grab' }}>
-                <DragIndicatorIcon fontSize="small" />
-              </IconButton>
+        <DragDropContext onDragEnd={handleDragEnd}>
+          <Droppable droppableId="columns">
+            {(provided) => (
+              <Box
+                {...provided.droppableProps}
+                ref={provided.innerRef}
+                sx={{ display: 'flex', flexDirection: 'column', gap: 1, mb: 3 }}
+              >
+                {columns.map((column, index) => (
+                  <Draggable key={column.id} draggableId={`column-${column.id}`} index={index}>
+                    {(provided, snapshot) => (
+                      <Paper
+                        ref={provided.innerRef}
+                        {...provided.draggableProps}
+                        sx={{
+                          display: 'grid',
+                          gridTemplateColumns: '32px 1fr 120px 80px 80px',
+                          gap: 2,
+                          alignItems: 'center',
+                          p: 1.5,
+                          bgcolor: snapshot.isDragging 
+                            ? alpha(theme.palette.primary.main, 0.1)
+                            : alpha(theme.palette.background.paper, 0.8),
+                          borderLeft: `3px solid ${column.color || '#1976D2'}`,
+                          boxShadow: snapshot.isDragging 
+                            ? theme.shadows[8]
+                            : 'none',
+                          transform: snapshot.isDragging ? 'rotate(2deg)' : 'none',
+                          transition: 'all 0.2s ease',
+                          '&:hover': {
+                            bgcolor: alpha(theme.palette.action.hover, 0.1),
+                          },
+                        }}
+                      >
+                        {/* Drag Handle */}
+                        <IconButton
+                          size="small"
+                          {...provided.dragHandleProps}
+                          sx={{ cursor: snapshot.isDragging ? 'grabbing' : 'grab' }}
+                          disabled={isReordering}
+                        >
+                          <DragIndicatorIcon fontSize="small" />
+                        </IconButton>
 
               {/* Column Name */}
               {editingColumnId === column.id ? (
@@ -1238,10 +1297,16 @@ function PipelineSettingsDialog({ open, onClose, board, onUpdate }: PipelineSett
                 sx={{ color: 'error.main' }}
               >
                 <DeleteIcon fontSize="small" />
-              </IconButton>
-            </Paper>
-          ))}
-        </Box>
+                      </IconButton>
+                      </Paper>
+                    )}
+                  </Draggable>
+                ))}
+                {provided.placeholder}
+              </Box>
+            )}
+          </Droppable>
+        </DragDropContext>
 
         {/* Add New Column */}
         <Paper sx={{ p: 2, bgcolor: alpha(theme.palette.primary.main, 0.05), borderStyle: 'dashed', border: `1px dashed ${theme.palette.divider}` }}>
