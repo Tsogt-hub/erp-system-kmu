@@ -276,10 +276,12 @@ class PDFService {
 
         // ==================== DOKUMENT-INFO-BOX ====================
         // Position rechts neben Empfängeradresse (Hero-Stil)
-        const infoBoxX = 370;
+        const infoBoxX = 340;  // Weiter nach links verschoben für mehr Platz
         const infoBoxY = recipientY - 5;
         const infoBoxWidth = pageWidth - infoBoxX - settings.margin_right;
         const infoBoxHeight = 80;
+        const labelWidth = 55;  // Feste Breite für Labels
+        const valueWidth = infoBoxWidth - labelWidth - 20;  // Restliche Breite für Werte
 
         // Box-Hintergrund
         doc.rect(infoBoxX, infoBoxY, infoBoxWidth, infoBoxHeight)
@@ -293,40 +295,41 @@ class PDFService {
 
         // Box-Inhalt
         const infoTextX = infoBoxX + 12;
+        const infoValueX = infoTextX + labelWidth;
         let infoTextY = infoBoxY + 10;
 
         doc.fontSize(8)
            .fillColor('#666666')
            .font('Helvetica')
-           .text('Angebot Nr.:', infoTextX, infoTextY);
+           .text('Angebot Nr.:', infoTextX, infoTextY, { width: labelWidth });
         doc.font('Helvetica-Bold')
            .fillColor('#000000')
-           .text(offer.offer_number, infoTextX + 80, infoTextY);
+           .text(offer.offer_number, infoValueX, infoTextY, { width: valueWidth });
 
         infoTextY += 15;
         doc.font('Helvetica')
            .fillColor('#666666')
-           .text('Datum:', infoTextX, infoTextY);
+           .text('Datum:', infoTextX, infoTextY, { width: labelWidth });
         doc.font('Helvetica-Bold')
            .fillColor('#000000')
-           .text(offer.date, infoTextX + 80, infoTextY);
+           .text(offer.date, infoValueX, infoTextY, { width: valueWidth });
 
         infoTextY += 15;
         doc.font('Helvetica')
            .fillColor('#666666')
-           .text('Gültig bis:', infoTextX, infoTextY);
+           .text('Gültig bis:', infoTextX, infoTextY, { width: labelWidth });
         doc.font('Helvetica-Bold')
            .fillColor('#000000')
-           .text(offer.valid_until, infoTextX + 80, infoTextY);
+           .text(offer.valid_until, infoValueX, infoTextY, { width: valueWidth });
 
         if (offer.project) {
           infoTextY += 15;
           doc.font('Helvetica')
              .fillColor('#666666')
-             .text('Projekt:', infoTextX, infoTextY);
+             .text('Projekt:', infoTextX, infoTextY, { width: labelWidth });
           doc.font('Helvetica-Bold')
              .fillColor('#000000')
-             .text(offer.project.name, infoTextX + 80, infoTextY, { width: 80 });
+             .text(offer.project.name, infoValueX, infoTextY, { width: valueWidth });
         }
 
         // ==================== WASSERZEICHEN (Entwurf) ====================
