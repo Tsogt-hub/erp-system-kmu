@@ -159,6 +159,14 @@ async function startServer() {
     logger.warn('⚠️  Offer Contact-Migration übersprungen:', error.message);
   }
 
+  // Time Entries-Migration ausführen
+  try {
+    const { migrateTimeEntries } = await import('./utils/migrate-time-entries');
+    await migrateTimeEntries();
+  } catch (error: any) {
+    logger.warn('⚠️  Time Entries-Migration übersprungen:', error.message);
+  }
+
   // Tasks-Tabelle initialisieren
   try {
     const { initTasksTable } = await import('./models/Task');

@@ -161,12 +161,13 @@ export async function initPostgresDatabase() {
           id SERIAL PRIMARY KEY,
           user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
           project_id INTEGER REFERENCES projects(id) ON DELETE SET NULL,
+          start_time TIMESTAMP NOT NULL,
+          end_time TIMESTAMP,
+          break_duration INTEGER DEFAULT 0,
           description TEXT,
-          hours DECIMAL(5,2) NOT NULL,
-          date DATE NOT NULL,
-          billable BOOLEAN DEFAULT true,
-          status VARCHAR(50) DEFAULT 'pending',
-          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+          type VARCHAR(50) DEFAULT 'work',
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         );
 
         -- Articles Table
