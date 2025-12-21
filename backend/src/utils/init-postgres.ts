@@ -504,6 +504,69 @@ export async function initPostgresDatabase() {
 async function runMigrations(pool: Pool) {
   logger.info('🔄 Führe Migrationen aus...');
 
+  // Erstelle notifications Tabelle falls nicht vorhanden
+  try {
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS notifications (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER REFERENCES users(id) ON DELETE CASCADE NOT NULL,
+        type VARCHAR(50) NOT NULL,
+        title VARCHAR(255) NOT NULL,
+        message TEXT NOT NULL,
+        related_id INTEGER,
+        related_type VARCHAR(50),
+        is_read BOOLEAN DEFAULT false,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+      CREATE INDEX IF NOT EXISTS idx_notifications_user ON notifications(user_id);
+      CREATE INDEX IF NOT EXISTS idx_notifications_read ON notifications(user_id, is_read);
+    `);
+    logger.info('✅ notifications Tabelle erstellt/geprüft');
+  } catch (e) {
+    logger.warn('notifications migration warning:', e);
+  }
+
+  // Erstelle project_members Tabelle falls nicht vorhanden
+  try {
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS project_members (
+        id SERIAL PRIMARY KEY,
+        project_id INTEGER REFERENCES projects(id) ON DELETE CASCADE,
+        user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+        role VARCHAR(50) DEFAULT 'member',
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE(project_id, user_id)
+      );
+      CREATE INDEX IF NOT EXISTS idx_project_members_project ON project_members(project_id);
+      CREATE INDEX IF NOT EXISTS idx_project_members_user ON project_members(user_id);
+    `);
+    logger.info('✅ project_members Tabelle erstellt/geprüft');
+  } catch (e) {
+    logger.warn('project_members migration warning:', e);
+  }
+
+  // Erstelle tasks Tabelle falls nicht vorhanden (zusätzlich zu init)
+  try {
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS tasks (
+        id SERIAL PRIMARY KEY,
+        title VARCHAR(255) NOT NULL,
+        description TEXT,
+        status VARCHAR(50) DEFAULT 'todo',
+        priority VARCHAR(20) DEFAULT 'medium',
+        due_date DATE,
+        assigned_to INTEGER REFERENCES users(id),
+        project_id INTEGER REFERENCES projects(id) ON DELETE SET NULL,
+        created_by INTEGER REFERENCES users(id),
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+    logger.info('✅ tasks Tabelle erstellt/geprüft');
+  } catch (e) {
+    logger.warn('tasks migration warning:', e);
+  }
+
   // Add missing columns to kanban_boards if they don't exist
   try {
     await pool.query(`
