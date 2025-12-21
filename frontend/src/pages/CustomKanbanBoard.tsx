@@ -366,7 +366,10 @@ export default function CustomKanbanBoard() {
 
   // ============ CARD ACTIONS ============
   const handleCreateCard = async () => {
-    if (!newCardColumnId || !board || !newCardData.title?.trim()) return;
+    if (!newCardColumnId || !board || !newCardData.title?.trim()) {
+      alert('Bitte geben Sie einen Titel ein');
+      return;
+    }
     
     try {
       await kanbanService.createCard({
@@ -379,8 +382,9 @@ export default function CustomKanbanBoard() {
       setNewCardData({ title: '', description: '', priority: 'medium' });
       setNewCardColumnId(null);
       loadBoard();
-    } catch (err) {
+    } catch (err: any) {
       console.error('Error creating card:', err);
+      alert('Fehler beim Erstellen der Karte: ' + (err?.response?.data?.error || err?.message || 'Unbekannter Fehler'));
     }
   };
 

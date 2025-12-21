@@ -662,6 +662,25 @@ async function runMigrations(pool: Pool) {
     logger.warn('kanban_cards migration warning:', e);
   }
 
+  // Seed Dummy-Artikel falls keine vorhanden
+  try {
+    const articleCount = await pool.query('SELECT COUNT(*) FROM articles');
+    if (parseInt(articleCount.rows[0].count) === 0) {
+      await pool.query(`
+        INSERT INTO articles (article_number, name, description, category, unit, selling_price, tax_rate, is_active) VALUES
+        ('ART-001', 'PV-Modul 400W', 'Hochleistungs-Solarmodul 400 Watt', 'PV-Module', 'Stück', 180.00, 19.00, true),
+        ('ART-002', 'Wechselrichter 10kW', 'Hybrid-Wechselrichter 10 kW', 'Wechselrichter', 'Stück', 2500.00, 19.00, true),
+        ('ART-003', 'Montagesystem Flachdach', 'Komplett-Set für Flachdachmontage', 'Montage', 'Set', 450.00, 19.00, true),
+        ('ART-004', 'Kabel Solar 6mm²', 'Solarkabel 6mm², schwarz, 100m Rolle', 'Elektrik', 'Rolle', 120.00, 19.00, true),
+        ('ART-005', 'Installation Pauschal', 'Installationsarbeiten Pauschal', 'Dienstleistung', 'Pauschal', 1500.00, 19.00, true)
+        ON CONFLICT (article_number) DO NOTHING;
+      `);
+      logger.info('✅ Dummy-Artikel erstellt');
+    }
+  } catch (e) {
+    logger.warn('articles seed warning:', e);
+  }
+
   logger.info('✅ Migrationen abgeschlossen');
 }
 
