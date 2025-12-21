@@ -366,25 +366,38 @@ export default function CustomKanbanBoard() {
 
   // ============ CARD ACTIONS ============
   const handleCreateCard = async () => {
+    console.log('handleCreateCard called', { newCardColumnId, board: !!board, title: newCardData.title });
+    
     if (!newCardColumnId || !board || !newCardData.title?.trim()) {
+      console.warn('Validation failed:', { newCardColumnId, boardId: board?.id, title: newCardData.title });
       alert('Bitte geben Sie einen Titel ein');
       return;
     }
     
     try {
-      await kanbanService.createCard({
+      console.log('Creating card with data:', {
+        column_id: newCardColumnId,
+        board_id: board.id,
+        title: newCardData.title.trim(),
+      });
+      
+      const result = await kanbanService.createCard({
         ...newCardData as CreateCardData,
         column_id: newCardColumnId,
         board_id: board.id,
         title: newCardData.title.trim(),
       });
+      
+      console.log('Card created successfully:', result);
       setNewCardDialogOpen(false);
       setNewCardData({ title: '', description: '', priority: 'medium' });
       setNewCardColumnId(null);
       loadBoard();
     } catch (err: any) {
       console.error('Error creating card:', err);
-      alert('Fehler beim Erstellen der Karte: ' + (err?.response?.data?.error || err?.message || 'Unbekannter Fehler'));
+      console.error('Error details:', err?.response?.data, err?.response?.status);
+      const errorMessage = err?.response?.data?.error || err?.response?.data?.message || err?.message || 'Unbekannter Fehler';
+      alert('Fehler beim Erstellen der Karte: ' + errorMessage);
     }
   };
 
